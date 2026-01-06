@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Contact Us - Sri Ambal Nagar Peoples Welfare Association</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #8EC5FC, #E0C3FC);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      position: relative;
+    }
+    .logo-bg {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      width: 100vw; height: 100vh;
+      background: url('logo.png') center center/cover no-repeat;
+      opacity: 0.13;
+      pointer-events: none;
+      z-index: 0;
+    }
+    header, footer {
+      background: #0052cc;
+      color: white;
+      padding: 15px 0;
+      text-align: center;
+      position: relative;
+      z-index: 1;
+    }
+    .header-container {
+      max-width: 1100px;
+      margin: auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 15px;
+      position: relative;
+    }
+    .menu-toggle {
+      display: none;
+      font-size: 30px;
+      cursor: pointer;
+      position: absolute;
+      right: 16px;
+      top: 18px;
+      background: transparent;
+      border: none;
+      color: white;
+      z-index: 2000;
+    }
+    nav ul.menu {
+      display: flex;
+      gap: 20px;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    nav ul.menu li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 600;
+      padding: 6px 12px;
+      border-radius: 6px;
+    }
+    nav ul.menu li a.active,
+    nav ul.menu li a:hover {
+      background: #e1e9fc;
+      color: #0052cc;
+    }
+    .contact-main {
+      max-width: 960px;
+      margin: 60px auto 40px auto;
+      display: flex;
+      gap: 60px;
+      align-items: flex-start;
+      z-index: 1;
+      position: relative;
+    }
+    .contact-info {
+      flex: 1 1 320px;
+      min-width: 250px;
+    }
+    .contact-info h2, .contact-form h2 {
+      color: #0052cc;
+      font-weight: 700;
+      margin-bottom: 24px;
+      font-size: 1.35rem;
+      letter-spacing: 0.5px;
+    }
+    .contact-info ul {
+      margin: 0 0 18px 0;
+      padding: 0;
+      list-style: none;
+      color: #2d3954;
+      font-size: 1.08rem;
+    }
+    .contact-info li { margin-bottom: 10px; }
+    .contact-info h3 {
+      color: #183153;
+      font-size: 1.07em;
+      margin-bottom: 13px;
+      font-weight: 600;
+      margin-top: 24px;
+    }
+    .contact-form {
+      flex: 1 1 350px;
+      min-width: 270px;
+    }
+    .contact-form form {
+      display: flex;
+      flex-direction: column;
+      gap: 17px;
+    }
+    .contact-form label {
+      font-weight: 600;
+      color: #1a237e;
+      margin-bottom: 7px;
+      font-size: 1.05em;
+    }
+    .contact-form input,
+    .contact-form textarea {
+      font-family: inherit;
+      font-size: 1rem;
+      padding: 11px 13px;
+      border: none;
+      border-bottom: 2px solid #0052cc;
+      background: transparent;
+      transition: border-color 0.2s, background 0.18s;
+      resize: none;
+      outline: none;
+    }
+    .contact-form input:focus,
+    .contact-form textarea:focus {
+      border-bottom: 2.5px solid #003d99;
+      background: #eff5ff;
+    }
+    .contact-form button {
+      margin-top: 5px;
+      padding: 12px 0;
+      background: #0052cc;
+      color: white;
+      font-weight: 700;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1.06rem;
+      letter-spacing: 0.2px;
+      transition: background 0.18s;
+    }
+    .contact-form button:hover {
+      background: #003d99;
+    }
+    .map-embed { margin-top: 30px; }
+    .map-embed iframe {
+      border:0; width:100%; height:170px; border-radius: 12px;
+    }
+
+    @media (max-width: 960px) {
+      .contact-main { flex-direction: column; gap: 48px; }
+      .contact-info, .contact-form { min-width: 0; }
+    }
+    @media (max-width: 640px) {
+      .contact-main { margin: 30px 5vw; }
+      .contact-form input, .contact-form textarea { font-size: 0.98rem; }
+    }
+
+    /* MOBILE NAV FIX */
+    @media (max-width: 600px) {
+      .header-container {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+      }
+      .menu-toggle {
+        display: block;
+      }
+      nav {
+        width: 100%;
+      }
+      nav ul.menu {
+        flex-direction: column;
+        width: 100vw;
+        position: absolute;
+        top: 62px;
+        right: 0;
+        background: #0052cc;
+        border-radius: 0 0 10px 10px;
+        display: none;
+        padding: 10px 0;
+        z-index: 1999;
+      }
+      nav ul.menu.show {
+        display: flex;
+      }
+      nav ul.menu li {
+        width: 100%;
+        margin: 4px 0;
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="logo-bg"></div>
+  <header>
+    <div class="header-container">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img src="img/logo.png" alt="APNGDR Logo" style="height:55px; border-radius:50%; background:#fff; padding:4px; box-shadow:0 1px 7px #0008;" />
+        <h1 style="margin:0; font-weight:700;">Sri AmbalNagar Makkal Nalvazhu Sangam</h1>
+      </div>
+      <button class="menu-toggle" id="menu-toggle">&#9776;</button>
+      <nav>
+        <ul class="menu" id="menu">
+          <li><a href="index.html" class="active">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="members.html">Members</a></li>
+          <li><a href="events.html">Events</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <main class="contact-main">
+    <div class="contact-info">
+      <h2>Contact Details</h2>
+      <ul>
+        <li><b>Address:</b><br /><br />No.21,RMS Illam,2nd Floor Rajesh Avenue,Sri AmbalNagar Pallikarani Chennai-100 </li>
+        <li><b>Email:</b> mnsambalnagar@gmail.com</li>
+        <li><b>Phone:</b> 9445336302</li>
+      </ul>
+      <h3>Office Hours</h3>
+      <ul>
+        <li>Mon–Sat: 9.30 AM – 6.00 PM</li>
+        <li>Sunday: Closed</li>
+      </ul>
+      <h3>Location</h3>
+      <div class="map-embed">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3919.0023734671654!2d80.18792471525804!3d13.01187629083211!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3a525b04fbed84af%3A0xdd1f4e1fba882ab1!2sAmbal%20Nagar%2C%20Pallikaranai%2C%20Chennai%2C%20Tamil%20Nadu%20600100%2C%20India!5e0!3m2!1sen!2sin!4v1700369632960!5m2!1sen!2sin" loading="lazy" style="border:0;" allowfullscreen="" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+
+    <div class="contact-form">
+      <h2>Send a Message</h2>
+      <form id="contactForm" enctype="multipart/form-data">
+        <label>Name</label>
+        <input type="text"
+         name="name" 
+         required 
+         placeholder="Enter your name"
+         pattern="[A-Za-z\s]+"
+         title="Only letters and spaces allowed"
+          />
+
+        <label>Mobile</label>
+        <input
+         type="text"
+         name="mobile"
+         required
+         placeholder="Enter your mobile number"
+         maxlength="10"
+         pattern="\d{10}"
+         inputmode="numeric"
+         title="Mobile must be exactly 10 digits"
+/>
+
+
+        <label>Message</label>
+        <textarea name="message" rows="5" required placeholder="Write your message"></textarea>
+
+        <label>Attachments (Optional)</label>
+        <input
+          type="file"
+          name="attachments"
+          accept="image/*,.pdf,video/mp4,video/*"
+          multiple
+        />
+
+        <button type="submit">Send Message</button>
+      </form>
+      <small style="color:#666; font-size:0.9em; margin-top:8px; display:block;">
+        Supports photos, PDF and videos (each file up to 25MB).
+      </small>
+    </div>
+  </main>
+
+<script>
+  const menuToggleBtn = document.getElementById('menu-toggle');
+  const navMenu = document.getElementById('menu');
+
+  // Mobile menu toggle
+  menuToggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    navMenu.classList.toggle('show');
+  });
+
+  navMenu.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      if (window.innerWidth <= 600) {
+        navMenu.classList.remove('show');
+      }
+    });
+  });
+
+  document.addEventListener('click', (e) => {
+    if (window.innerWidth <= 600 && !navMenu.contains(e.target) && e.target !== menuToggleBtn) {
+      navMenu.classList.remove('show');
+    }
+  });
+
+  // Live restriction: Name = letters + spaces only
+  const nameInput = document.querySelector('input[name="name"]');
+  nameInput.addEventListener('input', () => {
+    nameInput.value = nameInput.value.replace(/[^A-Za-z\s]/g, '');
+  });
+
+  // Live restriction: Mobile = digits only, max 10
+  const mobileInput = document.querySelector('input[name="mobile"]');
+  mobileInput.addEventListener('input', () => {
+    mobileInput.value = mobileInput.value.replace(/\D/g, '');
+    if (mobileInput.value.length > 10) {
+      mobileInput.value = mobileInput.value.slice(0, 10);
+    }
+  });
+
+  // contact form with file upload
+  document.getElementById('contactForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+    const name = formData.get('name')?.trim();
+    const mobile = formData.get('mobile')?.trim();
+    const message = formData.get('message')?.trim();
+
+    if (!name || !mobile || !message) {
+      alert('Please fill all fields.');
+      return;
+    }
+
+    if (!/^[A-Za-z\s]+$/.test(name)) {
+      alert('Name should contain letters and spaces only.');
+      return;
+    }
+
+    if (!/^\d{10}$/.test(mobile)) {
+      alert('Mobile number must be exactly 10 digits.');
+      return;
+    }
+
+    const submitBtn = this.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+
+    submitBtn.textContent = 'Sending...';
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch('/api/contact-with-file', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert('Message sent successfully! ✅');
+        this.reset();
+      } else {
+        alert(data.message || 'Failed to send message');
+      }
+    } catch (err) {
+      console.error('Contact error:', err);
+      alert('Network/Server error. Please try again.');
+    } finally {
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }
+  });
+</script>
+
+
+  <footer>
+    <div style="text-align:center; padding: 20px 0; background:#0052cc; color:white;">
+      <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association. All rights reserved.</p>
+    </div>
+  </footer>
+</body>
+</html>

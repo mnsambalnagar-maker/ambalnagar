@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>My Profile</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Poppins', sans-serif; background:#f2f6fb; margin:0;}
+    .profile-wrap { max-width:430px; margin:60px auto; background:#fff; border-radius:14px; padding:42px 34px; box-shadow:0 6px 25px #0001; }
+    .profile-pic { width:94px; height:94px; border-radius:50%; object-fit:cover; display:block; margin:0 auto 18px auto; }
+    .profile-title { font-size:1.32em; font-weight:700; margin-bottom:3px; text-align:center; color:#0052cc; }
+    .profile-field { margin-bottom:14px; }
+    label { font-weight:600; color:#3d4760; margin-bottom:4px; display:block; }
+    input[type="text"], input[type="email"] { width:100%; padding:7px; border-radius:5px; border:1px solid #d4d7eb; font-size:1.05em; }
+    #photoInput { margin-bottom:14px; }
+    .button-row { text-align:center; margin-top:22px; }
+    button, .back-btn { background:#0052cc; color:white; padding:10px 25px; font-weight:700; border-radius:8px; font-size:1em; border:none; cursor:pointer; }
+    button:hover, .back-btn:hover { background:#003d99; }
+    .back-btn { text-decoration:none; display:inline-block; }
+  </style>
+</head>
+<body>
+  <div class="profile-wrap">
+    <img src="img/profile-default.png" id="profilePic" class="profile-pic" alt="Profile"/>
+    <input type="file" id="photoInput" accept="image/*" style="display:none;" />
+    <div class="profile-title" id="profileTitle">Profile</div>
+    <div id="profile-details">
+      <div class="profile-field">
+        <label>Email</label>
+        <span id="emailSpan"></span>
+      </div>
+      <div class="profile-field">
+        <label>Role</label>
+        <span id="roleSpan"></span>
+      </div>
+      <div class="profile-field">
+        <label>Phone</label>
+        <span id="phoneSpan"></span>
+      </div>
+      <div class="profile-field">
+        <label>Joined</label>
+        <span id="joinedSpan"></span>
+      </div>
+      <div class="button-row">
+        <button id="editBtn">Edit</button>
+        <a class="back-btn" href="dashboard.html">&larr; Back to Dashboard</a>
+      </div>
+    </div>
+  </div>
+
+<script>
+  let currentUser = null;
+  document.addEventListener('DOMContentLoaded', () => {
+    const username = localStorage.getItem('loggedInUsername');
+    if (!username) {
+      alert('User not logged in!');
+      window.location.href = 'login.html';
+      return;
+    }
+    // Get profile data
+    fetch('/api/getUsers')
+      .then(res => res.json())
+      .then(users => {
+        currentUser = users.find(u => u.username === username);
+        if (!currentUser) {
+          alert('User data not found!');
+          return;
+        }
+        document.getElementById('profileTitle').innerText = currentUser.username;
+        document.getElementById('emailSpan').innerText = currentUser.email || '';
+        document.getElementById('roleSpan').innerText = currentUser.role || '';
+        document.getElementById('phoneSpan').innerText = currentUser.phone || '';
+        document.getElementById('joinedSpan').innerText = currentUser.joined || '';
+        // Photo preview
+        document.getElementById('profilePic').src = `uploads/${currentUser.username}.jpg`;
+        document.getElementById('profilePic').onerror = function() {
+          this.src = "img/profile-default.png";
+        };
+      });
+  });
+
+  document.getElementById('editBtn').onclick = function() {
+    document.getElementById('photoInput').style.display = 'block';
+    document.getElementById('profilePic').style.cursor = 'pointer';
+    document.getElementById('profilePic').onclick = function() {
+      document.getElementById('photoInput').click();
+    };
+    document.getElementById('photoInput').onchange = function(){
+      if (this.files[0]) {
+        document.getElementById('profilePic').src = URL.createObjectURL(this.files[0]);
+      }
+    };
+
+    document.getElementById('emailSpan').innerHTML = `<input type="email" id="editEmail" value="${currentUser.email}">`;
+    document.getElementById('roleSpan').innerHTML = `<input type="text" id="editRole" value="${currentUser.role}" readonly>`;
+    document.getElementById('phoneSpan').innerHTML = `<input type="text" id="editPhone" value="${currentUser.phone}">`;
+    document.getElementById('joinedSpan').innerHTML = `<input type="text" id="editJoined" value="${currentUser.joined}" readonly>`;
+    document.getElementById('editBtn').style.display = 'none';
+
+    const saveBtn = document.createElement('button');
+    saveBtn.id = 'saveBtn';
+    saveBtn.innerText = 'Save';
+    saveBtn.onclick = saveProfile;
+    document.querySelector('.button-row').insertBefore(saveBtn, document.querySelector('.back-btn'));
+  };
+
+  function saveProfile() {
+    const username = currentUser.username;
+    const formData = new FormData();
+    formData.append('username', username);
+    formData.append('email', document.getElementById('editEmail').value);
+    formData.append('role', document.getElementById('editRole').value);
+    formData.append('phone', document.getElementById('editPhone').value);
+    formData.append('joined', document.getElementById('editJoined').value);
+    const photo = document.getElementById('photoInput').files[0];
+    if(photo) formData.append('photo', photo);
+
+    fetch('/api/updateUserWithPhoto', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      if (data.success) {
+        alert('Profile updated successfully!');
+        location.reload();
+      } else {
+        alert('Failed to update profile!');
+      }
+    })
+    .catch(() => {
+      alert('Error connecting to server!');
+    });
+  }
+</script>
+</body>
+</html>

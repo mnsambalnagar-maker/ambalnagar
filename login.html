@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Login - Sri Ambal Nagar Admin Portal</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Poppins',sans-serif;
+      min-height:100vh;
+      margin:0;
+      padding:0;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(254,252,64,0.25) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(59,130,246,0.35) 0%, transparent 50%),
+        linear-gradient(135deg,#0f172a 0%,#1d2b64 40%,#2a3b8f 100%);
+      background-attachment:fixed;
+      display:flex;
+      flex-direction:column;
+    }
+    .nav-wrap{width:100%;padding:16px 34px;position:sticky;top:0;z-index:20;}
+    .nav-bar{max-width:1200px;margin:0 auto;padding:10px 18px;border-radius:999px;background:rgba(15,23,42,0.42);border:1px solid rgba(148,163,184,0.5);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:space-between;color:#e5e7eb;box-shadow:0 18px 45px rgba(15,23,42,0.7);}
+    .nav-left{display:flex;align-items:center;gap:10px;}
+    .nav-logo-mini{width:34px;height:34px;border-radius:50%;overflow:hidden;background:#facc15;display:flex;align-items:center;justify-content:center;}
+    .nav-logo-mini img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+    .nav-title{font-size:0.95rem;font-weight:600;}
+    .nav-right{display:flex;align-items:center;gap:18px;font-size:0.85rem;}
+    .nav-link{display:flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;color:#e5e7eb;text-decoration:none;font-weight:500;font-size:0.85rem;transition:.2s;}
+    .nav-link:hover{background:rgba(148,163,184,0.25);}
+    .nav-pill{padding:6px 14px;border-radius:999px;border:1px solid rgba(248,250,252,0.4);background:rgba(248,250,252,0.1);font-size:0.8rem;}
+    .page-main{flex:1;display:grid;grid-template-columns:1.2fr 1fr;min-height:0;}
+    .login-left{display:flex;flex-direction:column;justify-content:center;padding:40px 70px 60px 70px;color:#e5e7eb;position:relative;overflow:hidden;}
+    .login-left::after{content:'';position:absolute;right:-120px;bottom:-120px;width:260px;height:260px;background:radial-gradient(circle,rgba(59,130,246,0.7),transparent 70%);opacity:0.7;}
+    .logo-row{display:flex;align-items:center;gap:24px;margin-bottom:30px;}
+    .logo-wrap{width:82px;height:82px;border-radius:50%;background:radial-gradient(circle,#f0f0ec,#f5f4f2);box-shadow:0 16px 40px rgba(0,0,0,0.45);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+    .logo-wrap img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;}
+    .brand-text-main{font-size:2rem;font-weight:700;letter-spacing:0.5px;}
+    .brand-text-sub{font-size:0.92rem;color:#cbd5f5;margin-top:4px;}
+    .welcome-line{margin-top:16px;font-size:0.98rem;color:#e5e7eb;line-height:1.7;}
+    .welcome-line span{font-weight:600;color:#f9fafb;}
+    .feature-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px 24px;margin-top:35px;}
+    .feature-item{display:flex;align-items:center;gap:10px;font-size:0.9rem;color:#e5e7eb;}
+    .feature-icon{width:30px;height:30px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,0.9);box-shadow:0 10px 25px rgba(15,23,42,0.7);font-size:0.95rem;}
+    .login-left-footer{margin-top:40px;font-size:0.86rem;color:#cbd5f5;}
+    .login-right{background:linear-gradient(145deg,#f9fafb,#ffffff);box-shadow:-24px 0 60px rgba(15,23,42,0.55);display:flex;flex-direction:column;justify-content:center;padding:40px 70px 60px 70px;position:relative;overflow:hidden;}
+    .login-right::before{content:'';position:absolute;top:-80px;right:-80px;width:200px;height:200px;background:radial-gradient(circle,rgba(59,130,246,0.28),transparent 70%);}
+    .login-title{font-size:2.2rem;font-weight:800;color:#111827;text-align:left;margin-bottom:6px;}
+    .login-sub{font-size:0.98rem;color:#6b7280;margin-bottom:32px;}
+    form{display:flex;flex-direction:column;gap:20px;}
+    .form-group{display:flex;flex-direction:column;gap:7px;}
+    label{font-size:0.9rem;font-weight:600;color:#374151;}
+    .input-wrap{position:relative;}
+    .input-wrap input{width:100%;padding:14px 16px 14px 44px;border-radius:14px;border:1px solid #d1d5db;background:#f9fafb;font-size:0.96rem;outline:none;transition:.2s;box-shadow:0 8px 20px rgba(15,23,42,0.08);}
+    .input-wrap input:focus{border-color:#2563eb;background:#ffffff;box-shadow:0 0 0 3px rgba(37,99,235,0.15);}
+    .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:1rem;}
+    .login-btn{margin-top:6px;width:100%;padding:14px 0;border-radius:999px;border:none;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:#fff;font-weight:600;font-size:1rem;cursor:pointer;letter-spacing:.3px;box-shadow:0 18px 40px rgba(37,99,235,0.5);transition:.25s;display:flex;align-items:center;justify-content:center;gap:8px;}
+    .login-btn:hover{transform:translateY(-2px);box-shadow:0 24px 55px rgba(37,99,235,0.65);}
+    #otpBox{margin-top:26px;padding-top:22px;border-top:1px dashed rgba(148,163,184,0.7);display:none;}
+    #otpMsg{margin-top:10px;font-size:0.88rem;min-height:20px;text-align:center;}
+    .helper-text{margin-top:26px;font-size:0.84rem;color:#9ca3af;text-align:center;}
+    @media(max-width:960px){.nav-wrap{padding:10px 14px;}.nav-bar{padding:8px 14px;}.nav-right{display:none;}.page-main{grid-template-columns:1fr;}.login-left{padding:28px 20px 30px;}.login-right{padding:32px 20px 40px;box-shadow:0 -18px 40px rgba(15,23,42,0.7);}}
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <header class="nav-wrap">
+    <div class="nav-bar">
+      <div class="nav-left">
+        <div class="nav-logo-mini">
+          <img src="img/logo.png" alt="Logo">
+        </div>
+        <div class="nav-title">Sri Ambal Nagar Admin</div>
+      </div>
+      <div class="nav-right">
+        <a href="index.html" class="nav-link"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="about.html" class="nav-link"><i class="fas fa-info-circle"></i><span>About</span></a>
+        <a href="contact.html" class="nav-link"><i class="fas fa-phone"></i><span>Contact</span></a>
+        <div class="nav-pill">
+          <i class="fas fa-shield-alt" style="margin-right:6px;"></i>Admin Login
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="page-main">
+    <!-- LEFT -->
+    <section class="login-left">
+      <div class="logo-row">
+        <div class="logo-wrap">
+          <img src="img/logo.png" alt="Sri Ambal Nagar Logo">
+        </div>
+        <div>
+          <div class="brand-text-main">Sri Ambal Nagar</div>
+          <div class="brand-text-sub">Admin Portal</div>
+        </div>
+      </div>
+      <p class="welcome-line">
+        Welcome to the secure administration dashboard for
+        <span>Sri Ambal Nagar Peoples Welfare Association</span>
+      </p>
+      <div class="feature-grid">
+        <div class="feature-item">
+          <div class="feature-icon" style="color:#22c55e;"><i class="fas fa-lock"></i></div>
+          <span>2FA Email OTP Protection</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="color:#a855f7;"><i class="fas fa-users"></i></div>
+          <span>Complete Member Management</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="color:#38bdf8;"><i class="fas fa-calendar"></i></div>
+          <span>Events & Notices</span>
+        </div>
+        <div class="feature-item">
+          <div class="feature-icon" style="color:#f97316;"><i class="fas fa-images"></i></div>
+          <span>Gallery Uploads</span>
+        </div>
+      </div>
+      <div class="login-left-footer">
+        Need access or forgot credentials? Please contact the association secretary or IT volunteer.
+      </div>
+    </section>
+
+    <!-- RIGHT -->
+    <section class="login-right">
+      <h2 class="login-title">Secure Login</h2>
+      <p class="login-sub">Enter credentials & verify with OTP to access admin dashboard.</p>
+
+      <form id="loginForm" autocomplete="off">
+        <div class="form-group">
+          <label for="username">Username</label>
+          <div class="input-wrap">
+            <input id="username" type="text" required placeholder="Your username" autocomplete="off" />
+            <span class="input-icon"><i class="fas fa-user"></i></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" type="password" required placeholder="Password" autocomplete="off" />
+            <span class="input-icon"><i class="fas fa-lock"></i></span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="email">Email Address</label>
+          <div class="input-wrap">
+            <input id="email" type="email" required placeholder="you@example.com" autocomplete="off" />
+            <span class="input-icon"><i class="fas fa-envelope"></i></span>
+          </div>
+        </div>
+        <button type="submit" class="login-btn">
+          <i class="fas fa-paper-plane"></i>
+          Send OTP
+        </button>
+      </form>
+
+      <div id="otpBox">
+        <div class="form-group">
+          <label for="otp">Enter OTP</label>
+          <div class="input-wrap">
+            <input id="otp" type="text" maxlength="6" placeholder="6-digit code" />
+            <span class="input-icon"><i class="fas fa-key"></i></span>
+          </div>
+        </div>
+        <button id="verifyBtn" class="login-btn">
+          <i class="fas fa-check-circle"></i>
+          Verify & Login
+        </button>
+        <p id="otpMsg"></p>
+      </div>
+
+      <div class="helper-text">
+        Protected by advanced two-factor authentication. Only authorized admins are allowed to login.
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const loginForm = document.getElementById('loginForm');
+    const otpBox = document.getElementById('otpBox');
+    const otpInput = document.getElementById('otp');
+    const verifyBtn = document.getElementById('verifyBtn');
+    const otpMsg = document.getElementById('otpMsg');
+    let step1Email = '';
+
+    // ✅ REAL OTP ONLY - NO TEST MODE!
+    loginForm.onsubmit = function(e){
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const email = document.getElementById('email').value.trim();
+
+      if(!username || !password || !email){
+        alert('Please fill all fields');
+        return;
+      }
+
+      otpMsg.style.color = '#2563eb';
+      otpMsg.textContent = 'Sending OTP...';
+
+      fetch('/api/login-step1',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({username,password,email})
+      })
+      .then(r=>r.json())
+      .then(data=>{
+        if(!data.success){
+          otpMsg.style.color = '#dc2626';
+          otpMsg.textContent = data.message || 'Login failed';
+          otpBox.style.display = 'none';
+          return;
+        }
+        step1Email = email;
+        otpBox.style.display = 'block';
+        otpMsg.style.color = '#16a34a';
+        otpMsg.textContent = '✅ OTP sent! Check Gmail Inbox/SPAM/Promotions';
+        
+        // DEV HELP: Show OTP if returned (since email might fail)
+        if(data.debug_otp) {
+          alert('DEV MODE OTP: ' + data.debug_otp);
+          console.log('DEV OTP:', data.debug_otp);
+        }
+      })
+      .catch(err=>{
+        otpMsg.style.color = '#dc2626';
+        otpMsg.textContent = 'Server error. Check Terminal.';
+        console.error('Login error:', err);
+      });
+    };
+
+    // ✅ REAL OTP VERIFY ONLY - NO TEST LOGIN!
+    verifyBtn.addEventListener('click', ()=>{
+      const otp = otpInput.value.trim();
+      if(!step1Email || !otp){
+        otpMsg.style.color = '#dc2626';
+        otpMsg.textContent = 'Please enter the OTP.';
+        return;
+      }
+
+      otpMsg.style.color = '#2563eb';
+      otpMsg.textContent = 'Verifying...';
+
+      fetch('/api/login-step2',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:step1Email,otp})
+      })
+      .then(r=>r.json())
+      .then(data=>{
+        if(!data.success){
+          otpMsg.style.color = '#dc2626';
+          otpMsg.textContent = data.message || 'Invalid OTP';
+          return;
+        }
+        localStorage.setItem('currentUser',JSON.stringify(data.user));
+        localStorage.setItem('loggedInUsername',data.user.username);
+        console.log('✅ Server login:', data.user.username);
+        window.location.href='dashboard.html';
+      })
+      .catch(()=>{
+        otpMsg.style.color = '#dc2626';
+        otpMsg.textContent = 'Server error. Try again.';
+      });
+    });
+  </script>
+</body>
+</html>

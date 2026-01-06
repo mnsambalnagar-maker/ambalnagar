@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Membership Applications - Sri Ambal Nagar</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* SAME STYLE AS DASHBOARD */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: 'Inter', sans-serif; 
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+.container { max-width: 1200px; margin: 0 auto; }
+.header { 
+    text-align: center; 
+    color: white; 
+    margin-bottom: 40px;
+    padding: 20px 0;
+}
+.header h1 { font-size: 2.5rem; font-weight: 700; margin-bottom: 10px; }
+.back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-bottom: 20px;
+    transition: all 0.3s;
+}
+.back-btn:hover { background: rgba(255,255,255,0.3); transform: translateY(-2px); }
+
+/* APPLICATIONS TABLE */
+.applications-table {
+    background: rgba(255,255,255,0.95);
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+}
+.table-header {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.2fr;
+    gap: 15px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e2e8f0;
+    font-weight: 700;
+    color: #334155;
+    font-size: 0.95rem;
+}
+.app-row {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1.5fr 1fr 1.2fr;
+    gap: 15px;
+    padding: 20px 0;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: center;
+}
+.app-row:last-child { border-bottom: none; }
+.status-pending { color: #f59e0b; font-weight: 600; }
+.status-approved { color: #22c55e; font-weight: 600; }
+.status-rejected { color: #ef4444; font-weight: 600; }
+.action-buttons {
+    display: flex;
+    gap: 8px;
+}
+.btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+}
+.btn-approve { background: #22c55e; color: white; }
+.btn-reject { background: #ef4444; color: white; }
+.btn:hover { transform: scale(1.05); }
+.empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+.empty-state h3 { font-size: 1.5rem; margin-bottom: 10px; color: #64748b; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+    .table-header, .app-row {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .action-buttons { justify-content: center; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+    <a href="dashboard.html" class="back-btn">← Back to Dashboard</a>
+    
+    <div class="header">
+        <h1>📋 Membership Applications</h1>
+        <p>All membership applications & status</p>
+    </div>
+
+    <div class="applications-table">
+        <div class="table-header">
+            <span>Name</span>
+            <span>Mobile</span>
+            <span>Payment Ref</span>
+            <span>Date</span>
+            <span>Status</span>
+        </div>
+        
+        <div id="applicationsList">
+            <div class="empty-state">
+                <h3>No applications yet</h3>
+                <p>Applications will appear here when members submit</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+async function loadApplications() {
+    try {
+        const res = await fetch('/api/admin/applications');
+        const applications = await res.json();
+        
+        const list = document.getElementById('applicationsList');
+        
+        if (applications.length === 0) {
+            list.innerHTML = `
+                <div class="empty-state">
+                    <h3>No applications yet</h3>
+                    <p>Applications will appear here when members submit</p>
+                </div>
+            `;
+            return;
+        }
+        
+        list.innerHTML = applications.map(app => `
+            <div class="app-row">
+                <div><strong>${app.name}</strong></div>
+                <div>${app.mobile}</div>
+                <div>${app.refId}</div>
+                <div>${new Date(app.createdAt).toLocaleDateString()}</div>
+                <div class="status-${app.status}">${app.status.toUpperCase()}</div>
+                <div class="action-buttons">
+                    ${app.status !== 'approved' ? 
+                        `<button class="btn btn-approve" onclick="handleApprove(${app.id})">✅ Approve</button>` : 
+                        '<span style="color:#22c55e">✓ Approved</span>'
+                    }
+                    ${app.status !== 'rejected' ? 
+                        `<button class="btn btn-reject" onclick="handleReject(${app.id})">❌ Reject</button>` : 
+                        '<span style="color:#ef4444">✗ Rejected</span>'
+                    }
+                </div>
+            </div>
+        `).join('');
+    } catch (error) {
+        console.error('Load error:', error);
+    }
+}
+
+async function handleApprove(id) {
+    try {
+        await fetch(`/api/admin/update/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' })
+        });
+        loadApplications();
+    } catch (error) {
+        alert('Error approving');
+    }
+}
+
+async function handleReject(id) {
+    try {
+        await fetch(`/api/admin/update/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'rejected' })
+        });
+        loadApplications();
+    } catch (error) {
+        alert('Error rejecting');
+    }
+}
+
+// INIT
+loadApplications();
+</script>
+</body>
+</html>

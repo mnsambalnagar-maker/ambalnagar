@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1763541592033,
+    "title": "test",
+    "content": "Chek the video",
+    "media": "/uploads/videos/1763541584740-vecteezy_abstract-smoke-clouds-in-vivid-colors_55826164.mp4",
+    "mediaType": "video",
+    "date": "2025-11-19T08:39:52.033Z"
+  },
+  {
+    "id": 1763566801257,
+    "title": "happy pongal",
+    "content": "hello",
+    "media": "/uploads/news/1763566794591-color correct the up.png",
+    "mediaType": "image",
+    "date": "2025-11-19T15:40:01.257Z"
+  }
+]

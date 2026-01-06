@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Edit Member</title>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: 'Poppins', sans-serif; background:#ecf1fa; margin:0; padding:30px; }
+    .container { max-width: 400px; margin: auto; background: white; padding: 30px; border-radius: 12px; box-shadow: 0 6px 20px #0002; }
+    .profile-pic { width: 64px; height: 64px; border-radius: 40%; object-fit: cover; display: block; margin: 0 auto 20px; }
+    label { display: block; margin: 10px 0 6px 0; font-weight: 600; }
+    input, select { width: 100%; padding: 8px 10px; border-radius: 5px; border: 1px solid #ccc; }
+    button { margin-top: 15px; width: 100%; padding: 12px; background: #0052cc; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+    button:hover { background: #003d99; }
+   .home-float{
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  z-index: 2500;
+}
+
+.home-float a{
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+.home-float a:hover{
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  filter: brightness(1.08);
+}
+
+.home-float a img{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display:block;
+}
+
+@media (max-width:600px){
+  .home-float{
+    right:14px;
+    bottom:16px;
+  }
+}
+
+  </style>
+</head>
+<div class="home-float">
+    <a href="index.html" aria-label="Go to home">
+      <img src="img/home.png" alt="Home" />
+    </a>
+  </div>
+<body>
+  <div class="container">
+    <h2 style="text-align:center;">Edit Member</h2>
+    <img id="memberPhoto" src="img/profile-default.jpeg" alt="Member photo" class="profile-pic" />
+    <input type="file" id="photoInput" accept="image/*" />
+    <form id="editMemberForm">
+      <label>Username</label>
+      <input type="text" id="username" name="username" readonly />
+      <label>Email</label>
+      <input type="email" id="email" name="email" required />
+      <label>Phone</label>
+      <input type="text" id="phone" name="phone"/>
+      <label>Role</label>
+      <select id="role" name="role">
+        <option value="member">member</option>
+        <option value="admin">admin</option>
+      </select>
+      <button type="submit">Save</button>
+    </form>
+  </div>
+
+  <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const username = urlParams.get('username');
+
+    async function fetchMemberData() {
+      try {
+        const res = await fetch('/api/getUsers');
+        const users = await res.json();
+        const member = users.find(u => u.username === username);
+        if (!member) {
+          alert('Member not found!');
+          window.location.href = 'manage-members.html';
+          return;
+        }
+        document.getElementById('username').value = member.username;
+        document.getElementById('email').value = member.email || '';
+        document.getElementById('phone').value = member.phone || '';
+        document.getElementById('role').value = member.role || 'member';
+        const photoURL = `uploads/${member.username}.jpg`;
+        document.getElementById('memberPhoto').src = photoURL;
+        document.getElementById('memberPhoto').onerror = () => {
+          document.getElementById('memberPhoto').src = 'img/profile-default.jpeg';
+        };
+      } catch (err) {
+        alert('Error loading member data');
+        console.error(err);
+      }
+    }
+
+    fetchMemberData();
+
+    // Photo preview
+    document.getElementById('photoInput').addEventListener('change', (e) => {
+      if(e.target.files[0]) {
+        document.getElementById('memberPhoto').src = URL.createObjectURL(e.target.files[0]);
+      }
+    });
+
+    // Save updated member data with photo
+    document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData();
+      formData.append('username', document.getElementById('username').value);
+      formData.append('email', document.getElementById('email').value);
+      formData.append('phone', document.getElementById('phone').value);
+      formData.append('role', document.getElementById('role').value);
+      const photoFile = document.getElementById('photoInput').files[0];
+      if(photoFile) formData.append('photo', photoFile);
+
+      try {
+        const res = await fetch('/api/updateUserWithPhoto', {
+          method: 'POST',
+          body: formData
+        });
+        const data = await res.json();
+        if(data.success) {
+          alert('Member updated successfully!');
+          window.location.href = 'members.html'; // redirect to public members page
+        } else {
+          alert('Failed to update member.');
+        }
+      } catch(err) {
+        alert('Server error, try again later.');
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>

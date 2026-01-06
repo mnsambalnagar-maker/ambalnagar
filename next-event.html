@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Events Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: #0f172a;
+      color: #111827;
+      min-height: 100vh;
+      padding: 24px;
+    }
+
+    .shell {
+      max-width: 1280px;
+      margin: 0 auto;
+      background: #020617;
+      border-radius: 20px;
+      border: 1px solid #1f2937;
+      padding: 20px;
+      box-shadow: 0 25px 70px rgba(0,0,0,0.6);
+    }
+
+    .shell-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 14px;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    .shell-title {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: #e5e7eb;
+      letter-spacing: 0.03em;
+    }
+
+    .shell-subtitle {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .shell-badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .container {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr);
+      gap: 20px;
+      align-items: flex-start;
+    }
+
+    /* Events List */
+    .events-list {
+      background: #020617;
+      border-radius: 16px;
+      padding: 16px 16px 18px;
+      border: 1px solid #1f2937;
+    }
+
+    .section-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #e5e7eb;
+    }
+
+    .section-count {
+      font-size: 0.8rem;
+      color: #6b7280;
+    }
+
+    .events-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-height: 480px;
+      overflow-y: auto;
+      padding-right: 4px;
+    }
+
+    .events-grid::-webkit-scrollbar {
+      width: 6px;
+    }
+    .events-grid::-webkit-scrollbar-thumb {
+      background: #1f2937;
+      border-radius: 999px;
+    }
+
+    .event-card {
+      background: #020617;
+      border-radius: 12px;
+      padding: 10px 12px;
+      border: 1px solid #1f2937;
+      cursor: pointer;
+      transition: border-color 0.15s ease, background 0.15s ease, transform 0.1s ease;
+    }
+
+    .event-card:hover {
+      border-color: #3b82f6;
+      background: #030712;
+      transform: translateY(-1px);
+    }
+
+    .event-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #e5e7eb;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .event-date {
+      font-size: 0.8rem;
+      color: #9ca3af;
+    }
+
+    .event-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid #374151;
+      color: #9ca3af;
+    }
+
+    .event-desc {
+      color: #9ca3af;
+      font-size: 0.8rem;
+      margin-bottom: 8px;
+      line-height: 1.3;
+      max-height: 2.6em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .event-actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .btn-small {
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: 8px;
+      border: 1px solid #1f2937;
+      font-size: 0.78rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: #020617;
+      color: #e5e7eb;
+      transition: background 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+    }
+
+    .btn-edit {
+      border-color: #fbbf24;
+      color: #facc15;
+    }
+    .btn-edit:hover {
+      background: rgba(250,204,21,0.08);
+      transform: translateY(-1px);
+    }
+
+    .btn-delete {
+      border-color: #f87171;
+      color: #fca5a5;
+    }
+    .btn-delete:hover {
+      background: rgba(248,113,113,0.08);
+      transform: translateY(-1px);
+    }
+
+    .no-events {
+      text-align: center;
+      padding: 40px 10px;
+      color: #6b7280;
+      font-size: 0.9rem;
+    }
+
+    /* Form */
+    .form-container {
+      background-color: #020617;
+      border-radius: 16px;
+      padding: 18px 18px 20px;
+      border: 1px solid #1f2937;
+      position: sticky;
+      top: 20px;
+    }
+
+    .mode-indicator {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #93c5fd;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(37,99,235,0.12);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+
+    .mode-indicator span {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .mode-edit {
+      color: #fed7aa !important;
+      background: rgba(249,115,22,0.14) !important;
+    }
+    .mode-edit span {
+      background: #f97316 !important;
+    }
+
+    h2 {
+      font-size: 1.2rem;
+      color: #e5e7eb;
+      font-weight: 600;
+      margin-bottom: 14px;
+    }
+
+    .form-caption {
+      font-size: 0.82rem;
+      color: #9ca3af;
+      margin-bottom: 14px;
+    }
+
+    label {
+      font-weight: 500;
+      margin-top: 10px;
+      color: #d1d5db;
+      font-size: 0.85rem;
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    input,
+    textarea,
+    input[type="file"] {
+      width: 100%;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      padding: 9px 10px;
+      font-weight: 400;
+      color: #e5e7eb;
+      background-color: #020617;
+      box-sizing: border-box;
+      transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+    }
+
+    input::placeholder,
+    textarea::placeholder {
+      color: #6b7280;
+    }
+
+    input:focus,
+    textarea:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background-color: #020617;
+      box-shadow: 0 0 0 1px rgba(59,130,246,0.8);
+    }
+
+    input[type="file"] {
+      padding: 7px 9px;
+      cursor: pointer;
+      font-size: 0.85rem;
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 70px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    button {
+      flex: 1;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.18s ease, box-shadow 0.18s ease, transform 0.1s ease;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #e5e7eb;
+      box-shadow: 0 8px 22px rgba(37,99,235,0.45);
+    }
+    .btn-primary:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
+
+    .btn-cancel {
+      background: #111827;
+      color: #e5e7eb;
+      border: 1px solid #1f2937;
+    }
+    .btn-cancel:hover {
+      background: #020617;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 1024px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+      .form-container {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px;
+      }
+      .shell {
+        padding: 16px;
+      }
+      .form-actions {
+        flex-direction: column;
+      }
+    }
+     .home-float{
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  z-index: 2500;
+}
+
+.home-float a{
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+/* hover animation – சிறு zoom + float up */
+.home-float a:hover{
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  filter: brightness(1.08);
+}
+
+.home-float a img{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display:block;
+}
+
+@media (max-width:600px){
+  .home-float{
+    right:14px;
+    bottom:16px;
+  }
+}
+
+  </style>
+</head>
+<div class="home-float">
+    <a href="index.html" aria-label="Go to home">
+      <img src="img/home.png" alt="Home" />
+    </a>
+  </div>
+  <script>
+// 🔐 ADMIN PAGE PROTECTION
+ (function() {
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('login.html');
+  }
+ })();
+</script>
+
+<body>
+  <div class="shell">
+    <div class="shell-header">
+      <div>
+        <div class="shell-title">Events Manager</div>
+        <div class="shell-subtitle">Create, edit and maintain association events.</div>
+      </div>
+      <div class="shell-badge">Admin · Ambal Nagar</div>
+    </div>
+
+    <div class="container">
+      <!-- Events List -->
+      <div class="events-list">
+        <div class="section-head">
+          <div class="section-title">All Events</div>
+          <div class="section-count" id="eventCount">0 events</div>
+        </div>
+        <div class="events-grid" id="eventsGrid">
+          <div class="no-events">
+            <div style="font-weight:600;margin-bottom:4px;">No events found</div>
+            <div>Add your first event using the form on the right.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="form-container">
+        <div class="mode-indicator" id="modeIndicator">
+          <span></span> Add mode
+        </div>
+        <h2 id="formTitle">Add New Event</h2>
+        <div class="form-caption">Fill the details and upload images or videos for the gallery.</div>
+
+        <form id="eventForm" enctype="multipart/form-data">
+          <input type="hidden" id="eventId" name="id" />
+          
+          <label>Title *</label>
+          <input type="text" name="title" id="titleInput" required placeholder="Event title" />
+          
+          <label>Date *</label>
+          <input type="date" name="date" id="dateInput" required />
+          
+          <label>Description *</label>
+          <textarea name="description" id="descInput" rows="3" required placeholder="Short description"></textarea>
+          
+          <label>Photos & Videos</label>
+          <input type="file" name="files" multiple accept="image/*,video/mp4,video/webm" />
+          
+          <div class="form-actions">
+            <button type="submit" class="btn-primary" id="submitBtn">Upload Event</button>
+            <button type="button" class="btn-cancel" id="cancelBtn" style="display: none;">Cancel</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let events = [];
+    let editingId = null;
+
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/events');
+        const data = await res.json();
+        events = data.events || [];
+        renderEvents();
+      } catch (err) {
+        console.error('Events load pannala:', err);
+      }
+    }
+
+    function renderEvents() {
+      const grid = document.getElementById('eventsGrid');
+      const countEl = document.getElementById('eventCount');
+      countEl.textContent = `${events.length} event${events.length === 1 ? '' : 's'}`;
+
+      if (events.length === 0) {
+        grid.innerHTML = `
+          <div class="no-events">
+            <div style="font-weight:600;margin-bottom:4px;">No events found</div>
+            <div>Add your first event using the form on the right.</div>
+          </div>
+        `;
+        return;
+      }
+
+      grid.innerHTML = events.map(event => `
+        <div class="event-card">
+          <div class="event-title" title="${event.title}">${event.title}</div>
+          <div class="event-meta">
+            <div class="event-date">${new Date(event.date).toLocaleDateString('en-IN')}</div>
+            <div class="event-tag">ID: ${event.id}</div>
+          </div>
+          <div class="event-desc">${event.description}</div>
+          <div class="event-actions">
+            <button class="btn-small btn-edit" onclick="editEvent(${event.id})">Edit</button>
+            <button class="btn-small btn-delete" onclick="deleteEvent(${event.id})">Delete</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function editEvent(id) {
+      const event = events.find(e => e.id === id);
+      if (!event) return;
+
+      editingId = id;
+      document.getElementById('eventId').value = event.id;
+      document.getElementById('titleInput').value = event.title;
+      document.getElementById('dateInput').value = (event.date || '').split('T')[0];
+      document.getElementById('descInput').value = event.description;
+
+      const mode = document.getElementById('modeIndicator');
+      mode.innerHTML = '<span></span> Edit mode';
+      mode.classList.add('mode-edit');
+
+      document.getElementById('formTitle').textContent = 'Edit Event';
+      document.getElementById('submitBtn').textContent = 'Update Event';
+      document.getElementById('cancelBtn').style.display = 'block';
+
+      document.querySelector('.form-container').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function deleteEvent(id) {
+      if (!confirm('Event delete pannalama?')) return;
+
+      try {
+        await fetch(`/api/addevent/${id}`, { method: 'DELETE' });
+        await loadEvents();
+        resetForm();
+        alert('Event deleted!');
+      } catch (err) {
+        alert('Delete pannala');
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('eventForm').reset();
+      editingId = null;
+      const mode = document.getElementById('modeIndicator');
+      mode.innerHTML = '<span></span> Add mode';
+      mode.classList.remove('mode-edit');
+      document.getElementById('formTitle').textContent = 'Add New Event';
+      document.getElementById('submitBtn').textContent = 'Upload Event';
+      document.getElementById('cancelBtn').style.display = 'none';
+    }
+
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
+
+      try {
+        if (editingId) {
+          formData.append('id', editingId);
+        }
+
+        const res = await fetch('/api/addevent', {
+          method: editingId ? 'PUT' : 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert(editingId ? 'Event updated!' : 'Event added!');
+          await loadEvents();
+          resetForm();
+        } else {
+          alert('Error!');
+        }
+      } catch (err) {
+        alert('Network error!');
+      }
+    });
+
+    document.getElementById('cancelBtn').addEventListener('click', resetForm);
+
+    loadEvents();
+  </script>
+</body>
+</html>

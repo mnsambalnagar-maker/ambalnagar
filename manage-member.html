@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Manage Members - Card View</title>
+  <meta charset="UTF-8" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: radial-gradient(circle at top,#4f46e5,#020617);
+      margin: 0;
+      padding: 24px 16px;
+      color:#e5e7eb;
+    }
+
+    h2 {
+      color: #f9fafb;
+      text-align: center;
+      margin-bottom: 26px;
+      font-size:1.6rem;
+      text-shadow:0 3px 10px rgba(15,23,42,0.7);
+    }
+
+    .members-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(260px,1fr));
+      gap: 20px;
+      max-width: 1120px;
+      margin: 0 auto;
+    }
+
+    .member-card {
+      background: linear-gradient(145deg,#020617,#0b1120);
+      border-radius: 18px;
+      box-shadow: 0 22px 55px rgba(15,23,42,0.9);
+      padding: 18px 16px 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
+      cursor: pointer;
+      position: relative;
+      border:1px solid rgba(148,163,184,0.55);
+      overflow:hidden;
+    }
+    .member-card::before{
+      content:'';
+      position:absolute;
+      inset:0;
+      background:radial-gradient(circle at top,#38bdf833,transparent);
+      opacity:0;
+      transition:opacity .25s ease;
+      pointer-events:none;
+    }
+    .member-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 28px 70px rgba(15,23,42,1);
+      border-color:#38bdf8;
+    }
+    .member-card:hover::before{opacity:1;}
+
+    .member-photo {
+      width: 110px;
+      height: 110px;
+      border-radius: 50%;
+      object-fit: cover;
+      margin-bottom: 14px;
+      border: 3px solid #38bdf8;
+      box-shadow:0 10px 24px rgba(56,189,248,0.7);
+      background:#020617;
+    }
+
+    .member-info {
+      text-align: center;
+      margin-bottom: 14px;
+    }
+    .member-info h3 {
+      margin: 0;
+      color: #e5e7eb;
+      font-weight: 700;
+      font-size: 1.1em;
+    }
+    .member-info p {
+      margin: 6px 0;
+      color: #cbd5f5;
+      font-size: 0.9em;
+    }
+
+    .button-row{
+      display:flex;
+      justify-content:center;
+      gap:10px;
+      width:100%;
+    }
+
+    .edit-button,
+    .delete-button {
+      border: none;
+      padding: 9px 16px;
+      border-radius: 999px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 0.9em;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.18s, box-shadow 0.18s, transform 0.08s, color 0.18s;
+      min-width:100px;
+    }
+
+    .edit-button {
+      background: linear-gradient(135deg,#38bdf8,#6366f1);
+      color: #020617;
+      box-shadow:0 10px 26px rgba(37,99,235,0.7);
+    }
+    .edit-button:hover {
+      background: linear-gradient(135deg,#0ea5e9,#4f46e5);
+      transform:translateY(-1px);
+      box-shadow:0 14px 34px rgba(37,99,235,0.85);
+    }
+
+    .delete-button {
+      background: rgba(248,113,113,0.16);
+      color: #fecaca;
+      border:1px solid rgba(248,113,113,0.7);
+      box-shadow:0 8px 22px rgba(127,29,29,0.7);
+    }
+    .delete-button:hover {
+      background: rgba(248,113,113,0.35);
+      transform:translateY(-1px);
+      box-shadow:0 12px 32px rgba(127,29,29,0.9);
+    }
+
+    @media(max-width:600px){
+      body{padding:20px 10px;}
+      h2{font-size:1.4rem;margin-bottom:20px;}
+      .member-card{padding:16px 14px;}
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Manage Members</h2>
+  <div class="members-container" id="membersContainer"></div>
+
+  <script>
+  const membersContainer = document.getElementById('membersContainer');
+
+  async function deleteMember(username) {
+    if (!confirm(`Are you sure to delete member "${username}"? This action cannot be undone.`)) return;
+
+    try {
+      const res = await fetch(`/api/deleteUser/${encodeURIComponent(username)}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.success) {
+        alert('Member deleted successfully.');
+        location.reload();
+      } else {
+        alert(data.message || 'Delete failed.');
+      }
+    } catch (err) {
+      alert('Server error on delete.');
+      console.error(err);
+    }
+  }
+
+  fetch('/api/getUsers')
+    .then(res => res.json())
+    .then(users => {
+      membersContainer.innerHTML = '';
+      // member role மட்டும் show பண்ணு
+      users
+        .filter(user => (user.role || 'admin') === 'member')
+        .forEach(user => {
+          const card = document.createElement('div');
+          card.className = 'member-card';
+
+          const photo = user.photo ? user.photo : 'img/profile-default.png';
+
+          card.innerHTML = `
+            <img src="${photo}" alt="${user.username} photo" class="member-photo"
+                 onerror="this.src='img/profile-default.png'"/>
+            <div class="member-info">
+              <h3>${user.username}</h3>
+              <p><strong>Phone:</strong> ${user.phone || '-'}</p>
+              <p><strong>Role:</strong> ${(user.role || 'member')}</p>
+            </div>
+            <div class="button-row">
+              <a href="edit-member.html?username=${encodeURIComponent(user.username)}"
+                 class="edit-button">Edit</a>
+              <button class="delete-button"
+                      onclick="deleteMember('${user.username}')">Delete</button>
+            </div>
+          `;
+          membersContainer.appendChild(card);
+        });
+
+      if (!membersContainer.children.length) {
+        membersContainer.innerHTML = '<p>No members found.</p>';
+      }
+    })
+    .catch(() => {
+      membersContainer.innerHTML = '<p>Unable to load member profiles.</p>';
+    });
+
+    const stored = localStorage.getItem('currentUser');
+   if (!stored) {
+   window.location.replace('login.html');
+}
+ 
+</script>
+
+
+</body>
+</html>

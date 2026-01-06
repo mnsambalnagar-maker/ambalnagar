@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Receipt / Invoice</title>
+  <style>
+    body { font-family:'Montserrat',sans-serif; background:#f8fbff; margin:0; min-height:100vh; display:flex;align-items:center;justify-content:center;}
+    .rcpt-card { background:#fff; border-radius:18px; box-shadow:0 10px 43px #e0e6fc6a; max-width:420px; width:98vw; padding:28px 21px 23px; border:1.5px solid #eceeff;}
+    .rcpt-title { font-size:1.61em; font-weight:800; color:#182049; text-align:center; }
+    .rcpt-org {color:#137fd6;font-weight:600;margin:-5px 0 12px 0;font-size:1.09em;text-align:center;}
+    .rcpt-table { width:100%; border-collapse:collapse; margin:16px 0 11px 0;}
+    .rcpt-table th, .rcpt-table td { text-align:left; padding:7px 0; }
+    .rcpt-table th {color:#6a7693; font-weight:700; width:41%;}
+    .rcpt-sep { border-top: 1.2px solid #e3eaff; margin: 17px 0; }
+    .bill-label {color:#5e66ed;font-size:1.14em;font-weight:800;}
+    .rcpt-bill {color:#8b187c;font-size:1.13em;font-weight:800;letter-spacing:1.5px;margin-top:7px;}
+    .rcpt-date {font-size:.94em;color:#767b81;margin:6px 0 2px 0;}
+    .btn-download {margin:17px auto 0 auto; display:block; padding:9px 27px; color:#fff; border-radius:999px; background:#03b853;font-weight:700; border:none; cursor:pointer;font-size:1.05em;}
+    .thanks {margin:2.1em 0 0;text-align:center;color:#398f39;font-weight:600;font-size:1.08em;}
+  </style>
+</head>
+<body>
+  <div class="rcpt-card" id="billArea">
+    <div class="rcpt-title">OFFICIAL RECEIPT</div>
+    <div class="rcpt-org">Ambal Nagar People's Welfare Association</div>
+    <div class="rcpt-bill"><span class="bill-label">Receipt No:</span> <span id="billId"></span></div>
+    <div class="rcpt-date" id="dateField"></div>
+    <div class="rcpt-sep"></div>
+    <table class="rcpt-table">
+      <tr><th>Name:</th><td id="name"></td></tr>
+      <tr><th>Mobile:</th><td id="mobile"></td></tr>
+      <tr><th>Address:</th><td id="address"></td></tr>
+      <tr><th>Amount (INR):</th><td><b id="amount"></b></td></tr>
+      <tr><th>Paid To (UPI):</th><td id="upi"></td></tr>
+    </table>
+    <div class="rcpt-sep"></div>
+    <button class="btn-download" onclick="downloadReceipt()">Download Receipt</button>
+    <div class="thanks">Thank you for your support!</div>
+  </div>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    function getQS(k){
+      let q=new URLSearchParams(window.location.search);
+      return q.get(k)||"";
+    }
+    // Fill data
+    document.getElementById('billId').textContent = getQS("bill");
+    document.getElementById('dateField').textContent = "Date: " + (getQS("dt")|| new Date().toLocaleString());
+    document.getElementById('name').textContent = getQS("name");
+    document.getElementById('mobile').textContent = getQS("mobile");
+    document.getElementById('address').textContent = getQS("address");
+    document.getElementById('amount').textContent = getQS("amount");
+    document.getElementById('upi').textContent = "mathisurendhar-2@okicici";
+
+    // Download function (image)
+    function downloadReceipt() {
+      let bill = getQS("bill")||"receipt";
+      html2canvas(document.getElementById("billArea")).then(function(canvas) {
+        var link = document.createElement("a");
+        link.href = canvas.toDataURL();
+        link.download = bill + ".png";
+        link.click();
+      });
+    }
+  </script>
+</body>
+</html>

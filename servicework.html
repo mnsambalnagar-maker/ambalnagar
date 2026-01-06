@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard - Category & Member Management</title>
+  <style>
+   :root {
+  --bg: #020617;          /* dark navy */
+  --card: #0b1220;        /* slate */
+  --card-alt: #111827;    /* slightly lighter */
+  --accent: #14b8a6;      /* teal */
+  --accent-soft: #a5f3fc; /* light teal */
+  --text-main: #e5e7eb;
+  --text-muted: #9ca3af;
+  --danger: #ef4444;
+  --success: #22c55e;
+}
+
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #1f3b73, var(--bg));
+      color: var(--text-main);
+      margin: 0;
+      padding: 24px;
+    }
+
+    h1 {
+      margin: 0 0 20px;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 1.6px;
+      color: #fff;
+    }
+
+    h2 {
+      margin: 0 0 12px;
+      font-size: 1.15rem;
+      color: var(--accent-soft);
+    }
+
+    .layout {
+      max-width: 1180px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1.1fr 1.2fr;
+      gap: 24px;
+    }
+
+    .form-section {
+      background: linear-gradient(145deg, var(--card), var(--card-alt));
+      border-radius: 16px;
+      padding: 18px 18px 14px;
+      box-shadow: 0 18px 35px rgba(0,0,0,0.6);
+      border: 1px solid rgba(148,163,184,0.35);
+    }
+
+    label {
+      display: block;
+      margin: 6px 0 2px;
+      font-size: 0.85rem;
+      color: var(--accent-soft);
+    }
+
+    input, select {
+      width: 100%;
+      padding: 7px 9px;
+      margin-bottom: 6px;
+      border-radius: 8px;
+      border: 1px solid #374151;
+      background: #020617;
+      color: var(--text-main);
+      outline: none;
+      font-size: 0.9rem;
+    }
+    input:focus, select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(245,158,11,0.6);
+    }
+
+    .btn-row {
+      margin-top: 4px;
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      padding: 7px 14px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: background 0.2s ease, transform 0.1s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-primary {
+  background: linear-gradient(135deg, #14b8a6, #22c55e);
+  color: #021014;
+  box-shadow: 0 8px 20px rgba(34,197,94,0.35);
+}
+
+    .btn-primary:hover { transform: translateY(-1px); }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-muted);
+      border: 1px solid #4b5563;
+    }
+    .btn-ghost:hover {
+      background: #111827;
+    }
+
+    .btn-small {
+      padding: 4px 10px;
+      font-size: 0.8rem;
+      border-radius: 999px;
+    }
+    .btn-edit {
+      background: #0ea5e9;
+      color: #021018;
+    }
+    .btn-edit:hover { background: #0284c7; }
+    .btn-delete {
+      background: var(--danger);
+      color: #fef2f2;
+    }
+    .btn-delete:hover { background: #b91c1c; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+      font-size: 0.86rem;
+      background: rgba(15,23,42,0.9);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    thead {
+      background: linear-gradient(135deg, #111827, #020617);
+    }
+
+    th, td {
+      padding: 7px 9px;
+      text-align: left;
+    }
+
+    th {
+      color: var(--accent-soft);
+      font-weight: 600;
+      border-bottom: 1px solid #1f2937;
+    }
+
+    tbody tr:nth-child(even) {
+      background: rgba(15,23,42,0.85);
+    }
+    tbody tr:nth-child(odd) {
+      background: rgba(17,24,39,0.95);
+    }
+    tbody tr:hover {
+      background: rgba(30,64,175,0.55);
+    }
+
+    @media (max-width: 900px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      body { padding: 16px; }
+    }
+    .home-float{
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  z-index: 2500;
+}
+
+.home-float a{
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+
+.home-float a:hover{
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  filter: brightness(1.08);
+}
+
+.home-float a img{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display:block;
+}
+
+@media (max-width:600px){
+  .home-float{
+    right:14px;
+    bottom:16px;
+  }
+}
+
+   
+
+  </style>
+</head>
+<div class="home-float">
+    <a href="index.html" aria-label="Go to home">
+      <img src="img/home.png" alt="Home" />
+    </a>
+  </div>
+  <script>
+ // 🔐 ADMIN PAGE PROTECTION
+ (function() {
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('login.html');
+  }
+ })();
+</script>
+
+<body>
+  <h1>Service Dashboard</h1>
+
+  <div class="layout">
+    <!-- Category Management -->
+    <div class="form-section">
+      <h2>Manage Categories</h2>
+      <form id="categoryForm">
+        <input type="hidden" id="categoryId" />
+        <label>Category ID</label>
+        <input type="text" id="categoryInputId" required />
+        <label>Category Name</label>
+        <input type="text" id="categoryInputName" required />
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Category</button>
+          <button type="button" id="categoryCancel" class="btn-ghost">Cancel</button>
+        </div>
+      </form>
+
+      <table id="categoriesTable">
+        <thead>
+          <tr><th>ID</th><th>Name</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Member Management -->
+    <div class="form-section">
+      <h2>Manage Members</h2>
+      <form id="memberForm">
+        <input type="hidden" id="memberId" />
+        <label>Name</label>
+        <input type="text" id="memberName" required />
+        <label>Phone</label>
+        <input type="text" id="memberPhone" required />
+        <label>Category</label>
+        <select id="memberCategory" required></select>
+        <div class="btn-row">
+          <button type="submit" class="btn-primary">Save Member</button>
+          <button type="button" id="memberCancel" class="btn-ghost">Cancel</button>
+        </div>
+      </form>
+
+      <table id="membersTable">
+        <thead>
+          <tr><th>Name</th><th>Phone</th><th>Category</th><th>Actions</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const categoriesTableBody = document.querySelector('#categoriesTable tbody');
+    const categoryForm = document.getElementById('categoryForm');
+    const categoryIdInput = document.getElementById('categoryId');
+    const categoryInputId = document.getElementById('categoryInputId');
+    const categoryInputName = document.getElementById('categoryInputName');
+    const categoryCancelBtn = document.getElementById('categoryCancel');
+
+    const membersTableBody = document.querySelector('#membersTable tbody');
+    const memberForm = document.getElementById('memberForm');
+    const memberIdInput = document.getElementById('memberId');
+    const memberNameInput = document.getElementById('memberName');
+    const memberPhoneInput = document.getElementById('memberPhone');
+    const memberCategorySelect = document.getElementById('memberCategory');
+    const memberCancelBtn = document.getElementById('memberCancel');
+
+    let categoryMap = new Map();
+
+    function loadCategories() {
+      return fetch('/api/categories')
+        .then(res => res.json())
+        .then(categories => {
+          categoryMap.clear();
+          categoriesTableBody.innerHTML = '';
+          memberCategorySelect.innerHTML = '';
+
+          categories.forEach(cat => {
+            categoryMap.set(cat.id, cat.name);
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${cat.id}</td>
+              <td>${cat.name}</td>
+              <td>
+                <button class="btn-small btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
+                <button class="btn-small btn-delete" onclick="deleteCategory('${cat.id}')">Delete</button>
+              </td>
+            `;
+            categoriesTableBody.appendChild(tr);
+
+            const option = document.createElement('option');
+            option.value = cat.id;
+            option.textContent = cat.name;
+            memberCategorySelect.appendChild(option);
+          });
+        });
+    }
+
+    function loadMembers() {
+      fetch('/api/members')
+        .then(res => res.json())
+        .then(members => {
+          membersTableBody.innerHTML = '';
+          members.forEach(m => {
+            const categoryName = categoryMap.get(m.category) || m.category;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+              <td>${m.name}</td>
+              <td>${m.phone}</td>
+              <td>${categoryName}</td>
+              <td>
+                <button class="btn-small btn-edit" onclick="editMember('${m.id}')">Edit</button>
+                <button class="btn-small btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
+              </td>
+            `;
+            membersTableBody.appendChild(tr);
+          });
+        });
+    }
+
+    categoryCancelBtn.onclick = () => {
+      categoryIdInput.value = '';
+      categoryForm.reset();
+    };
+
+    memberCancelBtn.onclick = () => {
+      memberIdInput.value = '';
+      memberForm.reset();
+    };
+
+    categoryForm.onsubmit = e => {
+      e.preventDefault();
+      const storedId = categoryIdInput.value;
+      const id = categoryInputId.value.trim();
+      const name = categoryInputName.value.trim();
+
+      if (!id || !name) {
+        alert('Category ID and Name are required.');
+        return;
+      }
+
+      if (storedId) {
+        fetch('/api/categories/' + storedId, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ name })
+        }).then(() => {
+          loadCategories();
+          categoryCancelBtn.click();
+        });
+      } else {
+        fetch('/api/categories', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify({ id, name })
+        }).then(res => {
+          if (res.ok) {
+            loadCategories();
+            categoryCancelBtn.click();
+          } else {
+            res.json().then(data => alert(data.error || 'Failed to add category'));
+          }
+        });
+      }
+    };
+
+    memberForm.onsubmit = e => {
+      e.preventDefault();
+      const id = memberIdInput.value;
+      const body = {
+        name: memberNameInput.value.trim(),
+        phone: memberPhoneInput.value.trim(),
+        category: memberCategorySelect.value
+      };
+      if (!body.name || !body.phone || !body.category) {
+        alert('Please fill all member fields.');
+        return;
+      }
+      if (id) {
+        fetch('/api/members/' + id, {
+          method: 'PUT',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        }).then(() => {
+          loadMembers();
+          memberForm.reset();
+          memberIdInput.value = '';
+        });
+      } else {
+        fetch('/api/members', {
+          method: 'POST',
+          headers: {'Content-Type': 'application/json'},
+          body: JSON.stringify(body)
+        }).then(() => {
+          loadMembers();
+          memberForm.reset();
+        });
+      }
+    };
+
+    window.editCategory = id => {
+      fetch('/api/categories')
+        .then(res => res.json())
+        .then(categories => {
+          const cat = categories.find(c => c.id === id);
+          if (cat) {
+            categoryIdInput.value = cat.id;
+            categoryInputId.value = cat.id;
+            categoryInputName.value = cat.name;
+          }
+        });
+    };
+
+    window.deleteCategory = id => {
+      if (confirm('Delete this category?')) {
+        fetch('/api/categories/' + id, { method: 'DELETE' })
+          .then(() => {
+            loadCategories();
+            loadMembers();
+          });
+      }
+    };
+
+    window.editMember = id => {
+      fetch('/api/members')
+        .then(res => res.json())
+        .then(members => {
+          const m = members.find(mem => mem.id === id);
+          if (m) {
+            memberIdInput.value = m.id;
+            memberNameInput.value = m.name;
+            memberPhoneInput.value = m.phone;
+            memberCategorySelect.value = m.category;
+          }
+        });
+    };
+
+    window.deleteMember = id => {
+      if (confirm('Delete this member?')) {
+        fetch('/api/members/' + id, { method: 'DELETE' })
+          .then(() => loadMembers());
+      }
+    };
+
+    loadCategories().then(() => loadMembers());
+  </script>
+</body>
+</html>

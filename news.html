@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Add News</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  body{
+    font-family:'Poppins',sans-serif;
+    background:radial-gradient(circle at top,#4f46e5,#020617);
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:32px 16px;
+    color:#111827;
+  }
+
+  .page{
+    width:100%;
+    max-width:860px;
+    background:linear-gradient(145deg,#0f172a,#020617);
+    border-radius:22px;
+    border:1px solid rgba(148,163,184,0.4);
+    box-shadow:0 26px 80px rgba(15,23,42,0.85);
+    padding:22px 26px 26px;
+    display:grid;
+    grid-template-columns:minmax(0,1.05fr) minmax(0,0.95fr);
+    gap:24px;
+    color:#e5e7eb;
+  }
+
+  .info{
+    border-right:1px solid rgba(148,163,184,0.4);
+    padding-right:18px;
+  }
+  .badge{
+    display:inline-flex;
+    align-items:center;
+    gap:6px;
+    font-size:0.78rem;
+    color:#bfdbfe;
+    padding:4px 10px;
+    border-radius:999px;
+    background:rgba(37,99,235,0.22);
+    margin-bottom:10px;
+  }
+  .badge span{
+    width:7px;height:7px;border-radius:999px;background:#22c55e;
+  }
+  .title{
+    font-size:1.6rem;
+    font-weight:600;
+    color:#f9fafb;
+    margin-bottom:6px;
+  }
+  .subtitle{
+    font-size:0.9rem;
+    color:#9ca3af;
+    margin-bottom:16px;
+  }
+
+  .pill-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-bottom:14px;
+  }
+  .pill{
+    padding:6px 12px;
+    border-radius:999px;
+    font-size:0.8rem;
+    background:linear-gradient(135deg,#22c55e33,#22c55e11);
+    border:1px solid #22c55e55;
+    color:#bbf7d0;
+  }
+
+  .note-box{
+    margin-top:6px;
+    padding:10px 12px;
+    border-radius:12px;
+    background:linear-gradient(135deg,#1e293b,#020617);
+    border:1px solid rgba(148,163,184,0.5);
+    font-size:0.82rem;
+    color:#e5e7eb;
+  }
+
+  .form-wrap{padding-left:4px;}
+
+  form{display:flex;flex-direction:column;gap:14px;}
+
+  label{
+    font-weight:600;
+    font-size:0.88rem;
+    color:#e5e7eb;
+    margin-bottom:4px;
+  }
+
+  input[type="text"],
+  textarea{
+    width:100%;
+    padding:9px 11px;
+    border-radius:10px;
+    border:1px solid #1e293b;
+    background:#020617;
+    font-size:0.9rem;
+    font-family:inherit;
+    color:#e5e7eb;
+    transition:border-color .18s,box-shadow .18s,background .18s;
+  }
+  input::placeholder,textarea::placeholder{color:#64748b;}
+  input:focus,textarea:focus{
+    outline:none;
+    border-color:#38bdf8;
+    background:#020617;
+    box-shadow:0 0 0 1px rgba(56,189,248,0.9);
+  }
+
+  input[type="file"]{
+    padding:8px 10px;
+    border-radius:10px;
+    border:1px dashed #38bdf8aa;
+    background:rgba(15,23,42,0.85);
+    font-size:0.84rem;
+    color:#e5e7eb;
+    cursor:pointer;
+  }
+
+  textarea{
+    resize:vertical;
+    min-height:90px;
+  }
+
+  .file-note{
+    font-size:0.8rem;
+    color:#9ca3af;
+    margin-top:3px;
+  }
+
+  #previewWrap{margin-top:4px;}
+  .preview{
+    max-width:100%;
+    border-radius:12px;
+    margin-top:6px;
+    box-shadow:0 12px 30px rgba(15,23,42,0.7);
+  }
+
+  .actions{
+    display:flex;
+    justify-content:flex-end;
+    margin-top:4px;
+  }
+
+  button{
+    min-width:150px;
+    padding:10px 0;
+    border-radius:999px;
+    border:none;
+    background:linear-gradient(135deg,#38bdf8,#6366f1);
+    color:#0b1120;
+    font-weight:600;
+    font-size:0.9rem;
+    cursor:pointer;
+    box-shadow:0 14px 36px rgba(56,189,248,0.7);
+    transition:background .18s,transform .1s,box-shadow .18s;
+  }
+  button:hover{
+    background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+    transform:translateY(-1px);
+    box-shadow:0 18px 46px rgba(56,189,248,0.85);
+  }
+
+  #msg{
+    margin-top:6px;
+    font-size:0.86rem;
+    color:#e5e7eb;
+  }
+
+  @media(max-width:768px){
+    .page{
+      grid-template-columns:1fr;
+      padding:18px 16px 20px;
+    }
+    .info{
+      border-right:none;
+      border-bottom:1px solid rgba(148,163,184,0.4);
+      padding-right:0;
+      padding-bottom:12px;
+      margin-bottom:6px;
+    }
+    .form-wrap{padding-left:0;}
+    .actions{justify-content:stretch;}
+    button{width:100%;}
+  }
+
+  @media(max-width:480px){
+    body{padding:18px 10px;}
+    .title{font-size:1.35rem;}
+  }
+   .home-float{
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  z-index: 2500;
+}
+
+.home-float a{
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+
+.home-float a:hover{
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  filter: brightness(1.08);
+}
+
+.home-float a img{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display:block;
+}
+
+@media (max-width:600px){
+  .home-float{
+    right:14px;
+    bottom:16px;
+  }
+}
+
+</style>
+</head>
+<div class="home-float">
+    <a href="index.html" aria-label="Go to home">
+      <img src="img/home.png" alt="Home" />
+    </a>
+  </div>
+  <script>
+ // 🔐 ADMIN PAGE PROTECTION
+ (function() {
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('login.html');
+  }
+ })();
+</script>
+
+<body>
+  <div class="page">
+    <div class="info">
+      <div class="badge"><span></span> Admin panel · News</div>
+      <div class="title">Add News</div>
+      <div class="subtitle">Publish announcements, meeting notes, or important updates to the community.</div>
+      <div class="pill-row">
+        <div class="pill">Required: title & description</div>
+        <div class="pill">Optional: image / MP4</div>
+      </div>
+      <div class="note-box">
+        Keep messages short and clear. Media will appear above the text on the public news page.
+      </div>
+    </div>
+
+    <div class="form-wrap">
+      <form id="newsForm" enctype="multipart/form-data">
+        <div>
+          <label>Title</label>
+          <input type="text" name="title" placeholder="News title" required />
+        </div>
+
+        <div>
+          <label>Description</label>
+          <textarea name="content" rows="5" placeholder="News description" required></textarea>
+        </div>
+
+        <div>
+          <label>Media (optional)</label>
+          <input type="file" name="media" accept="image/*,video/mp4" />
+          <div class="file-note">JPEG / PNG image or MP4 video, up to 100 MB.</div>
+          <div id="previewWrap"></div>
+        </div>
+
+        <div class="actions">
+          <button type="submit">Post News</button>
+        </div>
+        <p id="msg"></p>
+      </form>
+    </div>
+  </div>
+
+<script>
+  const stored = localStorage.getItem('currentUser');
+ if (!stored) {
+  window.location.replace('login.html');
+}
+
+const mediaInput = document.querySelector('input[name="media"]');
+const previewWrap = document.getElementById('previewWrap');
+
+mediaInput.addEventListener('change', (e) => {
+  previewWrap.innerHTML = '';
+  const f = e.target.files[0];
+  if (!f) return;
+  if (f.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f);
+    img.className = 'preview';
+    previewWrap.appendChild(img);
+  } else if (f.type.startsWith('video/')) {
+    const vid = document.createElement('video');
+    vid.src = URL.createObjectURL(f);
+    vid.controls = true;
+    vid.className = 'preview';
+    previewWrap.appendChild(vid);
+  } else {
+    previewWrap.textContent = 'Preview not available';
+  }
+});
+
+document.getElementById('newsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const formData = new FormData(form);
+  const title = formData.get('title')?.trim();
+  const content = formData.get('content')?.trim();
+  if (!title || !content) return alert('Title and content are required');
+
+  const mediaFile = formData.get('media');
+  const hasMedia = mediaFile && mediaFile.size > 0;
+  let res, data;
+
+  if (hasMedia) {
+    res = await fetch('/api/addNewsMedia', { method: 'POST', body: formData });
+    data = await res.json();
+  } else {
+    res = await fetch('/api/addNews', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ title, content })
+    });
+    data = await res.json();
+  }
+
+  if (data.success) {
+    document.getElementById('msg').innerText = 'News posted — redirecting...';
+    setTimeout(() => window.location.href = 'newslist.html', 800);
+  } else {
+    document.getElementById('msg').innerText = data.message || 'Failed to post news';
+  }
+});
+</script>
+</body>
+</html>

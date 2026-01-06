@@ -1,0 +1,157 @@
+/* Reset & base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+    scroll-behavior: smooth;
+}
+
+
+
+.container {
+    width: 90%;
+    max-width: 1100px;
+    margin: 0 auto;
+}
+
+/* Header */
+header {
+    background-color: rgb(39, 126, 225);
+    color: white;
+    padding: 15px 0;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.1);
+    
+}
+
+.header-container {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+
+nav ul.menu {
+    list-style: none;
+    display: flex;
+    gap: 20px;
+}
+
+nav ul.menu li a {
+    color: rgb(20, 19, 19);
+    text-decoration: none;
+    font-weight: 600;
+    padding: 7px 12px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+nav ul.menu li a.active {
+    background-color: #002d80;
+    border-radius: 5px;
+    color: #fff;
+}
+
+nav ul.menu li a:hover,
+nav ul.menu li a.btn {
+    background-color: #080b0f;
+    border-radius: 5px;
+    color: #fff;
+}
+
+nav ul.menu li a.btn {
+    background-color: #007bff;
+}
+
+nav ul.menu li a.btn:hover {
+    background-color: #e176ed;
+}
+
+/* Hero section */
+.hero {
+    background: url('uploads/image1.jpg') no-repeat center center/cover;
+    padding: 140px 80px;
+    color: white;
+    text-align: center;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 7px rgba(0,0,0,0.7);
+}
+
+.hero p {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    font-weight: 500;
+    text-shadow: 1px 1px 5px rgba(0,0,0,0.6);
+}
+
+
+
+/* About overview */
+.about-overview {
+    background: white;
+    padding: 40px 30px;
+    border-radius: 10px;
+    margin: 40px 0;
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+}
+
+.about-overview h3 {
+    color: #0052cc;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.about-overview p {
+    font-size: 1.15rem;
+    color: #444;
+    margin-bottom: 25px;
+}
+
+/* Structure for full height page */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+    text-align: center;
+    padding: 20px 0;
+    background-color: #0e0e0e;
+    color: #121212;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.05);
+}
+
+/* Button styles */
+.delete-button {
+    background: #cc0000;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-left: 10px;
+}
+
+.delete-button:hover {
+    background: #990000;
+}
+
+
+
+
+
+
+

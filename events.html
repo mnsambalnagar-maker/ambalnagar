@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Events - Sri Ambal Nagar Peoples Welfare Association</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* YOUR ORIGINAL CSS - NO CHANGE */
+    * { box-sizing: border-box; }
+    :root{--bg1:#fef3c7;--bg2:#dbeafe;--accent1:#f97316;--accent2:#3b82f6;}
+    body{margin:0;font-family:'Poppins',sans-serif;background:linear-gradient(135deg,var(--bg1),var(--bg2));min-height:100vh;color:#0f172a;}
+    header{background:#bc3208;padding:12px 0;box-shadow:0 8px 25px rgba(188,50,8,0.3);position:fixed;width:100%;top:0;z-index:1000;}
+    .header-container{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;}
+    .brand-flex{display:flex;align-items:center;gap:14px;color:#fff;font-weight:700;font-size:19px;}
+    .brand-flex img{height:54px;width:54px;border-radius:50%;background:#fff;padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.2);object-fit:cover;}
+    nav ul{display:flex;gap:14px;list-style:none;margin:0;padding:0;}
+    nav ul a{color:#fff;font-weight:600;text-decoration:none;padding:8px 16px;border-radius:25px;font-size:0.92rem;transition:all .2s ease;}
+    nav ul a:hover,nav ul a.active{background:linear-gradient(135deg,#fff,#f3f4f6);color:#111827;transform:scale(1.05);}
+    .menu-toggle{display:none;font-size:26px;cursor:pointer;background:#fff;color:#002d80;border:none;border-radius:10px;padding:6px 12px;}
+    body>*:not(header){padding-top:100px;}
+    .hero-section{max-width:1100px;margin:80px auto 10px;padding:26px 20px 24px;border-radius:24px;background:linear-gradient(135deg,#ffffff,#e0f2fe);box-shadow:0 12px 30px rgba(15,23,42,0.15);text-align:center;}
+    .hero-section h1{margin:0 0 8px;font-size:2.2rem;color:#1d4ed8;}
+    .hero-section p{margin:0;color:#4b5563;font-size:0.98rem;}
+    .container{max-width:1100px;margin:20px auto 60px;padding:0 20px;}
+    .section-title{font-size:1.6rem;font-weight:700;color:#1f2937;margin:28px 0 16px;display:flex;align-items:center;gap:10px;}
+    .section-title span.bar{flex:1;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--accent1),var(--accent2));}
+    .events-grid{display:flex;flex-wrap:wrap;gap:12px;justify-content:flex-start;}
+    .event-card{background:#ffffff;border-radius:14px;box-shadow:0 6px 14px rgba(15,23,42,0.12);border:1px solid rgba(148,163,184,0.25);overflow:hidden;display:flex;flex-direction:column;cursor:pointer;width:190px;}
+    .event-image{width:100%;height:95px;object-fit:cover;background:#e5e7eb;}
+    .event-body{padding:8px 8px 10px;display:flex;flex-direction:column;gap:4px;}
+    .event-title{font-size:0.85rem;font-weight:700;color:#111827;margin:0;}
+    .event-date{font-size:0.78rem;color:#1d4ed8;}
+    .event-desc{font-size:0.8rem;color:#4b5563;margin:2px 0 0;line-height:1.35;max-height:3.2em;overflow:hidden;}
+    .modal-bg{display:none;position:fixed;inset:0;background:rgba(15,23,42,0.6);align-items:center;justify-content:center;z-index:1500;padding:20px;}
+    .modal-box{max-width:800px;width:100%;max-height:90vh;background:#ffffff;border-radius:24px;box-shadow:0 20px 50px rgba(15,23,42,0.4);overflow:hidden;display:flex;flex-direction:column;}
+    .modal-media{background:#0f172a;display:flex;align-items:center;justify-content:center;}
+    .modal-media img,.modal-media video{max-width:100%;max-height:360px;object-fit:contain;}
+    .modal-content{padding:18px 18px 20px;}
+    .modal-title{margin:0 0 6px;font-size:1.3rem;color:#111827;}
+    .modal-date{font-size:0.9rem;color:#1d4ed8;margin-bottom:10px;}
+    .modal-text{font-size:0.95rem;color:#374151;line-height:1.5;}
+    .modal-close{position:absolute;top:14px;right:18px;background:#ef4444;color:#fff;border:none;border-radius:999px;padding:4px 10px;cursor:pointer;font-size:0.85rem;}
+    .modal-wrapper{position:relative;width:100%;max-width:800px;}
+    footer{margin-top:20px;padding:20px;background:rgba(15,23,42,0.08);color:#4b5563;text-align:center;font-size:0.9rem;}
+    @media(max-width:768px){.header-container{flex-direction:column;align-items:flex-start;gap:10px;}.brand-flex{font-size:16px;}.menu-toggle{display:block;margin-left:auto;}nav ul{position:absolute;top:64px;left:0;right:0;flex-direction:column;background:#111827;width:100vw;padding:14px 18px;display:none;}nav ul.show{display:flex;}nav ul a{width:100%;padding:10px 14px;}.hero-section{margin:70px 10px 5px;padding:24px 16px;}.hero-section h1{font-size:1.7rem;}.events-grid{justify-content:center;}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <div class="brand-flex">
+        <img src="img/logo.png" alt="Logo"/>
+        <span>Sri AmbalNagar Makkal Nalvazhu Sangam</span>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="members.html">Members</a></li>
+          <li><a href="events.html" class="active">Events</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="login.html">Login</a></li>
+        </ul>
+      </nav>
+      <button class="menu-toggle">&#9776;</button>
+    </div>
+  </header>
+  <section class="hero-section">
+    <h1>Events &amp; Gallery</h1>
+    <p>Recent and past activities of Sri Ambal Nagar community.</p>
+  </section>
+  <div class="container">
+    <h2 class="section-title">
+      New
+      <span class="bar"></span>
+    </h2>
+    <div class="events-grid" id="upcoming-events"></div>
+    <h2 class="section-title">
+      Past
+      <span class="bar"></span>
+    </h2>
+    <div class="events-grid" id="past-events"></div>
+  </div>
+  <div class="modal-bg" id="modal-bg">
+    <div class="modal-wrapper">
+      <button class="modal-close" onclick="closeModal()">Close</button>
+      <div class="modal-box">
+        <div class="modal-media" id="modal-media"></div>
+        <div class="modal-content">
+          <h3 class="modal-title" id="modal-title"></h3>
+          <div class="modal-date" id="modal-date"></div>
+          <p class="modal-text" id="modal-text"></p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <footer>
+    <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association. All rights reserved.</p>
+  </footer>
+  <script>
+    const menuToggle = document.querySelector('.menu-toggle');
+    const navUl = document.querySelector('nav ul');
+    menuToggle.addEventListener('click', () => {
+      navUl.classList.toggle('show');
+      menuToggle.textContent = navUl.classList.contains('show') ? '×' : '☰';
+    });
+    const upcomingContainer = document.getElementById('upcoming-events');
+    const pastContainer = document.getElementById('past-events');
+    const modalBg = document.getElementById('modal-bg');
+    const modalMedia = document.getElementById('modal-media');
+    const modalTitle = document.getElementById('modal-title');
+    const modalDate = document.getElementById('modal-date');
+    const modalText = document.getElementById('modal-text');
+    let groupedData = { upcoming: {}, past: {} };
+    let currentGroupType = null;
+    let currentGroupIndex = 0;
+    let currentMediaIndex = 0;
+    function normalizeTitle(title) {
+      return (title || '').trim().toLowerCase();
+    }
+    async function loadEvents() {
+      try {
+        const res = await fetch('/api/events');
+        const data = await res.json();
+        const now = new Date().toISOString().slice(0,10);
+        const upcoming = data.events.filter(e => e.date >= now);
+        const past = data.events.filter(e => e.date < now);
+        groupedData = { upcoming: {}, past: {} };
+        function groupInto(bucketName, list) {
+          list.forEach(ev => {
+            const key = normalizeTitle(ev.title) || `event_${ev.id}`;
+            if (!groupedData[bucketName][key]) {
+              groupedData[bucketName][key] = {
+                title: ev.title,
+                dates: [],
+                descriptions: [],
+                files: []
+              };
+            }
+            groupedData[bucketName][key].dates.push(ev.date);
+            if (ev.description) groupedData[bucketName][key].descriptions.push(ev.description);
+            (ev.files || []).forEach(f => {
+              if (!groupedData[bucketName][key].files.includes(f)) {
+                groupedData[bucketName][key].files.push(f);
+              }
+            });
+          });
+        }
+        groupInto('upcoming', upcoming);
+        groupInto('past', past);
+        upcomingContainer.innerHTML = '';
+        pastContainer.innerHTML = '';
+        function createCard(group, type, index) {
+          const firstFile = group.files[0];
+          let imgHtml = `<div class="event-image"></div>`;
+          if (firstFile) {
+            if (firstFile.endsWith('.mp4') || firstFile.endsWith('.webm')) {
+              imgHtml = `<video class="event-image" muted src="${firstFile}"></video>`;
+            } else {
+              imgHtml = `<img src="${firstFile}" class="event-image" alt="${group.title}">`;
+            }
+          }
+          const mainDate = group.dates.slice().sort()[0];
+          const desc = group.descriptions[0] || '';
+          return `
+            <div class="event-card" onclick="openModal('${type}', ${index})">
+              ${imgHtml}
+              <div class="event-body">
+                <h3 class="event-title">${group.title}</h3>
+                <span class="event-date">${new Date(mainDate).toLocaleDateString('en-IN')}</span>
+                <p class="event-desc">${desc}</p>
+              </div>
+            </div>
+          `;
+        }
+        const upcomingGroups = Object.values(groupedData.upcoming);
+        upcomingGroups.forEach((g, idx) => {
+          upcomingContainer.innerHTML += createCard(g, 'upcoming', idx);
+        });
+        const pastGroups = Object.values(groupedData.past);
+        pastGroups.forEach((g, idx) => {
+          pastContainer.innerHTML += createCard(g, 'past', idx);
+        });
+        if (!upcomingGroups.length) upcomingContainer.innerHTML = '<p>No new events.</p>';
+        if (!pastGroups.length) pastContainer.innerHTML = '<p>No past events.</p>';
+      } catch (e) {
+        upcomingContainer.innerHTML = '<p>Unable to load events.</p>';
+        pastContainer.innerHTML = '';
+      }
+    }
+    function getGroup(type, index) {
+      const groups = Object.values(groupedData[type] || {});
+      return groups[index] || null;
+    }
+    function renderCarousel() {
+      const group = getGroup(currentGroupType, currentGroupIndex);
+      if (!group) return;
+      const files = group.files || [];
+      modalMedia.innerHTML = '';
+      if (!files.length) {
+        modalMedia.innerHTML = '<p style="color:#fff;padding:20px;">No media available.</p>';
+      } else {
+        const file = files[currentMediaIndex];
+        if (file.endsWith('.mp4') || file.endsWith('.webm')) {
+          modalMedia.innerHTML = `<video controls src="${file}"></video>`;
+        } else {
+          modalMedia.innerHTML = `<img src="${file}" alt="${group.title}">`;
+        }
+        if (files.length > 1) {
+          const controlsHtml = `
+            <div style="text-align:center;margin:12px 0;">
+              <button onclick="prevMedia()" style="margin-right:14px;font-size:1.1rem;padding:6px 10px;border:none;background:#e5e7eb;border-radius:999px;cursor:pointer;">‹ Prev</button>
+              <span style="font-size:0.9rem;color:#374151;">${currentMediaIndex + 1} / ${files.length}</span>
+              <button onclick="nextMedia()" style="margin-left:14px;font-size:1.1rem;padding:6px 10px;border:none;background:#e5e7eb;border-radius:999px;cursor:pointer;">Next ›</button>
+            </div>
+          `;
+          modalMedia.innerHTML += controlsHtml;
+        }
+      }
+    }
+    function openModal(type, index){
+      currentGroupType = type;
+      currentGroupIndex = index;
+      currentMediaIndex = 0;
+      const group = getGroup(type, index);
+      if (!group) return;
+      modalTitle.textContent = group.title;
+      const allDates = group.dates.slice().sort();
+      const first = new Date(allDates[0]).toLocaleDateString('en-IN');
+      const last = new Date(allDates[allDates.length - 1]).toLocaleDateString('en-IN');
+      modalDate.textContent = allDates.length > 1 ? `${first} – ${last}` : first;
+      modalText.textContent = group.descriptions.join(' | ') || '';
+      renderCarousel();
+      modalBg.style.display = 'flex';
+    }
+    function closeModal(){
+      modalBg.style.display = 'none';
+    }
+    modalBg.addEventListener('click',e=>{
+      if (e.target === modalBg) closeModal();
+    });
+    function nextMedia(){
+      const group = getGroup(currentGroupType, currentGroupIndex);
+      if (!group) return;
+      const files = group.files || [];
+      if (!files.length) return;
+      currentMediaIndex = (currentMediaIndex + 1) % files.length;
+      renderCarousel();
+    }
+    function prevMedia(){
+      const group = getGroup(currentGroupType, currentGroupIndex);
+      if (!group) return;
+      const files = group.files || [];
+      if (!files.length) return;
+      currentMediaIndex = (currentMediaIndex - 1 + files.length) % files.length;
+      renderCarousel();
+    }
+    window.openModal = openModal;
+    window.closeModal = closeModal;
+    window.nextMedia = nextMedia;
+    window.prevMedia = prevMedia;
+    loadEvents();
+  </script>
+</body>
+</html>

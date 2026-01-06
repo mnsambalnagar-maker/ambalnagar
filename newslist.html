@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>News List</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet" />
+<style>
+  *{box-sizing:border-box;margin:0;padding:0;}
+
+  body {
+    font-family: Poppins, sans-serif;
+    background: radial-gradient(circle at top,#4f46e5,#020617);
+    margin:0;
+    padding:20px 14px;
+    color:#e5e7eb;
+  }
+
+  .wrap {
+    max-width:980px;
+    margin:12px auto;
+  }
+
+  .wrap h2{
+    font-size:1.6rem;
+    font-weight:600;
+    margin-bottom:12px;
+    color:#f9fafb;
+    text-shadow:0 2px 8px rgba(15,23,42,0.6);
+  }
+
+  #list{margin-top:6px;}
+
+  .item { 
+    background: linear-gradient(135deg,#020617,#0b1120); 
+    padding:14px; 
+    margin:12px 0; 
+    border-radius:14px; 
+    box-shadow: 0 18px 40px rgba(15,23,42,0.85); 
+    display:flex; 
+    gap:14px; 
+    align-items:flex-start;
+    border:1px solid rgba(148,163,184,0.5);
+  }
+
+  .meta { flex:1; }
+
+  .media { 
+    width:200px; 
+    max-width:40%; 
+    flex-shrink:0;
+    border-radius:10px;
+    overflow:hidden;
+  }
+
+  img, video { 
+    width:100%; 
+    border-radius:10px;
+    display:block;
+    box-shadow:0 10px 24px rgba(15,23,42,0.7);
+    background:#020617;
+  }
+
+  .meta strong{
+    font-size:1.05rem;
+    color:#f9fafb;
+  }
+
+  .meta .date{
+    color:#9ca3af;
+    font-size:0.86rem;
+    margin-top:6px;
+  }
+
+  .meta p{
+    margin-top:8px;
+    white-space:pre-wrap;
+    font-size:0.9rem;
+    color:#e5e7eb;
+  }
+
+  .actions { 
+    margin-top:10px; 
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+  }
+
+  a.view, button {
+    border-radius:999px;
+    border:0;
+    padding:8px 14px;
+    font-size:0.88rem;
+    font-weight:600;
+    cursor:pointer;
+    text-decoration:none;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    transition:background .18s,box-shadow .18s,transform .08s,color .18s;
+  }
+
+  a.view {
+    background:linear-gradient(135deg,#38bdf8,#6366f1);
+    color:#020617;
+    box-shadow:0 10px 26px rgba(56,189,248,0.7);
+  }
+  a.view:hover{
+    background:linear-gradient(135deg,#0ea5e9,#4f46e5);
+    transform:translateY(-1px);
+    box-shadow:0 14px 32px rgba(56,189,248,0.85);
+  }
+
+  button {
+    background:rgba(248,113,113,0.12);
+    color:#fecaca;
+    border:1px solid rgba(248,113,113,0.6);
+    box-shadow:0 8px 20px rgba(127,29,29,0.6);
+  }
+  button:hover{
+    background:rgba(248,113,113,0.3);
+    transform:translateY(-1px);
+    box-shadow:0 12px 30px rgba(127,29,29,0.8);
+  }
+
+  @media(max-width:700px){
+    .item { 
+      flex-direction:column; 
+      padding:12px;
+    }
+    .media{ 
+      width:100%; 
+      max-width:100%; 
+      margin-top:8px;
+    }
+  }
+  .home-float{
+  position: fixed;
+  right: 18px;
+  bottom: 20px;
+  z-index: 2500;
+}
+
+.home-float a{
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, filter 0.25s ease;
+}
+
+/* hover animation – சிறு zoom + float up */
+.home-float a:hover{
+  transform: translateY(-4px) scale(1.08);
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  filter: brightness(1.08);
+}
+
+.home-float a img{
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display:block;
+}
+
+@media (max-width:600px){
+  .home-float{
+    right:14px;
+    bottom:16px;
+  }
+}
+
+</style>
+</head>
+<div class="home-float">
+    <a href="index.html" aria-label="Go to home">
+      <img src="img/home.png" alt="Home" />
+    </a>
+  </div>
+  <script>
+ // 🔐 ADMIN PAGE PROTECTION
+(function() {
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('login.html');
+  }
+ })();
+</script>
+
+<body>
+<div class="wrap">
+  <h2>All News</h2>
+  <div id="list">Loading...</div>
+</div>
+<script>
+async function load() {
+  const res = await fetch('/api/getNews');
+  const data = await res.json();
+  const box = document.getElementById('list');
+  if(!data || data.length === 0){
+    box.innerHTML = '<b>No news yet</b>';
+    return;
+  }
+  box.innerHTML = data.map(n => {
+    const mediaHtml = n.media ? (n.mediaType === 'video' ? `<video controls src="${n.media}"></video>` : `<img src="${n.media}" alt="media">`) : '';
+    return `
+      <div class="item">
+        <div class="meta">
+          <strong>${escapeHtml(n.title)}</strong>
+          <div class="date">${new Date(n.date).toLocaleString()}</div>
+          <p>${escapeHtml(n.content)}</p>
+          <div class="actions">
+            <a class="view" href="newsview.html?id=${n.id}" target="_blank">View</a>
+            <button onclick="del(${n.id})">Delete</button>
+          </div>
+        </div>
+        <div class="media">${mediaHtml}</div>
+      </div>
+    `;
+  }).join('');
+}
+function escapeHtml(s){ if(!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+async function del(id){
+  if(!confirm('Delete this news?')) return;
+  const res = await fetch('/api/deleteNews/' + id, { method: 'DELETE' });
+  const data = await res.json();
+  if(data.success) load();
+  else alert('Delete failed');
+}
+load();
+</script>
+</body>
+</html>

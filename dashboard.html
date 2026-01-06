@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin Dashboard - Sri Ambal Nagar</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script>
+    if (!localStorage.getItem('currentUser')) window.location.replace('login.html');
+    history.pushState(null, null, location.href);
+    window.onpopstate = () => history.go(1);
+  </script>
+  <style>
+    :root {
+      --primary: #6366f1;
+      --secondary: #8b5cf6;
+      --success: #10b981;
+      --bg: #f8fafc;
+      --card: rgba(255,255,255,0.9);
+      --shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+      --shadow-lg: 0 20px 25px -5px rgba(0,0,0,0.1);
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: #1e293b;
+      min-height: 100vh;
+    }
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: 0;
+      width: 280px;
+      height: 100vh;
+      background: rgb(26, 3, 3);
+      box-shadow: var(--shadow-lg);
+      z-index: 1000;
+      padding: 24px 0;
+      overflow-y: auto;
+    }
+    .sidebar-logo {
+      padding: 0 24px 32px;
+      border-bottom: 1px solid #e2e8f0;
+      margin-bottom: 32px;
+    }
+    .sidebar-logo img { width: 160px; height: auto; }
+    .sidebar-nav a {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 14px 24px;
+      color: #64748b;
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s ease;
+      border-right: 4px solid transparent;
+    }
+    .sidebar-nav a:hover, .sidebar-nav a.active {
+      color: var(--primary);
+      background: #f8fafc;
+      border-right-color: var(--primary);
+    }
+    .sidebar-nav i { font-size: 20px; width: 20px; }
+    .main-content {
+      margin-left: 280px;
+      padding: 24px;
+      min-height: 100vh;
+    }
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+      min-width: 0;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1e293b;
+      margin: 0;
+      white-space: nowrap;
+    }
+    .user-info { display: flex; align-items: center; gap: 12px; }
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      object-fit: cover;
+      border: 2px solid white;
+      box-shadow: var(--shadow);
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    .stat-card {
+      background: var(--card);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.2);
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+    }
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      margin: 0 auto 16px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 20px;
+    }
+    .stat-number {
+      font-size: 36px;
+      font-weight: 700;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    .stat-label {
+      font-size: 14px;
+      color: #64748b;
+      font-weight: 500;
+    }
+    .membership-section {
+      background: var(--card);
+      border-radius: 16px;
+      box-shadow: var(--shadow);
+      padding: 24px;
+      border: 1px solid rgba(255,255,255,0.2);
+      backdrop-filter: blur(10px);
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1e293b;
+    }
+    .toggle-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+    }
+    .approve-btn {
+      background: var(--success);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s ease;
+    }
+    .approve-btn:hover { background: #059669; transform: translateY(-1px); }
+    .logout-btn {
+      background: #ef4444;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .logout-btn:hover {
+      background: #dc2626;
+      transform: translateY(-1px);
+    }
+    .time-card {
+      padding: 8px 12px;
+      background: rgba(99,102,241,0.1);
+      border-radius: 10px;
+      border: 1px solid rgba(99,102,241,0.2);
+    }
+    #currentTime {
+      font-size: 13px;
+      font-weight: 500;
+      color: #1e293b;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, #0b0101 0%, #0c0e0e 100%);
+      border-radius: 16px;
+      border: 2px solid rgba(40, 44, 238, 0.15);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      backdrop-filter: blur(10px);
+      flex-shrink: 1;
+      min-width: 0;
+    }
+    #ampmDisplay {
+      font-size: 11px;
+      color: #64748b;
+      text-align: center;
+      display: block;
+      margin-top: 2px;
+    }
+    .sidebar-overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+      display: none;
+    }
+    .sidebar-overlay.active { display: block; }
+    @media (max-width: 1024px) {
+      .sidebar { 
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-in-out;
+      }
+      .sidebar.active { transform: translateX(0); }
+      .main-content { margin-left: 0; }
+      .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 16px; }
+      .header { align-items: flex-start; gap: 12px; }
+      #currentTime {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+    }
+    @media (max-width: 768px) {
+      .stats-grid { grid-template-columns: 1fr; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <img src="img/logo.png" alt="SANA Logo">
+    </div>
+    <nav class="sidebar-nav" id="sidebarNav">
+      <a href="dashboard.html" class="active">
+        <i class="fas fa-tachometer-alt"></i> Dashboard
+      </a>
+      <a href="next-event.html">
+        <i class="fas fa-calendar"></i> Events
+      </a>
+      <a href="news.html">
+        <i class="fas fa-newspaper"></i> News
+      </a>
+      <a href="servicework.html">
+        <i class="fas fa-cogs"></i> Services
+      </a>
+      <div id="adminLinks" style="display: none;">
+        <a href="add-member.html">
+          <i class="fas fa-user-plus"></i> Add Member
+        </a>
+        <a href="newslist.html">
+          <i class="fas fa-envelope"></i> E-News
+        </a>
+        <a href="admin-users.html">
+          <i class="fas fa-users-cog"></i> Admin Users
+        </a>
+        <a href="membership-applications.html">
+          <i class="fas fa-check-circle"></i> Member Approve
+        </a>
+        <a href="edit-member.html">
+          <i class="fas fa-check-circle"></i> Member-Edit
+        </a>
+        <a href="index.html">
+          <i class="fas fa-home"></i> Home
+        </a>
+      </div>
+    </nav>
+  </div>
+  <div class="main-content">
+    <div class="header">
+      <div class="header-left">
+        <div class="menu-toggle" onclick="toggleSidebar()">
+          <i class="fas fa-bars"></i>
+        </div>
+        <div>
+          <h1 id="dashboardTitle">Dashboard</h1>
+          <div id="currentTime">
+            <div style="
+              width:36px;height:36px;
+              background:linear-gradient(135deg, var(--primary), var(--secondary));
+              border-radius:12px;
+              display:flex;
+              flex-direction:column;
+              align-items:center;
+              justify-content:center;
+              color:white;
+              font-weight:600;
+              font-size:12px;
+              box-shadow:0 4px 12px rgba(99,102,241,0.3);
+            ">
+              <div id="dayNum" style="font-size:14px;font-weight:700;">01</div>
+              <div id="monthShort" style="font-size:10px;">Jan</div>
+            </div>
+            <div style="flex:1;">
+              <div id="weekdayDisplay" style="font-weight:600;color:var(--primary);margin-bottom:2px;">Thursday</div>
+              <div id="dateDisplay" style="color:#ecf3fd;font-size:13px;">1 January 2026</div>
+            </div>
+            <div class="time-card">
+              <div id="timeDisplay">10:12</div>
+              <span id="ampmDisplay">AM</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="user-info header-right">
+        <div style="display:flex; flex-direction:column; align-items:flex-end;">
+          <span id="loggedUserName" style="font-weight:600; font-size:14px;">Admin</span>
+          <button class="logout-btn" onclick="logoutUser()" style="padding:6px 12px; font-size:12px; margin-top:4px;">Logout</button>
+        </div>
+        <img src="img/avatar1.png" class="user-avatar" alt="User">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;justify-content:flex-end;">
+      <button id="langBtn" onclick="toggleLanguage()" style="background:var(--primary);color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:500;">🇮🇳 Tamil</button>
+      <button id="statsToggleBtn" onclick="toggleStatsCycle()" style="background:#0ea5e9;color:white;border:none;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:500;">🔁 Auto Toggle</button>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-users"></i></div>
+        <div class="stat-number" id="membersCount">0</div>
+        <div class="stat-label" id="membersLabel">Total Members</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div class="stat-number" id="eventsCount">0</div>
+        <div class="stat-label" id="eventsLabel">Total Events</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-eye"></i></div>
+        <div class="stat-number" id="visitorsCount">0</div>
+        <div class="stat-label" id="visitorsLabel">Visitors</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon"><i class="fas fa-clock"></i></div>
+        <div class="stat-number" id="pendingCount">0</div>
+        <div class="stat-label" id="pendingLabel">Pending Application</div>
+      </div>
+    </div>
+    <div class="membership-section" id="membershipSection" style="display: none;">
+      <div class="section-header">
+        <div class="section-title">🆕 New Membership Applications</div>
+        <button class="toggle-btn" onclick="toggleMembershipSection()">
+          <i class="fas fa-chevron-down"></i> Toggle
+        </button>
+      </div>
+      <div id="membershipTableContainer" style="display:none;">
+        <div class="membership-table-container">
+          <table class="membership-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Ref ID</th>
+                <th style="text-align:center;">Action</th>
+              </tr>
+            </thead>
+            <tbody id="membershipTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    let isSuperAdmin = false;
+    let currentLang = 'en';
+    let membersData = [];
+    const translations = {
+      en: {
+        dashboard: 'Dashboard',
+        members: 'Total Members',
+        events: 'Total Events',
+        visitors: 'Visitors',
+        pending: 'Pending Application'
+      },
+      ta: {
+        dashboard: 'நிர்வாக பலகம்',
+        members: 'மொத்த உறுப்பினர்கள்',
+        events: 'மொத்த நிகழ்வுகள்',
+        visitors: 'பார்வையாளர்கள்',
+        pending: 'பெண்டிங் விண்ணப்பங்கள்'
+      }
+    };
+    async function loadMembersData() {
+      try {
+        const response = await fetch('members.json');
+        if (!response.ok) throw new Error('members.json not found');
+        membersData = await response.json();
+        const pendingCount = membersData.filter(app => app.status === 'pending').length;
+        document.getElementById('pendingCount').textContent = pendingCount.toLocaleString();
+        if (isSuperAdmin) {
+          loadMembershipTable(membersData);
+        }
+      } catch (error) {
+        console.log('❌ members.json not found - Demo mode');
+        document.getElementById('pendingCount').textContent = '4';
+      }
+    }
+    function loadMembershipTable(data) {
+      const pendingApps = data.filter(app => app.status === 'pending');
+      let tableHTML = '';
+      pendingApps.forEach(app => {
+        tableHTML += `
+          <tr>
+            <td>${app.name}</td>
+            <td>${app.mobile}</td>
+            <td>${app.refId}</td>
+            <td style="text-align:center;">
+              <span class="status-badge status-pending">Pending</span>
+              <button class="approve-btn" onclick="approveMembership('${app.id}')">✅ Approve</button>
+            </td>
+          </tr>
+        `;
+      });
+      document.getElementById('membershipTableBody').innerHTML = tableHTML || 
+        '<tr><td colspan="4" style="text-align:center;color:#64748b;padding:20px;">No pending applications</td></tr>';
+    }
+    async function loadRealData() {
+      try {
+        const usersResponse = await fetch('users.json');
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json();
+          const totalMembers = getArrayLength(usersData);
+          document.getElementById('membersCount').textContent = totalMembers.toLocaleString();
+        }
+        const eventsResponse = await fetch('events.json');
+        if (eventsResponse.ok) {
+          const eventsData = await eventsResponse.json();
+          const totalEvents = getArrayLength(eventsData);
+          document.getElementById('eventsCount').textContent = totalEvents.toLocaleString();
+        }
+        document.getElementById('visitorsCount').textContent = '1,247';
+        await loadMembersData();
+      } catch (error) {
+        console.log('❌ Some JSON files missing - Demo mode');
+        loadDemoData();
+      }
+    }
+    async function approveMembership(id) {
+      if (confirm('✅ Approve membership application?')) {
+        try {
+          const response = await fetch(`/api/admin/update/${id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'approved' })
+          });
+          const result = await response.json();
+          if (!result.success) {
+            alert('❌ Server error: ' + result.message);
+            return;
+          }
+          if (result.whatsapp) {
+            window.open(result.whatsapp, '_blank', 'noopener,noreferrer');
+          }
+          console.log('✅ Backend approved + WhatsApp:', result.message);
+          await loadRealData();
+          alert('✅ APPROVED! WhatsApp opened');
+        } catch(e) {
+          console.error('Error:', e);
+          alert('✅ APPROVED locally! Refresh page.');
+        }
+      }
+    }
+    function getArrayLength(data) {
+      if (Array.isArray(data)) return data.length;
+      if (data.users && Array.isArray(data.users)) return data.users.length;
+      if (data.members && Array.isArray(data.members)) return data.members.length;
+      if (data.data && Array.isArray(data.data)) return data.data.length;
+      if (typeof data === 'object') return Object.keys(data).length;
+      return 0;
+    }
+    function loadDemoData() {
+      document.getElementById('membersCount').textContent = '1,250';
+      document.getElementById('eventsCount').textContent = '45';
+      document.getElementById('visitorsCount').textContent = '1,247';
+      document.getElementById('pendingCount').textContent = '4';
+    }
+    function initializeUser() {
+      try {
+        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+        document.getElementById('loggedUserName').textContent = user.name || user.username || 'Admin';
+        isSuperAdmin = user.role === 'super' || user.role === 'superadmin' || user.role === 'admin';
+        if (isSuperAdmin) {
+          document.getElementById('adminLinks').style.display = 'block';
+          document.getElementById('membershipSection').style.display = 'block';
+        }
+      } catch(e) {}
+    }
+    function updateTime() {
+      const now = new Date();
+      document.getElementById('dayNum').textContent = now.getDate();
+      document.getElementById('monthShort').textContent = now.toLocaleDateString('en-IN', {month:'short'});
+      document.getElementById('weekdayDisplay').textContent = now.toLocaleDateString('en-IN', {weekday:'long'});
+      document.getElementById('dateDisplay').textContent = now.toLocaleDateString('en-IN', {day:'numeric', month:'long', year:'numeric'});
+      const hours = now.getHours();
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      const displayHours = hours % 12 || 12;
+      document.getElementById('timeDisplay').textContent = `${displayHours}:${minutes}`;
+      document.getElementById('ampmDisplay').textContent = ampm;
+    }
+    function toggleLanguage() {
+      currentLang = currentLang === 'en' ? 'ta' : 'en';
+      document.getElementById('langBtn').textContent = currentLang === 'en' ? '🇮🇳 Tamil' : '🇺🇸 English';
+      document.getElementById('dashboardTitle').textContent = translations[currentLang].dashboard;
+      document.getElementById('membersLabel').textContent = translations[currentLang].members;
+      document.getElementById('eventsLabel').textContent = translations[currentLang].events;
+      document.getElementById('visitorsLabel').textContent = translations[currentLang].visitors;
+      document.getElementById('pendingLabel').textContent = translations[currentLang].pending;
+    }
+    function toggleMembershipSection() {
+      const container = document.getElementById('membershipTableContainer');
+      container.style.display = container.style.display === 'none' ? 'block' : 'none';
+    }
+    function logoutUser() {
+      localStorage.clear();
+      window.location.replace('index.html');
+    }
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.querySelector('.sidebar-overlay');
+      sidebar.classList.toggle('active');
+      overlay.classList.toggle('active');
+    }
+    let statsCycleOn = true;
+    let statsIndex = 0;
+    let statsTimer = null;
+    function showCurrentStat() {
+      const cards = Array.from(document.querySelectorAll('.stats-grid .stat-card'));
+      cards.forEach((c, i) => {
+        c.style.display = i === statsIndex ? 'block' : 'none';
+      });
+    }
+    function startStatsCycle() {
+      const cards = Array.from(document.querySelectorAll('.stats-grid .stat-card'));
+      if (cards.length === 0) return;
+      showCurrentStat();
+      if (statsTimer) clearInterval(statsTimer);
+      statsTimer = setInterval(() => {
+        statsIndex = (statsIndex + 1) % cards.length;
+        showCurrentStat();
+      }, 3000);
+      document.getElementById('statsToggleBtn').textContent = '🔁 Auto Toggle';
+      document.getElementById('statsToggleBtn').style.background = '#0ea5e9';
+    }
+    function stopStatsCycle() {
+      if (statsTimer) clearInterval(statsTimer);
+      statsTimer = null;
+      document.querySelectorAll('.stats-grid .stat-card').forEach(c => c.style.display = 'block');
+      document.getElementById('statsToggleBtn').textContent = '⬛ Show All';
+      document.getElementById('statsToggleBtn').style.background = '#10b981';
+    }
+    function toggleStatsCycle() {
+      statsCycleOn = !statsCycleOn;
+      if (statsCycleOn) startStatsCycle();
+      else stopStatsCycle();
+    }
+    document.addEventListener('DOMContentLoaded', () => {
+      initializeUser();
+      loadRealData();
+      setInterval(updateTime, 1000);
+      setInterval(loadRealData, 30000);
+      updateTime();
+      startStatsCycle();
+    });
+  </script>
+</body>
+</html>

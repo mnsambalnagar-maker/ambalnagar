@@ -1,0 +1,67 @@
+[
+  {
+    "username": "mainadmin",
+    "password": "119313",
+    "role": "super",
+    "name": "Main Admin",
+    "email": "mathisurendhar@gmail.com",
+    "phone": "",
+    "joined": "",
+    "avatar": "img/avatar1.png",
+    "otp": null,
+    "otpExpiry": null
+  },
+  {
+    "username": "saravanan",
+    "role": "admin",
+    "phone": "651168494",
+    "joined": "",
+    "email": "mizzey1193@gmail.com",
+    "avatar": "img/avatar2.png",
+    "password": "12345",
+    "otp": "919630",
+    "otpExpiry": 1767425649099
+  },
+  {
+    "username": "Mukesh",
+    "phone": "-",
+    "role": "member",
+    "joined": "-",
+    "photo": "/uploads/Mukesh.jpeg",
+    "email": "csccscscs@gmail.com"
+  },
+  {
+    "username": "Natarajan",
+    "phone": "-",
+    "role": "member",
+    "joined": "-",
+    "photo": "/uploads/Natarajan.jpeg",
+    "email": "kfkmpf@gmail.com"
+  },
+  {
+    "username": "Magesh",
+    "phone": "-",
+    "role": "member",
+    "joined": "-",
+    "photo": "/uploads/Magesh.png",
+    "email": "csacacasca@gmail.com"
+  },
+  {
+    "username": "prabu",
+    "phone": "-",
+    "role": "member",
+    "joined": "-",
+    "photo": "/uploads/prabu.png"
+  },
+  {
+    "username": "arun",
+    "role": "member",
+    "phone": "97456321458",
+    "joined": "2026",
+    "email": "ashwinstark7007@gmail.com",
+    "avatar": "img/avatar5.png",
+    "password": "22222",
+    "otp": null,
+    "otpExpiry": null
+  }
+]

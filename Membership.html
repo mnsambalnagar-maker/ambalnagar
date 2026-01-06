@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sri Ambal Nagar - Membership ₹200/Year</title>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+
+body{
+    font-family:'DM Sans',sans-serif;
+    height:100vh;
+    background:#020617;
+    overflow:hidden;
+}
+
+/* BACKGROUND SHAPES */
+.bg{
+    position:fixed;
+    inset:0;
+    z-index:-1;
+}
+.bg::before{
+    content:'';
+    position:absolute;
+    width:600px;
+    height:600px;
+    background:radial-gradient(circle,#22c55e,transparent 60%);
+    top:-200px;
+    left:-200px;
+}
+.bg::after{
+    content:'';
+    position:absolute;
+    width:600px;
+    height:600px;
+    background:radial-gradient(circle,#6366f1,transparent 60%);
+    bottom:-200px;
+    right:-200px;
+}
+
+/* LAYOUT */
+.container{
+    width:100vw;
+    height:100vh;
+    display:grid;
+    grid-template-columns:1.3fr 1fr;
+    padding:40px;
+    gap:30px;
+}
+
+/* LEFT HERO */
+.hero{
+    color:white;
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding-left:40px;
+}
+
+.hero img{
+    width:90px;
+    height:90px;
+    border-radius:50%;
+    border:4px solid rgba(255,255,255,0.3);
+    margin-bottom:20px;
+}
+
+.hero h1{
+    font-size:3rem;
+    font-weight:800;
+    line-height:1.1;
+}
+.hero p{
+    margin-top:14px;
+    font-size:1rem;
+    opacity:0.85;
+    max-width:420px;
+}
+
+.hero .price{
+    margin-top:30px;
+    font-size:4rem;
+    font-weight:900;
+    color:#22c55e;
+}
+.hero span{
+    font-size:1rem;
+    letter-spacing:0.5px;
+    opacity:0.9;
+}
+
+/* RIGHT FORM CARD */
+.card{
+    background:rgba(255,255,255,0.97);
+    border-radius:28px;
+    padding:50px 40px;
+    display:flex;
+    flex-direction:column;
+    justify-content:space-between;
+    box-shadow:0 40px 80px rgba(0,0,0,0.5);
+}
+
+/* QR */
+.qr-box{
+    background:#000502;
+    border-radius:18px;
+    padding:18px;
+    text-align:center;
+    
+}
+.qr-box img{
+    width:140px;
+    border-radius:14px;
+    
+}
+.phone-number{
+    font-weight:800;
+    margin-top:8px;
+    color:#da07ee;
+}
+.qr-box p{
+    font-size:0.8rem;
+    color:#d70be1;
+}
+
+/* FORM */
+form{
+    display:flex;
+    flex-direction:column;
+    gap:18px;
+}
+
+label{
+    font-size:0.8rem;
+    font-weight:700;
+    color:#334155;
+}
+
+input{
+    padding:16px;
+    border-radius:16px;
+    border:1.6px solid #cbd5e1;
+    font-size:0.95rem;
+    background:#f8fafc;
+}
+input:focus{
+    outline:none;
+    border-color:#22c55e;
+    box-shadow:0 0 0 4px rgba(34,197,94,0.25);
+}
+
+button{
+    padding:10px 20px;   /* size kammi */
+    border:none;
+    border-radius:14px;  /* konjam kammi */
+    background:linear-gradient(135deg,#22c55e,#16a34a);
+    color:white;
+    font-weight:700;     /* 900 → 700 */
+    font-size:0.95rem;   /* font size kammi */
+    letter-spacing:0.5px;
+    cursor:pointer;
+    box-shadow:0 12px 25px rgba(34,197,94,0.35);
+    width: 100px;
+    margin-left: 500px;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+/* STATUS */
+.loading{
+    display:none;
+    text-align:center;
+    color:#16a34a;
+    font-weight:700;
+    font-size:0.85rem;
+}
+.success-message{
+    display:none;
+    background:linear-gradient(135deg,#22c55e,#4ade80);
+    color:white;
+    padding:16px;
+    border-radius:16px;
+    text-align:center;
+    font-weight:700;
+    font-size:0.9rem;
+}
+
+/* MOBILE */
+@media(max-width:950px){
+    .container{
+        grid-template-columns:1fr;
+        padding:20px;
+    }
+    .hero{
+        padding:0;
+        text-align:center;
+        align-items:center;
+    }
+    .hero h1{
+        font-size:2.3rem;
+    }
+}
+</style>
+</head>
+
+<body>
+<div class="bg"></div>
+
+<div class="container">
+
+    <!-- LEFT -->
+    <div class="hero">
+        <img src="img/logo.png" alt="Sri Ambal Nagar">
+        <h1>Annual Membership</h1>
+        <p>Join Sri Ambal Nagar Welfare Association and be part of community development.</p>
+
+        <div class="price">₹200</div>
+        <span>1 Year Membership</span>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+
+        <div class="qr-box">
+            <img src="img/qr-payment.jpg" class="qr-code">
+            <div class="phone-number">GPay QR</div>
+            <p>Scan → Pay ₹200</p>
+        </div>
+
+        <form id="membershipForm" class="modern-form">
+    <div class="field">
+        <label>Name</label>
+        <input type="text" id="name" placeholder="Full Name" required oninput="this.value=this.value.replace(/[^a-zA-Z\s]/g,'')">
+    </div>
+
+    <div class="field">
+        <label>Mobile</label>
+        <input type="tel" id="mobile" placeholder="Mobile Number" required maxlength="10" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+    </div>
+
+    <div class="field">
+        <label>Ref ID</label>
+        <input type="text" id="refId" placeholder="GPAY-ABC123" required>
+    </div>
+
+    <button type="submit" id="submitBtn">SUBMIT</button>
+</form>
+
+<div id="loadingMsg" class="loading">Processing...</div>
+<div id="successMsg" class="success-message">✅ Submitted! Admin approves soon</div>
+
+
+</div>
+
+<script>
+document.getElementById('membershipForm').addEventListener('submit', async (e)=>{
+    e.preventDefault();
+
+    const submitBtn=document.getElementById('submitBtn');
+    const loadingMsg=document.getElementById('loadingMsg');
+    const successMsg=document.getElementById('successMsg');
+
+    const name=document.getElementById('name').value.trim();
+    const mobile=document.getElementById('mobile').value.trim();
+    const refId=document.getElementById('refId').value.trim();
+
+    if(!name||!mobile||!refId) return alert('Fill all');
+    if(!/^\d{10}$/.test(mobile)) return alert('10 digits');
+
+    submitBtn.disabled=true;
+    submitBtn.textContent='Send...';
+    loadingMsg.style.display='block';
+
+    try{
+        const res=await fetch('/api/submit-membership',{
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify({name,mobile,refId})
+        });
+        const result=await res.json();
+        if(result.success){
+            successMsg.style.display='block';
+            document.getElementById('membershipForm').reset();
+        }else alert(result.message);
+    }catch{
+        alert('Network error');
+    }finally{
+        submitBtn.disabled=false;
+        submitBtn.textContent='SUBMIT';
+        loadingMsg.style.display='none';
+    }
+});
+
+async function loadQR(){
+    try{
+        const res=await fetch('/api/qr?upi=mathisurendhar@okhdfcbank');
+        const data=await res.json();
+        document.querySelector('.qr-code').src=data.qr;
+    }catch{}
+}
+loadQR();
+</script>
+
+</body>
+</html>

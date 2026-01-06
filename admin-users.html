@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Admin Users</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    /* YOUR ORIGINAL CSS - NO CHANGE */
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{
+      font-family:'Poppins',sans-serif;
+      min-height:100vh;
+      background:linear-gradient(135deg,#020617,#0b1120);
+      color:#e5e7eb;
+      padding:32px 12px;
+      display:flex;
+      align-items:flex-start;
+      justify-content:center;
+    }
+    .page{
+      width:100%;
+      max-width:980px;
+      background:#020617;
+      border-radius:20px;
+      border:1px solid rgba(148,163,184,0.35);
+      box-shadow:0 22px 60px rgba(0,0,0,0.9);
+      padding:22px 22px 26px;
+    }
+    .page-header{
+      border-bottom:1px solid rgba(148,163,184,0.4);
+      padding-bottom:10px;
+      margin-bottom:18px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:center;
+    }
+    .title{font-size:1.4rem;font-weight:700;}
+    .subtitle{font-size:0.85rem;color:#9ca3af;margin-top:2px;}
+    .badge-main{
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(34,197,94,0.16);
+      border:1px solid rgba(34,197,94,0.6);
+      color:#bbf7d0;
+      font-size:0.78rem;
+    }
+    .grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1.75fr);gap:18px;}
+    @media(max-width:800px){.grid{grid-template-columns:1fr;}}
+    .card{background:#020617;border-radius:14px;border:1px solid rgba(148,163,184,0.4);padding:16px 14px 14px;}
+    .card h3{font-size:0.98rem;margin-bottom:8px;font-weight:600;}
+    .card small{font-size:0.78rem;color:#9ca3af;}
+    .avatar-grid{display:grid;grid-template-columns:repeat(3,56px);gap:10px;margin-top:6px;}
+    .avatar-option{width:56px;height:56px;border-radius:50%;overflow:hidden;border:2px solid transparent;cursor:pointer;background:#020617;transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;}
+    .avatar-option img{width:100%;height:100%;object-fit:cover;display:block;}
+    .avatar-option:hover{transform:translateY(-1px);box-shadow:0 8px 18px rgba(15,23,42,0.8);}
+    .avatar-option.selected{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(37,99,235,0.65);}
+    .avatar-info{font-size:0.78rem;color:#9ca3af;margin-top:6px;}
+    form{margin-top:14px;display:grid;gap:10px 14px;grid-template-columns:repeat(2,minmax(0,1fr));}
+    .full-row{grid-column:1/-1;}
+    label{display:block;font-size:0.82rem;margin-bottom:2px;color:#cbd5f5;font-weight:500;}
+    input,select{width:100%;padding:8px 10px;border-radius:9px;border:1px solid #374151;background:#020617;color:#e5e7eb;font-size:0.86rem;outline:none;transition:border-color .16s ease,box-shadow .16s ease,background .16s ease,opacity .16s ease;}
+    input::placeholder{color:#6b7280;}
+    input:focus,select:focus{border-color:#3b82f6;box-shadow:0 0 0 2px rgba(59,130,246,0.5);background:#020617;}
+    .locked input,.locked select{opacity:0.4;pointer-events:none;}
+    .actions{grid-column:1/-1;display:flex;gap:10px;justify-content:flex-end;margin-top:4px;}
+    button{border:none;border-radius:999px;padding:9px 18px;font-size:0.86rem;font-weight:600;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:4px;}
+    .btn-primary{background:linear-gradient(135deg,#3b82f6,#6366f1);color:#f9fafb;box-shadow:0 10px 28px rgba(37,99,235,0.6);}
+    .btn-primary:hover{filter:brightness(1.05);transform:translateY(-1px);box-shadow:0 14px 34px rgba(37,99,235,0.8);}
+    .btn-secondary{background:transparent;color:#e5e7eb;border:1px solid #4b5563;}
+    .btn-secondary:hover{background:#111827;}
+    .btn-primary:disabled{opacity:0.4;cursor:not-allowed;box-shadow:none;transform:none;}
+    table{width:100%;border-collapse:collapse;margin-top:10px;font-size:0.8rem;}
+    th,td{padding:8px 8px;text-align:left;border-bottom:1px solid rgba(31,41,55,0.9);}
+    th{font-size:0.78rem;text-transform:uppercase;letter-spacing:.08em;color:#9ca3af;background:#020617;position:sticky;top:0;z-index:1;}
+    tbody tr:nth-child(even){background:#020617;}
+    .user-cell{display:flex;align-items:center;gap:8px;}
+    .user-avatar{width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;border:1px solid rgba(148,163,184,0.6);background:#020617;}
+    .user-name{font-size:0.82rem;}
+    .tag-role{padding:2px 7px;border-radius:999px;font-size:0.7rem;border:1px solid rgba(148,163,184,0.6);}
+    .tag-role.admin{color:#bfdbfe;border-color:#3b82f6;}
+    .tag-role.member{color:#bbf7d0;border-color:#22c55e;}
+    .tag-role.super{color:#facc15;border-color:#eab308;}
+    .table-actions{display:flex;gap:6px;}
+    .btn-xs{padding:4px 8px;font-size:0.72rem;border-radius:999px;border:none;cursor:pointer;}
+    .btn-edit{background:#0369a1;color:#e5e7eb;}
+    .btn-edit:hover{background:#0ea5e9;}
+    .btn-del{background:#991b1b;color:#fee2e2;}
+    .btn-del:hover{background:#dc2626;}
+    .home-float{position:fixed;right:18px;bottom:20px;z-index:2500;}
+    .home-float a{width:58px;height:58px;border-radius:50%;background:transparent;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:0 10px 24px rgba(0,0,0,0.35);transition:transform 0.25s ease,box-shadow 0.25s ease,filter 0.25s ease;}
+    .home-float a:hover{transform:translateY(-4px) scale(1.08);box-shadow:0 16px 36px rgba(0,0,0,0.6);filter:brightness(1.08);}
+    .home-float a img{width:46px;height:46px;border-radius:50%;display:block;}
+    @media(max-width:600px){body{padding:20px 8px;}.page{padding:18px 14px 20px;}}
+  </style>
+</head>
+<body>
+  <!-- floating home -->
+  <div class="home-float">
+    <a href="dashboard.html" aria-label="Back to dashboard">
+      <img src="img/home.png" alt="Home">
+    </a>
+  </div>
+
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <div class="title">Admin Users</div>
+        <div class="subtitle">Create, edit and remove admin logins. Only main admin can access this page.</div>
+      </div>
+      <span class="badge-main">Main admin control</span>
+    </div>
+
+    <div class="grid">
+      <!-- LEFT: avatar first, then locked form -->
+      <div class="card">
+        <h3 id="formTitle">Pick avatar to start</h3>
+        <small id="formSubtitle">Step 1: Choose an avatar. Step 2: Fill user details and save.</small>
+        <div class="avatar-grid" id="avatarGrid">
+          <div class="avatar-option" data-avatar="img/avatar1.png"><img src="img/avatar1.png" alt="Avatar 1"></div>
+          <div class="avatar-option" data-avatar="img/avatar2.png"><img src="img/avatar2.png" alt="Avatar 2"></div>
+          <div class="avatar-option" data-avatar="img/avatar3.png"><img src="img/avatar3.png" alt="Avatar 3"></div>
+          <div class="avatar-option" data-avatar="img/avatar4.png"><img src="img/avatar4.png" alt="Avatar 4"></div>
+          <div class="avatar-option" data-avatar="img/avatar5.png"><img src="img/avatar5.png" alt="Avatar 5"></div>
+          <div class="avatar-option" data-avatar="img/avatar6.png"><img src="img/avatar6.png" alt="Avatar 6"></div>
+        </div>
+        <div class="avatar-info" id="avatarInfo">Select an avatar to enable the form.</div>
+        <form id="userForm" class="locked">
+          <div class="full-row">
+            <label>Username</label>
+            <input type="text" id="fUsername" required placeholder="Login username" />
+          </div>
+          <div>
+            <label>Password</label>
+            <input type="password" id="fPassword" placeholder="Set / change password" />
+          </div>
+          <div>
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required />
+          </div>
+          <div>
+            <label>Role</label>
+            <select id="fRole">
+              <option value="admin">Admin</option>
+              <option value="member">Member</option>
+              
+            </select>
+          </div>
+          <div>
+            <label>Phone</label>
+            <input type="text" id="fPhone" placeholder="Phone (optional)" />
+          </div>
+          <div class="full-row">
+            <label>Joined</label>
+            <input type="text" id="fJoined" placeholder="e.g. October 2025" />
+          </div>
+          <div class="actions">
+            <button type="button" class="btn-secondary" id="btnCancelEdit" style="display:none;">Cancel</button>
+            <button type="submit" class="btn-primary" id="btnSave" disabled>Save User</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- RIGHT: list -->
+      <div class="card" style="max-height:420px;overflow:auto;">
+        <h3>Users list</h3>
+        <small>All users from users.json. You cannot delete yourself (current login).</small>
+        <table>
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Role</th>
+              <th>Phone</th>
+              <th>Joined</th>
+              <th style="width:110px;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="usersTbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 🔥 URL + Back button protection + EXACT ACCESS LOGIC
+    let currentUser;
+    
+    (function initSecurity() {
+      window.addEventListener('pageshow', function(event) {
+        if (event.persisted || performance.navigation.type === 2) {
+          checkAccess();
+        }
+      });
+
+      function checkAccess() {
+        const cuStr = localStorage.getItem('currentUser');
+        if (!cuStr) {
+          window.location.replace('login.html');
+          return false;
+        }
+
+        currentUser = JSON.parse(cuStr);
+        console.log('🔍 User:', currentUser.username, 'Role:', currentUser.role);
+
+        // ✅ mainadmin (super) + saravanan (admin) மட்டும் full access
+        if (currentUser.role !== 'super' && currentUser.role !== 'admin') {
+          alert('Only main admin and admin can manage admin users.');
+          window.location.href = 'dashboard.html';
+          return false;
+        }
+
+        console.log('✅ FULL ACCESS GRANTED');
+        setTimeout(initApp, 100);
+        return true;
+      }
+
+      if (!checkAccess()) return;
+    })();
+
+    function initApp() {
+      const usersTbody = document.getElementById('usersTbody');
+      const form = document.getElementById('userForm');
+      const fUsername = document.getElementById('fUsername');
+      const fPassword = document.getElementById('fPassword');
+      const fRole = document.getElementById('fRole');
+      const fPhone = document.getElementById('fPhone');
+      const fJoined = document.getElementById('fJoined');
+      const fEmail = document.getElementById('email');
+      const formTitle = document.getElementById('formTitle');
+      const formSubtitle = document.getElementById('formSubtitle');
+      const btnCancelEdit = document.getElementById('btnCancelEdit');
+      const btnSave = document.getElementById('btnSave');
+      const avatarGrid = document.getElementById('avatarGrid');
+      const avatarInfo = document.getElementById('avatarInfo');
+
+      let editMode = false;
+      let editUsername = null;
+      let selectedAvatar = "";
+
+      avatarGrid.addEventListener('click', e => {
+        const opt = e.target.closest('.avatar-option');
+        if (!opt) return;
+        document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        opt.classList.add('selected');
+        selectedAvatar = opt.getAttribute('data-avatar');
+        form.classList.remove('locked');
+        btnSave.disabled = false;
+        avatarInfo.textContent = 'Avatar selected. Now fill user details.';
+        if (!editMode) {
+          formTitle.textContent = 'Create new user';
+          formSubtitle.textContent = 'Step 2: Fill details and click Save.';
+        }
+      });
+
+      async function loadUsers() {
+        try {
+          const res = await fetch('/api/getUsers');
+          const users = await res.json();
+          renderUsers(users);
+        } catch (err) {
+          console.error('Load error:', err);
+        }
+      }
+
+      function avatarSrc(u){
+        return u.avatar && u.avatar.trim() ? u.avatar : 'img/avatar1.png';
+      }
+
+      // 🔥 EXACT RENDER LOGIC - mainadmin hide for admin role
+      function renderUsers(users) {
+        usersTbody.innerHTML = '';
+        users.forEach(u => {
+          // 🔥 saravanan (admin) login பண்ணா mainadmin hide
+          if (u.username === 'mainadmin' && currentUser.role === 'admin') {
+            console.log('👻 mainadmin HIDDEN for admin role');
+            return;
+          }
+
+          const tr = document.createElement('tr');
+          const tdUser = document.createElement('td');
+          const userDiv = document.createElement('div');
+          userDiv.className = 'user-cell';
+          const img = document.createElement('img');
+          img.className = 'user-avatar';
+          img.src = avatarSrc(u);
+          img.alt = u.username;
+          img.onerror = () => { img.src = 'img/avatar1.png'; };
+          const nameSpan = document.createElement('span');
+          nameSpan.className = 'user-name';
+          nameSpan.textContent = u.username;
+          userDiv.appendChild(img);
+          userDiv.appendChild(nameSpan);
+          tdUser.appendChild(userDiv);
+
+          const tdRole = document.createElement('td');
+          const spanRole = document.createElement('span');
+          const r = (u.role || 'admin').toLowerCase();
+          spanRole.textContent = r;
+          spanRole.className = 'tag-role ' + r;
+          tdRole.appendChild(spanRole);
+
+          const tdPhone = document.createElement('td');
+          tdPhone.textContent = u.phone || '-';
+          const tdJoined = document.createElement('td');
+          tdJoined.textContent = u.joined || '-';
+
+          const tdAct = document.createElement('td');
+          const actDiv = document.createElement('div');
+          actDiv.className = 'table-actions';
+
+          const btnE = document.createElement('button');
+          btnE.textContent = 'Edit';
+          btnE.className = 'btn-xs btn-edit';
+          btnE.onclick = () => startEdit(u);
+
+          const btnD = document.createElement('button');
+          btnD.textContent = 'Delete';
+          btnD.className = 'btn-xs btn-del';
+          btnD.onclick = () => deleteUser(u.username);
+
+          // 🔥 saravanan cannot delete/update mainadmin
+          if (u.username === 'mainadmin' && currentUser.role === 'admin') {
+            btnE.disabled = true;
+            btnE.style.opacity = 0.4;
+            btnE.title = 'Cannot edit mainadmin';
+            btnD.disabled = true;
+            btnD.style.opacity = 0.4;
+            btnD.title = 'Cannot delete mainadmin';
+          } 
+          // Cannot delete self
+          else if (u.username === currentUser.username) {
+            btnD.disabled = true;
+            btnD.style.opacity = 0.4;
+            btnD.title = 'Cannot delete yourself';
+          }
+
+          actDiv.appendChild(btnE);
+          actDiv.appendChild(btnD);
+          tdAct.appendChild(actDiv);
+
+          tr.appendChild(tdUser);
+          tr.appendChild(tdRole);
+          tr.appendChild(tdPhone);
+          tr.appendChild(tdJoined);
+          tr.appendChild(tdAct);
+          usersTbody.appendChild(tr);
+        });
+      }
+
+      function clearFormFields() {
+        fUsername.value = ''; fUsername.disabled = false;
+        fPassword.value = ''; fRole.value = 'admin';
+        fPhone.value = ''; fJoined.value = ''; fEmail.value = '';
+      }
+
+      function resetForm() {
+        editMode = false; editUsername = null; clearFormFields();
+        form.classList.add('locked'); btnSave.disabled = true;
+        formTitle.textContent = 'Pick avatar to start';
+        formSubtitle.textContent = 'Step 1: Choose an avatar. Step 2: Fill user details and save.';
+        avatarInfo.textContent = 'Select an avatar to enable the form.';
+        selectedAvatar = "";
+        document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        btnCancelEdit.style.display = 'none';
+        btnSave.textContent = 'Save User';
+      }
+
+      function startEdit(u) {
+        // 🔥 saravanan cannot edit mainadmin
+        if (u.username === 'mainadmin' && currentUser.role === 'admin') {
+          alert('Cannot edit mainadmin');
+          return;
+        }
+
+        editMode = true;
+        editUsername = u.username;
+        formTitle.textContent = 'Edit user';
+        formSubtitle.textContent = 'Change avatar if needed and update other details.';
+        btnSave.textContent = 'Update User';
+        btnCancelEdit.style.display = 'inline-flex';
+
+        clearFormFields();
+        fUsername.value = u.username;
+        fUsername.disabled = true;
+        fRole.value = u.role || 'admin';
+        fPhone.value = u.phone || '';
+        fJoined.value = u.joined || '';
+        fEmail.value = u.email || '';
+        fPassword.value = '';
+
+        document.querySelectorAll('.avatar-option').forEach(o => o.classList.remove('selected'));
+        const opt = document.querySelector('.avatar-option[data-avatar="'+(u.avatar || 'img/avatar1.png')+'"]');
+        if (opt) {
+          opt.classList.add('selected');
+          selectedAvatar = opt.getAttribute('data-avatar');
+        } else {
+          selectedAvatar = 'img/avatar1.png';
+        }
+
+        form.classList.remove('locked');
+        btnSave.disabled = false;
+        avatarInfo.textContent = 'Avatar selected. You can change or keep it.';
+      }
+
+      btnCancelEdit.onclick = () => resetForm();
+
+      form.onsubmit = async e => {
+        e.preventDefault();
+        if (!selectedAvatar) {
+          alert('Please select an avatar first.');
+          return;
+        }
+        const username = fUsername.value.trim();
+        if (!username) {
+          alert('Username is required');
+          return;
+        }
+        const payload = {
+          username,
+          role: fRole.value,
+          phone: fPhone.value.trim(),
+          joined: fJoined.value.trim(),
+          email: fEmail.value.trim(),
+          avatar: selectedAvatar
+        };
+        const password = fPassword.value.trim();
+        if (password) payload.password = password;
+
+        try {
+          const url = editMode ? '/api/updateUser' : '/api/addUser';
+          const res = await fetch(url, {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body:JSON.stringify(payload)
+          });
+          const data = await res.json();
+          if (!data.success) {
+            alert(data.message || 'Failed to save user');
+          }
+          await loadUsers();
+          resetForm();
+        } catch (err) {
+          console.error(err);
+          alert('Server error while saving user');
+        }
+      };
+
+      async function deleteUser(username) {
+        // 🔥 saravanan cannot delete mainadmin
+        if (username === 'mainadmin' && currentUser.role === 'admin') {
+          alert('Cannot delete mainadmin');
+          return;
+        }
+
+        if (!confirm('Delete user "' + username + '" ?')) return;
+        try {
+          const res = await fetch('/api/deleteUser/' + encodeURIComponent(username), {
+            method:'DELETE'
+          });
+          const data = await res.json();
+          if (!data.success) {
+            alert(data.message || 'Failed to delete');
+          }
+          await loadUsers();
+        } catch (err) {
+          console.error(err);
+          alert('Server error while deleting');
+        }
+      }
+
+      // initial
+      resetForm();
+      loadUsers();
+    }
+  </script>
+</body>
+</html>
