@@ -11,6 +11,8 @@ const app = express();
 
 // ------------------ Static Files ------------------
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
+
 
 
 // ---------- PAGE ROUTES ----------
@@ -39,10 +41,7 @@ app.get('/login', (req, res) => {
 });
 
 
-app.use('/img', express.static(path.join(__dirname, 'img')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-app.use('/uploads/videos', express.static(path.join(__dirname, 'public/uploads/videos')));
-app.use('/uploads/news', express.static(path.join(__dirname, 'public/uploads/news')));
+
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
