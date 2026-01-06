@@ -13,10 +13,31 @@ const app = express();
 app.use(express.static(path.join(__dirname, 'public')));
 
 
-// ✅ ROOT ROUTE FIX
+// ---------- PAGE ROUTES ----------
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
+app.get('/about', (req, res) => {
+  res.sendFile(path.join(__dirname, 'about.html'));
+});
+
+app.get('/members', (req, res) => {
+  res.sendFile(path.join(__dirname, 'members.html'));
+});
+
+app.get('/events', (req, res) => {
+  res.sendFile(path.join(__dirname, 'events.html'));
+});
+
+app.get('/contact', (req, res) => {
+  res.sendFile(path.join(__dirname, 'contact.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'login.html'));
+});
+
 
 app.use('/img', express.static(path.join(__dirname, 'img')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
