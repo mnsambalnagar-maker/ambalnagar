@@ -7,7 +7,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-  <!-- 🔒 DESIGN NOT CHANGED -->
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
     body{
@@ -21,41 +20,66 @@
       display:flex;
       flex-direction:column;
     }
-    .nav-wrap{padding:16px 34px;position:sticky;top:0;z-index:20;}
-    .nav-bar{max-width:1200px;margin:auto;padding:10px 18px;border-radius:999px;background:rgba(15,23,42,.42);border:1px solid rgba(148,163,184,.5);backdrop-filter:blur(18px);display:flex;justify-content:space-between;align-items:center;color:#e5e7eb;}
-    .nav-left{display:flex;gap:10px;align-items:center;}
+
+    .nav-wrap{width:100%;padding:16px 34px;position:sticky;top:0;z-index:20;}
+    .nav-bar{max-width:1200px;margin:0 auto;padding:10px 18px;border-radius:999px;background:rgba(15,23,42,0.42);border:1px solid rgba(148,163,184,0.5);backdrop-filter:blur(18px);display:flex;align-items:center;justify-content:space-between;color:#e5e7eb;}
+    .nav-left{display:flex;align-items:center;gap:10px;}
     .nav-logo-mini{width:34px;height:34px;border-radius:50%;overflow:hidden;}
     .nav-logo-mini img{width:100%;height:100%;object-fit:cover;}
-    .nav-right{display:flex;gap:16px;}
-    .nav-link{color:#e5e7eb;text-decoration:none;font-size:.85rem;padding:6px 10px;border-radius:999px;}
-    .nav-link:hover{background:rgba(148,163,184,.25);}
-    .nav-pill{padding:6px 14px;border-radius:999px;border:1px solid rgba(248,250,252,.4);background:rgba(248,250,252,.1);}
+    .nav-right{display:flex;gap:18px;}
+    .nav-link{color:#e5e7eb;text-decoration:none;font-size:0.85rem;}
+    .nav-pill{padding:6px 14px;border-radius:999px;border:1px solid rgba(255,255,255,0.4);}
 
     .page-main{flex:1;display:grid;grid-template-columns:1.2fr 1fr;}
     .login-left{padding:40px 70px;color:#e5e7eb;}
-    .login-right{background:#fff;padding:40px 70px;display:flex;flex-direction:column;justify-content:center;}
-    .login-title{font-size:2.2rem;font-weight:800;}
-    .login-sub{color:#6b7280;margin-bottom:30px;}
+    .login-right{background:#fff;padding:40px 70px;}
+
+    .login-title{font-size:2.2rem;font-weight:800;margin-bottom:6px;}
+    .login-sub{color:#6b7280;margin-bottom:32px;}
 
     .form-group{margin-bottom:18px;}
-    label{font-weight:600;font-size:.9rem;}
+    label{font-size:0.9rem;font-weight:600;}
     .input-wrap{position:relative;}
-    .input-wrap input{width:100%;padding:14px 16px 14px 44px;border-radius:14px;border:1px solid #d1d5db;}
-    .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);}
+    .input-wrap input{
+      width:100%;
+      padding:14px 16px 14px 44px;
+      border-radius:14px;
+      border:1px solid #d1d5db;
+      font-size:0.96rem;
+    }
+    .input-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#9ca3af;}
 
-    .login-btn{width:100%;padding:14px;border-radius:999px;border:none;background:#2563eb;color:#fff;font-weight:600;cursor:pointer;}
-    #otpBox{display:none;margin-top:22px;border-top:1px dashed #94a3b8;padding-top:22px;}
-    #otpMsg{margin-top:10px;text-align:center;font-size:.88rem;}
+    .login-btn{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:999px;
+      background:#2563eb;
+      color:#fff;
+      font-weight:600;
+      cursor:pointer;
+      margin-top:10px;
+    }
+
+    #otpBox{display:none;margin-top:22px;border-top:1px dashed #ccc;padding-top:18px;}
+    #otpMsg{margin-top:10px;font-size:0.9rem;text-align:center;}
+
+    @media(max-width:960px){
+      .page-main{grid-template-columns:1fr}
+      .login-left{display:none}
+      .login-right{padding:32px 20px}
+    }
   </style>
 </head>
 
 <body>
 
-<!-- NAV -->
 <header class="nav-wrap">
   <div class="nav-bar">
     <div class="nav-left">
-      <div class="nav-logo-mini"><img src="img/logo.png"></div>
+      <div class="nav-logo-mini">
+        <img src="img/logo.png" alt="Logo">
+      </div>
       <div>Sri Ambal Nagar Admin</div>
     </div>
     <div class="nav-right">
@@ -70,8 +94,8 @@
 <main class="page-main">
 
   <section class="login-left">
-    <h2>Sri Ambal Nagar</h2>
-    <p>Secure Admin Portal with OTP verification</p>
+    <h2>Welcome</h2>
+    <p>Secure admin access with Email OTP verification.</p>
   </section>
 
   <section class="login-right">
@@ -82,7 +106,7 @@
       <div class="form-group">
         <label>Username</label>
         <div class="input-wrap">
-          <input id="username" required>
+          <input id="username" type="text" required>
           <span class="input-icon"><i class="fas fa-user"></i></span>
         </div>
       </div>
@@ -103,22 +127,22 @@
         </div>
       </div>
 
-      <button class="login-btn">Send OTP</button>
+      <button class="login-btn" type="submit">Send OTP</button>
     </form>
 
     <div id="otpBox">
       <div class="form-group">
         <label>OTP</label>
         <div class="input-wrap">
-          <input id="otp" maxlength="6">
+          <input id="otp" type="text" maxlength="6">
           <span class="input-icon"><i class="fas fa-key"></i></span>
         </div>
       </div>
       <button id="verifyBtn" class="login-btn">Verify & Login</button>
       <p id="otpMsg"></p>
     </div>
-  </section>
 
+  </section>
 </main>
 
 <script>
@@ -126,59 +150,74 @@ const loginForm = document.getElementById('loginForm');
 const otpBox = document.getElementById('otpBox');
 const otpMsg = document.getElementById('otpMsg');
 const verifyBtn = document.getElementById('verifyBtn');
-let emailCache = '';
 
-loginForm.addEventListener('submit', async e => {
+let loginEmail = "";
+
+// STEP 1: SEND OTP
+loginForm.addEventListener('submit', async (e)=>{
   e.preventDefault();
 
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
-  const email = document.getElementById('email').value.trim();
+  const email    = document.getElementById('email').value.trim();
 
   if(!username || !password || !email){
-    otpMsg.textContent = 'Fill all fields';
+    otpMsg.style.color='red';
+    otpMsg.textContent='Fill all fields';
     return;
   }
 
-  otpMsg.textContent = 'Sending OTP...';
+  otpMsg.style.color='#2563eb';
+  otpMsg.textContent='Sending OTP...';
 
   const res = await fetch('/api/login-step1',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({username,password,email})
   });
+
   const data = await res.json();
 
   if(!data.success){
-    otpMsg.textContent = data.message;
+    otpMsg.style.color='red';
+    otpMsg.textContent=data.message || 'Login failed';
     return;
   }
 
-  emailCache = email;
-  otpBox.style.display = 'block';
-  otpMsg.textContent = 'OTP sent (check spam)';
+  loginEmail = email;
+  otpBox.style.display='block';
+  otpMsg.style.color='green';
+  otpMsg.textContent='OTP sent to email (check spam also)';
 });
 
+// STEP 2: VERIFY OTP
 verifyBtn.addEventListener('click', async ()=>{
   const otp = document.getElementById('otp').value.trim();
-  if(!otp) return;
+  if(!otp){
+    otpMsg.style.color='red';
+    otpMsg.textContent='Enter OTP';
+    return;
+  }
 
-  otpMsg.textContent = 'Verifying...';
+  otpMsg.style.color='#2563eb';
+  otpMsg.textContent='Verifying...';
 
   const res = await fetch('/api/login-step2',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({email:emailCache,otp})
+    body:JSON.stringify({email:loginEmail,otp})
   });
+
   const data = await res.json();
 
   if(!data.success){
-    otpMsg.textContent = data.message;
+    otpMsg.style.color='red';
+    otpMsg.textContent=data.message || 'Invalid OTP';
     return;
   }
 
   localStorage.setItem('currentUser',JSON.stringify(data.user));
-  window.location.href = '/dashboard';
+  window.location.href='dashboard.html';
 });
 </script>
 
