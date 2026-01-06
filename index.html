@@ -277,14 +277,35 @@ footer p{ text-align:center; padding:10px; font-size:16px; color:black; margin-t
 </style>
 </head>
 <body>
+
 <header>
   <div class="header-container">
     <div style="display:flex; align-items:center;">
-      <div style="background:#fff; padding:10px; border-radius:50%; box-shadow:0 4px 16px rgba(34,2,2,0.6); height:60px; width:60px; display:flex; align-items:center; justify-content:center;">
-        <img src="img/logo.png" alt="APNGDR Logo" style="height:50px; width:50px; object-fit:cover; border-radius:50%;" />
+      <div style="
+        background:#fff;
+        padding:10px;
+        border-radius:50%;
+        box-shadow:0 4px 16px rgba(34,2,2,0.6);
+        height:60px;
+        width:60px;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+      ">
+        <!-- LOGO -->
+        <img
+          src="img/logo.png"
+          alt="Ambal Nagar Logo"
+          style="height:50px; width:50px; object-fit:cover; border-radius:50%;"
+        />
       </div>
-      <h1 class="logo" style="margin-left:10px;">AmbalNagar Makkal Nalvazhu Sangam</h1>
+
+      <h1 class="logo" style="margin-left:10px;">
+        AmbalNagar Makkal Nalvazhu Sangam
+      </h1>
     </div>
+
+    <!-- NAV -->
     <nav>
       <ul class="menu">
         <li><a href="index.html" class="active">Home</a></li>
@@ -297,9 +318,9 @@ footer p{ text-align:center; padding:10px; font-size:16px; color:black; margin-t
     </nav>
   </div>
 
-  <!-- Top right corner - user pill -->
+  <!-- USER PILL -->
   <div class="user-pill" id="userPill" style="display:none;">
-    <img src="img/avatar1.png" class="user-avatar" alt="User">
+    <img src="img/avatar1.png" class="user-avatar" alt="User Avatar">
     <span id="loggedUserName"></span>
   </div>
 </header>
@@ -307,21 +328,32 @@ footer p{ text-align:center; padding:10px; font-size:16px; color:black; margin-t
 <main>
   <section class="hero">
     <h2>Welcome to Sri Ambal Nagar Peoples Welfare Association</h2>
-    <p>Building a united and thriving community through commitment, culture, and care.</p>
+    <p>
+      Building a united and thriving community through commitment,
+      culture, and care.
+    </p>
   </section>
 </main>
 
+<!-- NEWS BAR -->
 <div id="news-notify-bar">
   <div id="notify-card"></div>
 </div>
 
+<!-- SERVICE BUTTON -->
 <div class="service-floating-btn">
-  <a href="service.html"><span>Service</span></a>
+  <a href="service.html">
+    <span>Service</span>
+  </a>
 </div>
 
 <footer>
   <p>&copy; 2025 All rights reserved.</p>
 </footer>
+
+</body>
+
+
 
 <script>
 async function startNewsNotifyBar() {
