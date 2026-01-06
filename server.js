@@ -62,18 +62,22 @@ app.get('/dashboard', (req, res) => {
 // ===================================================
 //           MAIL TRANSPORT - FIXED SMTP
 // ===================================================
-require('dotenv').config();
+
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT), // 465
-  secure: true, // ✅ VERY IMPORTANT for Render
+  port: Number(process.env.SMTP_PORT), // 587
+  secure: false, // ❗ IMPORTANT (Render)
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
   },
-  connectionTimeout: 20000,
-  greetingTimeout: 20000
+  tls: {
+    rejectUnauthorized: false
+  },
+  connectionTimeout: 30000,
+  greetingTimeout: 30000
 });
+
 
 
 
