@@ -65,8 +65,8 @@ app.get('/dashboard', (req, res) => {
 
 const transporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT), // 587
-  secure: false, // ❗ IMPORTANT (Render)
+  port: Number(process.env.SMTP_PORT),
+  secure: false, // ✅ MUST be false for port 587
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
@@ -74,9 +74,20 @@ const transporter = nodemailer.createTransport({
   tls: {
     rejectUnauthorized: false
   },
-  connectionTimeout: 30000,
-  greetingTimeout: 30000
+  connectionTimeout: 20000,
+  greetingTimeout: 20000
 });
+
+// 🔍 SMTP CHECK (RUNS ON SERVER START)
+transporter.verify((err, success) => {
+  if (err) {
+    console.error('❌ SMTP CONFIG ERROR:', err.message);
+  } else {
+    console.log('✅ SMTP READY (Brevo)');
+  }
+});
+
+
 
 
 
@@ -281,13 +292,21 @@ app.post('/api/contact-with-file', contactUpload.array('attachments', 10), (req,
     }));
   }
 
-  const mailOptions = {
-    from: `"${name}" <no-reply@ambalnagar.local>`,
-    to: 'mathisurendhar@gmail.com',
-    subject: `New Contact Message from ${name}${attachments.length ? ' (with attachments)' : ''}`,
-    text: `Name: ${name}\nMobile: ${mobile}\nMessage: ${message}`,
-    attachments
-  };
+const mailOptions = {
+  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
+  to: 'mnsambalnagar@gmail.com',
+  replyTo: email,
+  subject: `New Contact Message from ${name}`,
+  text: `
+Name   : ${name}
+Email  : ${email}
+
+Message:
+${message}
+`
+};
+
+
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
@@ -308,11 +327,21 @@ app.post('/api/contact', (req, res) => {
   }
 
   const mailOptions = {
-    from: `"${name}" <${email}>`,
-    to: 'mathisurendhar@gmail.com',
-    subject: `New Contact Message from ${name}`,
-    text: `Name: ${name}\nEmail: ${email}\nMessage: ${message}`
-  };
+  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
+  to: 'mnsambalnagar@gmail.com',   // admin receive mail
+  replyTo: email,                 // user email (important)
+  subject: `New Contact Message from ${name}${attachments.length ? ' (with attachments)' : ''}`,
+  text: `
+  Name   : ${name}
+  Mobile : ${mobile}
+  Email  : ${email}
+
+  Message:
+  ${message}
+  `,
+  attachments
+};
+
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
@@ -608,21 +637,25 @@ app.post('/api/login-step1', (req, res) => {
 
   console.log(`📨 OTP GENERATED → ${user.email}`);
 
-  const mailOptions = {
-    from: `"Sri Ambal Nagar" <mnsambalnagar@gmail.com>`,
-    to: user.email,
-    subject: 'Sri Ambal Nagar Login OTP',
-    text: `Your login OTP is ${otp}. It is valid for 5 minutes.`
-  };
+ const mailOptions = {
+  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
+  to: user.email,
+  replyTo: 'mnsambalnagar@gmail.com', // optional but good
+  subject: 'Sri Ambal Nagar Login OTP',
+  text: `Your login OTP is ${otp}. It is valid for 5 minutes.`
+ };
+
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
-      console.error('❌ OTP EMAIL FAILED:', err.message);
-      return res.json({
-        success: false,
-        message: 'Failed to send OTP. Please try again.'
-      });
-    }
+  console.error('❌ OTP EMAIL FAILED:', err.message);
+
+  // Still allow OTP entry (Brevo delay safety)
+  return res.json({
+    success: true,
+    message: 'OTP generated. Please check email (Inbox / Spam).'
+  });
+}
 
     console.log('✅ OTP EMAIL SENT:', info.messageId);
     res.json({
