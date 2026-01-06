@@ -286,7 +286,8 @@
         return;
       }
       localStorage.setItem('currentUser',JSON.stringify(d.user));
-      window.location.href='dashboard.html';
+      window.location.href = '/dashboard';
+
     })
     .catch(()=>{
       msg.style.color='red';
