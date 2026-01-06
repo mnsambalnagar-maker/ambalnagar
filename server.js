@@ -553,7 +553,7 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//           TWO-STEP LOGIN (ALL ROLES ALLOWED + DEBUG)
+//           TWO-STEP LOGIN (ALL ROLES ALLOWED)
 // ===================================================
 app.post('/api/login-step1', (req, res) => {
   const { username, password, email } = req.body;
@@ -561,7 +561,10 @@ app.post('/api/login-step1', (req, res) => {
   console.log('🔍 LOGIN ATTEMPT:', { username, email });
 
   if (!username || !password || !email) {
-    return res.status(400).json({ success: false, message: 'All fields required' });
+    return res.status(400).json({
+      success: false,
+      message: 'All fields required'
+    });
   }
 
   const users = loadUsers();
@@ -573,74 +576,113 @@ app.post('/api/login-step1', (req, res) => {
   );
 
   if (!user) {
-    console.log('❌ USER NOT FOUND');
-    return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    console.log('❌ INVALID LOGIN');
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid credentials'
+    });
   }
 
-  // ✅ FIXED: NO ROLE CHECK - ALL ROLES ALLOWED!
-  console.log('✅ USER FOUND:', user.username, user.role, user.name);
+  console.log('✅ USER FOUND:', user.username);
 
+  // 🔐 Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
   const expiry = Date.now() + 5 * 60 * 1000;
 
   user.otp = otp;
   user.otpExpiry = expiry;
-  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
 
-  console.log(`🔥 OTP GENERATED: ${otp} → ${user.email}`);
+  fs.writeFileSync(
+    path.join(__dirname, 'users.json'),
+    JSON.stringify(users, null, 2)
+  );
+
+  console.log(`📨 OTP GENERATED → ${user.email}`);
 
   const mailOptions = {
-    from: 'mathisurendhar@gmail.com',
+    from: `"Sri Ambal Nagar" <mnsambalnagar@gmail.com>`,
     to: user.email,
-    subject: 'Ambal Nagar Login OTP',
+    subject: 'Sri Ambal Nagar Login OTP',
     text: `Your login OTP is ${otp}. It is valid for 5 minutes.`
   };
 
   transporter.sendMail(mailOptions, (err, info) => {
     if (err) {
-      console.error('❌ OTP mail error:', err);
-      // DEV MODE: Allow login even if email fails
-      console.log('⚠️ Email failed. OTP is visible in console above.');
-      return res.json({ success: true, message: 'OTP sent (Check Console/Email)', debug_otp: otp });
+      console.error('❌ OTP EMAIL FAILED:', err.message);
+      return res.json({
+        success: false,
+        message: 'Failed to send OTP. Please try again.'
+      });
     }
-    console.log('✅ OTP Email SENT!', info.messageId);
-    console.log('📧 Check Gmail Inbox/SPAM/Promotions');
-    res.json({ success: true, message: 'OTP sent! Check Gmail SPAM/Promotions folder.', debug_otp: otp });
+
+    console.log('✅ OTP EMAIL SENT:', info.messageId);
+    res.json({
+      success: true,
+      message: 'OTP sent to your email. Check Inbox / Spam.'
+    });
   });
 });
 
+
+// ===================================================
+//               OTP VERIFY
+// ===================================================
 app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
 
-  console.log('🔍 OTP VERIFY:', { email, otp: otp ? '******' : 'missing' });
+  console.log('🔍 OTP VERIFY REQUEST:', email);
 
   if (!email || !otp) {
-    return res.status(400).json({ success: false, message: 'Email and OTP required' });
+    return res.status(400).json({
+      success: false,
+      message: 'Email and OTP required'
+    });
   }
 
   const users = loadUsers();
-  const user = users.find(u => String(u.email).toLowerCase() === String(email).toLowerCase());
+  const user = users.find(
+    u => String(u.email).toLowerCase() === String(email).toLowerCase()
+  );
 
   if (!user || !user.otp || !user.otpExpiry) {
-    return res.status(400).json({ success: false, message: 'OTP not requested' });
+    return res.status(400).json({
+      success: false,
+      message: 'OTP not requested'
+    });
   }
 
   if (Date.now() > user.otpExpiry) {
     user.otp = null;
     user.otpExpiry = null;
-    fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
-    return res.status(400).json({ success: false, message: 'OTP expired' });
+
+    fs.writeFileSync(
+      path.join(__dirname, 'users.json'),
+      JSON.stringify(users, null, 2)
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: 'OTP expired'
+    });
   }
 
   if (user.otp !== otp) {
-    return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid OTP'
+    });
   }
 
+  // ✅ OTP VALID → CLEAR OTP
   user.otp = null;
   user.otpExpiry = null;
-  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
 
-  console.log('✅ LOGIN SUCCESS:', user.username, user.role, user.name);
+  fs.writeFileSync(
+    path.join(__dirname, 'users.json'),
+    JSON.stringify(users, null, 2)
+  );
+
+  console.log('✅ LOGIN SUCCESS:', user.username);
 
   res.json({
     success: true,
@@ -654,6 +696,7 @@ app.post('/api/login-step2', (req, res) => {
     }
   });
 });
+
 
 // ===================================================
 //             CATEGORY & MEMBERS SYSTEM
