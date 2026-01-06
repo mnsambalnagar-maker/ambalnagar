@@ -6,13 +6,18 @@ const multer = require('multer');
 const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
-
-
 const app = express();
 
 
 // ------------------ Static Files ------------------
 app.use(express.static(path.join(__dirname, 'public')));
+
+
+// ✅ ROOT ROUTE FIX
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 app.use('/img', express.static(path.join(__dirname, 'img')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/uploads/videos', express.static(path.join(__dirname, 'public/uploads/videos')));
