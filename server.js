@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const app = express();
+require('dotenv').config();
+
 
 
 // ------------------ Static Files ------------------
@@ -62,14 +64,17 @@ app.get('/dashboard', (req, res) => {
 // ===================================================
 require('dotenv').config();
 const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: false,
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT), // 465
+  secure: true, // ✅ VERY IMPORTANT for Render
   auth: {
     user: process.env.SMTP_USER,
     pass: process.env.SMTP_PASS
-  }
+  },
+  connectionTimeout: 20000,
+  greetingTimeout: 20000
 });
+
 
 
 // ---------------------------------------------------
