@@ -19,8 +19,6 @@
       display:flex;
       flex-direction:column;
     }
-
-    /* NAV */
     header{
       padding:14px 28px;
       background:rgba(255,255,255,0.08);
@@ -30,124 +28,24 @@
       align-items:center;
       color:#fff;
     }
-    header .left{
-      display:flex;
-      align-items:center;
-      gap:10px;
-      font-weight:700;
-    }
-    header img{
-      width:38px;
-      height:38px;
-      border-radius:50%;
-    }
-    header a{
-      color:#fff;
-      text-decoration:none;
-      font-size:0.9rem;
-      margin-left:18px;
-    }
+    header .left{display:flex;align-items:center;gap:10px;font-weight:700;}
+    header img{width:38px;height:38px;border-radius:50%;}
+    header a{color:#fff;text-decoration:none;font-size:0.9rem;margin-left:18px;}
 
-    /* MAIN */
-    main{
-      flex:1;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-    }
-
-    /* LEFT INFO */
-    .info{
-      padding:60px;
-      color:#fff;
-      display:flex;
-      flex-direction:column;
-      justify-content:center;
-    }
-    .info h1{
-      font-size:2.2rem;
-      margin-bottom:12px;
-    }
-    .info p{
-      font-size:1rem;
-      opacity:0.9;
-      line-height:1.6;
-    }
-
-    /* LOGIN CARD */
-    .login{
-      background:#fff;
-      display:flex;
-      align-items:center;
-      justify-content:center;
-    }
-    .card{
-      width:100%;
-      max-width:420px;
-      padding:40px;
-      border-radius:22px;
-      box-shadow:0 30px 70px rgba(0,0,0,0.25);
-    }
-    .card h2{
-      font-size:1.8rem;
-      margin-bottom:8px;
-    }
-    .card p{
-      font-size:0.9rem;
-      color:#555;
-      margin-bottom:24px;
-    }
-
-    .field{
-      margin-bottom:16px;
-    }
-    .field label{
-      font-size:0.85rem;
-      font-weight:600;
-      margin-bottom:6px;
-      display:block;
-    }
-    .field input{
-      width:100%;
-      padding:13px 14px;
-      border-radius:12px;
-      border:1px solid #d1d5db;
-      font-size:0.95rem;
-    }
-
-    .btn{
-      width:100%;
-      padding:14px;
-      border:none;
-      border-radius:999px;
-      background:#2563eb;
-      color:#fff;
-      font-weight:700;
-      cursor:pointer;
-      margin-top:10px;
-    }
-
-    .btn:hover{opacity:0.92}
-
-    #otpBox{
-      display:none;
-      margin-top:18px;
-      border-top:1px dashed #ddd;
-      padding-top:18px;
-    }
-
-    #msg{
-      margin-top:12px;
-      font-size:0.85rem;
-      text-align:center;
-      min-height:20px;
-    }
-
-    @media(max-width:900px){
-      main{grid-template-columns:1fr}
-      .info{display:none}
-    }
+    main{flex:1;display:grid;grid-template-columns:1fr 1fr;}
+    .info{padding:60px;color:#fff;display:flex;flex-direction:column;justify-content:center;}
+    .login{background:#fff;display:flex;align-items:center;justify-content:center;}
+    .card{width:100%;max-width:420px;padding:40px;border-radius:22px;box-shadow:0 30px 70px rgba(0,0,0,0.25);}
+    .field{margin-bottom:16px;}
+    .field label{font-size:0.85rem;font-weight:600;margin-bottom:6px;display:block;}
+    .field input{width:100%;padding:13px 14px;border-radius:12px;border:1px solid #d1d5db;}
+    .btn{width:100%;padding:14px;border:none;border-radius:999px;background:#2563eb;color:#fff;font-weight:700;cursor:pointer;}
+    #otpBox{display:none;margin-top:18px;border-top:1px dashed #ddd;padding-top:18px;}
+    #msg{margin-top:12px;font-size:0.85rem;text-align:center;min-height:20px;}
+    @media(max-width:900px){main{grid-template-columns:1fr}.info{display:none}}
   </style>
 </head>
+
 <body>
 
 <header>
@@ -164,136 +62,121 @@
 
 <main>
 
-  <!-- LEFT INFO -->
-  <section class="info">
-    <h1>Admin Login</h1>
-    <p>
-      Secure access for Sri Ambal Nagar Peoples Welfare Association.<br>
-      Login protected with Email OTP verification.
-    </p>
-  </section>
+<section class="info">
+  <h1>Admin Login</h1>
+  <p>Secure access with Email OTP verification.</p>
+</section>
 
-  <!-- LOGIN -->
-  <section class="login">
-    <div class="card">
+<section class="login">
+  <div class="card">
 
-      <h2>Secure Login</h2>
-      <p>Enter credentials and verify OTP</p>
+    <h2>Secure Login</h2>
+    <p>Enter credentials and verify OTP</p>
 
-      <!-- STEP 1 -->
-      <form id="loginForm">
-        <div class="field">
-          <label>Username</label>
-          <input id="username" type="text" required>
-        </div>
-
-        <div class="field">
-          <label>Password</label>
-          <input id="password" type="password" required>
-        </div>
-
-        <div class="field">
-          <label>Email</label>
-          <input id="email" type="email" required>
-        </div>
-
-        <button class="btn" type="submit">Send OTP</button>
-      </form>
-
-      <!-- STEP 2 -->
-      <div id="otpBox">
-        <div class="field">
-          <label>OTP</label>
-          <input id="otp" type="text" maxlength="6" placeholder="6 digit OTP">
-        </div>
-        <button id="verifyBtn" class="btn">Verify & Login</button>
+    <form id="loginForm">
+      <div class="field">
+        <label>Username</label>
+        <input id="username" type="text" required>
       </div>
+      <div class="field">
+        <label>Password</label>
+        <input id="password" type="password" required>
+      </div>
+      <div class="field">
+        <label>Email</label>
+        <input id="email" type="email" required>
+      </div>
+      <button class="btn" type="submit">Send OTP</button>
+    </form>
 
-      <div id="msg"></div>
-
+    <div id="otpBox">
+      <div class="field">
+        <label>OTP</label>
+        <input id="otp" type="text" maxlength="6">
+      </div>
+      <button id="verifyBtn" class="btn">Verify & Login</button>
     </div>
-  </section>
+
+    <div id="msg"></div>
+
+  </div>
+</section>
 
 </main>
 
 <script>
-  const loginForm = document.getElementById('loginForm');
-  const otpBox = document.getElementById('otpBox');
-  const msg = document.getElementById('msg');
-  const verifyBtn = document.getElementById('verifyBtn');
+const loginForm = document.getElementById('loginForm');
+const otpBox = document.getElementById('otpBox');
+const msg = document.getElementById('msg');
+const verifyBtn = document.getElementById('verifyBtn');
+let loginEmail = '';
 
-  let loginEmail = '';
+loginForm.addEventListener('submit', e => {
+  e.preventDefault();
 
-  // STEP 1 – SEND OTP
-  loginForm.addEventListener('submit', e => {
-    e.preventDefault();
+  const usernameVal = document.getElementById('username').value.trim();
+  const passwordVal = document.getElementById('password').value.trim();
+  const emailVal = document.getElementById('email').value.trim();
 
-    const username = username.value.trim();
-    const password = password.value.trim();
-    const email = email.value.trim();
+  if(!usernameVal || !passwordVal || !emailVal){
+    msg.style.color='red';
+    msg.textContent='Please fill all fields';
+    return;
+  }
 
-    msg.style.color = '#2563eb';
-    msg.textContent = 'Sending OTP...';
+  msg.style.color='#2563eb';
+  msg.textContent='Sending OTP...';
 
-    fetch('/api/login-step1',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({username,password,email})
+  fetch('/api/login-step1',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      username:usernameVal,
+      password:passwordVal,
+      email:emailVal
     })
-    .then(r=>r.json())
-    .then(d=>{
-      if(!d.success){
-        msg.style.color='red';
-        msg.textContent=d.message || 'Login failed';
-        return;
-      }
-      loginEmail = email;
-      otpBox.style.display='block';
-      msg.style.color='green';
-      msg.textContent='OTP sent to email (check spam also)';
-      if(d.debug_otp){
-        alert('DEV OTP: '+d.debug_otp);
-      }
-    })
-    .catch(()=>{
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.success){
       msg.style.color='red';
-      msg.textContent='Server error';
-    });
-  });
-
-  // STEP 2 – VERIFY OTP
-  verifyBtn.addEventListener('click',()=>{
-    const otp = document.getElementById('otp').value.trim();
-    if(!otp){
-      msg.style.color='red';
-      msg.textContent='Enter OTP';
+      msg.textContent=d.message;
       return;
     }
-
-    msg.style.color='#2563eb';
-    msg.textContent='Verifying...';
-
-    fetch('/api/login-step2',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:loginEmail,otp})
-    })
-    .then(r=>r.json())
-    .then(d=>{
-      if(!d.success){
-        msg.style.color='red';
-        msg.textContent=d.message || 'Invalid OTP';
-        return;
-      }
-      localStorage.setItem('currentUser',JSON.stringify(d.user));
-      window.location.href = '/dashboard';
-
-    })
-    .catch(()=>{
-      msg.style.color='red';
-      msg.textContent='Server error';
-    });
+    loginEmail = emailVal;
+    otpBox.style.display='block';
+    msg.style.color='green';
+    msg.textContent='OTP sent (check spam also)';
+    if(d.debug_otp) alert('DEV OTP: '+d.debug_otp);
   });
+});
+
+verifyBtn.addEventListener('click',()=>{
+  const otp = document.getElementById('otp').value.trim();
+  if(!otp){
+    msg.style.color='red';
+    msg.textContent='Enter OTP';
+    return;
+  }
+
+  msg.textContent='Verifying...';
+
+  fetch('/api/login-step2',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({email:loginEmail,otp})
+  })
+  .then(r=>r.json())
+  .then(d=>{
+    if(!d.success){
+      msg.style.color='red';
+      msg.textContent=d.message;
+      return;
+    }
+    localStorage.setItem('currentUser',JSON.stringify(d.user));
+    window.location.href='/dashboard';
+  });
+});
 </script>
 
 </body>
