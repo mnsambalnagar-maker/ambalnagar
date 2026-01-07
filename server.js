@@ -7,7 +7,7 @@ const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
 const app = express();
 require('dotenv').config();
-const nodemailer = require('nodemailer');
+
 
 
 
@@ -229,6 +229,34 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 
 
 // ===================================================
+//        CONTACT FILE UPLOAD CONFIG (MULTER)
+// ===================================================
+const contactStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName =
+      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, safeName);
+  }
+});
+
+const contactUpload = multer({
+  storage: contactStorage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPG, PNG, PDF allowed'));
+  }
+});
+
+// ===================================================
 //         CONTACT WITH FILE UPLOAD (BREVO API MAIL)
 // ===================================================
 app.post(
@@ -297,31 +325,43 @@ ${filesList}
     }
   }
 );
-// ===================================================
-//        CONTACT FILE UPLOAD CONFIG (MULTER)
-// ===================================================
-const contactStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const safeName =
-      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, safeName);
-  }
-});
 
-const contactUpload = multer({
-  storage: contactStorage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only JPG, PNG, PDF allowed'));
+// ===================================================
+//           SIMPLE CONTACT (NO FILE)
+// ===================================================
+app.post('/api/contact', async (req, res) => {
+  try {
+    const { name, email, message } = req.body;
+
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields required'
+      });
+    }
+
+    await sendBrevoMail({
+      to: 'mnsambalnagar@gmail.com',
+      subject: `📩 Contact Message – ${name}`,
+      text: `
+Name  : ${name}
+Email : ${email}
+
+Message:
+${message}
+      `,
+      html: `
+        <h2>Contact Message</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Message:</b><br>${message}</p>
+      `
+    });
+
+    res.json({ success: true, message: 'Message sent successfully' });
+  } catch (err) {
+    console.error('❌ Contact mail error:', err.message);
+    res.status(500).json({ success: false, message: 'Mail failed' });
   }
 });
 
