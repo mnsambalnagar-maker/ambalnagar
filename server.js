@@ -53,27 +53,30 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// ===================================================
-//           SMTP TRANSPORT (BREVO)
-// ===================================================
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  }
-});
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
 
-// Optional check (safe)
-transporter.verify((err, success) => {
-  if (err) {
-    console.error('❌ SMTP ERROR:', err.message);
-  } else {
-    console.log('✅ SMTP READY (Brevo)');
+async function sendBrevoMail({ to, subject, text, html }) {
+  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: {
+      'accept': 'application/json',
+      'content-type': 'application/json',
+      'api-key': BREVO_API_KEY
+    },
+    body: JSON.stringify({
+      sender: { name: 'Sri Ambal Nagar', email: 'no-reply@sriambalnagar.org' },
+      to: [{ email: to }],
+      subject,
+      textContent: text,
+      htmlContent: html
+    })
+  });
+
+  if (!res.ok) {
+    throw new Error(await res.text());
   }
-});
+}
+
 
 
 
@@ -223,38 +226,6 @@ app.delete('/api/deleteUser/:username', (req, res) => {
     res.json({ success: false, message: 'Delete failed' });
   }
 });
-// ===================================================
-//        CONTACT FILE UPLOAD CONFIG (MULTER)
-// ===================================================
-const contactStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const safeName =
-      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, safeName);
-  }
-});
-
-const contactUpload = multer({
-  storage: contactStorage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
-  fileFilter: (req, file, cb) => {
-    const allowed = [
-      'image/jpeg',
-      'image/png',
-      'image/jpg',
-      'application/pdf'
-    ];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only JPG, PNG, PDF allowed'));
-  }
-});
 
 
 // ===================================================
@@ -326,6 +297,34 @@ ${filesList}
     }
   }
 );
+// ===================================================
+//        CONTACT FILE UPLOAD CONFIG (MULTER)
+// ===================================================
+const contactStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName =
+      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, safeName);
+  }
+});
+
+const contactUpload = multer({
+  storage: contactStorage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter: (req, file, cb) => {
+    const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPG, PNG, PDF allowed'));
+  }
+});
+
 
 
 
