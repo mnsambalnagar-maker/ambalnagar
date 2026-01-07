@@ -513,53 +513,7 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//           LOGIN STEP 1 (OTP IN BROWSER)
-// ===================================================
-app.post('/api/login-step1', (req, res) => {
-  const { username, password, email } = req.body;
-
-  if (!username || !password || !email) {
-    return res.status(400).json({
-      success: false,
-      message: 'All fields required'
-    });
-  }
-
-  const users = loadUsers();
-  const user = users.find(
-    u =>
-      u.username.toLowerCase() === username.toLowerCase() &&
-      u.password === password &&
-      u.email.toLowerCase() === email.toLowerCase()
-  );
-
-  if (!user) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid credentials'
-    });
-  }
-
-  // ✅ OTP GENERATE
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-  user.otp = otp;
-  user.otpExpiry = Date.now() + 5 * 60 * 1000;
-
-  fs.writeFileSync(
-    path.join(__dirname, 'users.json'),
-    JSON.stringify(users, null, 2)
-  );
-
-  // ✅ OTP RETURN TO BROWSER
-  res.json({
-    success: true,
-    message: 'OTP generated',
-    otp: otp   // 🔥 DIRECT OTP
-  });
-});
-// ===================================================
-//               OTP VERIFY
+//               OTP VERIFY (DEV MODE)
 // ===================================================
 app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
@@ -572,17 +526,21 @@ app.post('/api/login-step2', (req, res) => {
   }
 
   const users = loadUsers();
-  const user = users.find(
-    u => u.email.toLowerCase() === email.toLowerCase()
+
+  const userIndex = users.findIndex(
+    u => String(u.email).toLowerCase() === String(email).toLowerCase()
   );
 
-  if (!user || !user.otp) {
+  if (userIndex === -1 || !users[userIndex].otp) {
     return res.status(400).json({
       success: false,
       message: 'OTP not generated'
     });
   }
 
+  const user = users[userIndex];
+
+  // ⏰ Expiry check
   if (Date.now() > user.otpExpiry) {
     user.otp = null;
     user.otpExpiry = null;
@@ -598,14 +556,15 @@ app.post('/api/login-step2', (req, res) => {
     });
   }
 
-  if (user.otp !== otp) {
+  // ❌ Wrong OTP
+  if (String(user.otp) !== String(otp)) {
     return res.status(400).json({
       success: false,
       message: 'Invalid OTP'
     });
   }
 
-  // ✅ SUCCESS
+  // ✅ SUCCESS → clear OTP
   user.otp = null;
   user.otpExpiry = null;
 
@@ -625,6 +584,7 @@ app.post('/api/login-step2', (req, res) => {
     }
   });
 });
+
 
 
 
