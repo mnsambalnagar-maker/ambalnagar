@@ -14,7 +14,7 @@ require('dotenv').config();
 // ------------------ Static Files ------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
@@ -491,9 +491,6 @@ app.post('/api/login-step1', (req, res) => {
 });
 
 
-// ===================================================
-// OTP VERIFY
-// ===================================================
 app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
 
@@ -502,9 +499,7 @@ app.post('/api/login-step2', (req, res) => {
   }
 
   const users = loadUsers();
-  const user = users.find(
-    u => u.email && u.email.toLowerCase() === email.toLowerCase()
-  );
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
   if (!user || !user.otp) {
     return res.json({ success: false, message: 'OTP not generated' });
@@ -527,7 +522,6 @@ app.post('/api/login-step2', (req, res) => {
 
   res.json({
     success: true,
-    message: 'Login success',
     user: {
       username: user.username,
       name: user.name || user.username,
@@ -535,14 +529,7 @@ app.post('/api/login-step2', (req, res) => {
       role: user.role || 'admin'
     }
   });
-
- 
 });
-
-
-
-
-
 
 
 // ===================================================
@@ -672,7 +659,7 @@ app.post('/api/admin/update/:id', async (req, res) => {
 
   saveMembers(members);
 
- 
+});
 
 //==================================================
 //                 DYNAMIC QR CODE
