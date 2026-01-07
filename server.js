@@ -205,71 +205,7 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 });
 
 
-// ===================================================
-//        CONTACT FILE UPLOAD CONFIG (MULTER)
-// ===================================================
-const contactStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const dir = path.join(__dirname, 'public/uploads/contacts');
-    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-    cb(null, dir);
-  },
-  filename: (req, file, cb) => {
-    const safeName =
-      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, safeName);
-  }
-});
 
-const contactUpload = multer({
-  storage: contactStorage,
-  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
-});
-app.post(
-  '/api/contact-with-file',
-  contactUpload.array('attachments', 10),
-  async (req, res) => {
-    try {
-      const { name, email, mobile, message } = req.body;
-
-      if (!name || !email || !mobile || !message) {
-        return res.status(400).json({ success: false, message: 'All fields required' });
-      }
-
-      const filesList =
-        req.files?.length ? req.files.map(f => f.originalname).join(', ') : 'No files';
-
-      await sendBrevoMail({
-        to: 'mnsambalnagar@gmail.com',
-        subject: `📩 New Contact Message – ${name}`,
-        text: `
-Name: ${name}
-Email: ${email}
-Mobile: ${mobile}
-
-Message:
-${message}
-
-Files:
-${filesList}
-        `,
-        html: `
-          <h2>New Contact Message</h2>
-          <p><b>Name:</b> ${name}</p>
-          <p><b>Email:</b> ${email}</p>
-          <p><b>Mobile:</b> ${mobile}</p>
-          <p><b>Message:</b><br>${message}</p>
-          <p><b>Attachments:</b> ${filesList}</p>
-        `
-      });
-
-      res.json({ success: true, message: 'Message sent successfully' });
-    } catch (err) {
-      console.error(err);
-      res.status(500).json({ success: false, message: 'Mail failed' });
-    }
-  }
-);
 
 
 
@@ -690,48 +626,7 @@ app.delete('/api/members/:id', (req, res) => {
 //             MEMBERSHIP + QR CODE (SMTP)
 //==================================================
 
-app.post('/api/submit-membership', async (req, res) => {
-  const { name, mobile, refId } = req.body;
 
-  if (!name || !mobile || !refId) {
-    return res.json({ success: false, message: 'All fields required' });
-  }
-
-  const members = loadMembers();
-
-  const newMember = {
-    id: Date.now(),
-    name,
-    mobile,
-    refId,
-    status: 'pending',
-    appliedAt: new Date().toISOString()
-  };
-
-  members.push(newMember);
-  saveMembers(members);
-
-  try {
-    await transporter.sendMail({
-  from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
-  to: 'mnsambalnagar@gmail.com',
-  subject: `✅ Membership Approved | ${m.name}`,
-  html: `
-    <h2>Membership Approved</h2>
-    <p><b>Name:</b> ${m.name}</p>
-    <p><b>Mobile:</b> ${m.mobile}</p>
-    <p><b>Amount:</b> ₹200</p>
-    <p>Status: <b style="color:green">Approved</b></p>
-  `
-});
-
-
-    res.json({ success: true, message: 'Application submitted' });
-  } catch (err) {
-    console.error('❌ Membership mail error:', err.message);
-    res.status(500).json({ success: false });
-  }
-});
 
 
 // 🔥 ADMIN – VIEW MEMBERSHIP APPLICATIONS
@@ -764,46 +659,7 @@ app.post('/api/admin/update/:id', async (req, res) => {
 
   saveMembers(members);
 
-  // ✅ APPROVAL MAIL (OPTIONAL – BREVO)
-  if (status === 'approved') {
-    const m = members[index];
-    const BASE_URL = process.env.BASE_URL || 'https://ambalnagar-ma5z.onrender.com';
-
-    await sendBrevoMail({
-      to: 'mnsambalnagar@gmail.com',
-      subject: `✅ Membership Approved | ${m.name}`,
-      html: `
-        <h2>Membership Approved</h2>
-        <p><b>Name:</b> ${m.name}</p>
-        <p><b>Mobile:</b> ${m.mobile}</p>
-        <p><b>Amount:</b> ₹200</p>
-        <p>Status: <b style="color:green">Approved</b></p>
-      `
-    });
-
-    // WhatsApp auto message
-    const whatsappMessage = `Sri Ambal Nagar Welfare Association
-
-${BASE_URL}/img/logo.png
-
-✅ MEMBERSHIP APPROVED
-
-👤 Name: ${m.name}
-📱 Mobile: ${m.mobile}
-💰 ₹200 Annual Membership ACTIVE`;
-
-    const whatsappLink =
-      `https://wa.me/91${m.mobile}?text=${encodeURIComponent(whatsappMessage)}`;
-
-    return res.json({
-      success: true,
-      whatsapp: whatsappLink,
-      message: 'Membership approved'
-    });
-  }
-
-  res.json({ success: true, message: `Status updated: ${status}` });
-});
+ 
 
 //==================================================
 //                 DYNAMIC QR CODE
