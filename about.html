@@ -182,30 +182,37 @@ main,section{padding-top:100px;}
 }
 .float-card{
   background:#fff;
-  border-radius:22px;
-  padding:18px 12px;
+  border-radius:18px;              /* ⬇️ slightly smaller */
+  padding:14px 10px;               /* ⬇️ card size reduced */
   text-align:center;
-  box-shadow:0 12px 30px rgba(15,23,42,0.15);
-  transition:.3s;
+  box-shadow:0 8px 20px rgba(15,23,42,0.12);
+  transition:0.3s;
+  width: 160px;                    /* ⬇️ card width control */
 }
+
 .float-card:hover{
-  transform:translateY(-6px);
+  transform:translateY(-4px);      /* ⬇️ subtle hover */
 }
+
 .float-card img{
-  width:70px;
-  height:70px;
+  width:82px;                      /* ⬆️ image slightly bigger */
+  height:82px;
   border-radius:50%;
   object-fit:cover;
-  border:4px solid var(--accent2);
-  margin-bottom:8px;
+  border:3px solid var(--accent2); /* ⬇️ border thinner */
+  margin-bottom:6px;
 }
+
 .float-card-name{
   font-weight:700;
+  font-size:0.95rem;               /* ⬇️ text slightly smaller */
 }
+
 .float-card-role{
-  font-size:0.85rem;
+  font-size:0.8rem;
   color:#6b7280;
 }
+
 
 /* ================= ACTIVITIES ================= */
 .activities-section{
@@ -335,6 +342,62 @@ footer{
       <div class="float-card-role">President</div>
     </div>
   </div>
+  
+    <div class="float-card">
+      <img src="img/shajhan.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Shajakan</div>
+      <div class="float-card-role">Excutive President</div>
+    </div>
+    <div class="float-card">
+      <img src="img/3.png" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Krishnamurthy K S</div>
+      <div class="float-card-role">Honorary President</div>
+    </div>
+    <div class="float-card">
+      <img src="img/davadass.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Devadass M K</div>
+      <div class="float-card-role">Speaker</div>
+    </div>
+    <div class="float-card">
+      <img src="img/2.png" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Ganesh AS</div>
+      <div class="float-card-role">Secretary</div>
+    </div>
+    <div class="float-card">
+      <img src="img/4.png" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Murali B</div>
+      <div class="float-card-role">Treasurer</div>
+    </div>
+    <div class="float-card">
+      <img src="img/1.png" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Saravanan D</div>
+      <div class="float-card-role">Administrator</div>
+    </div>
+       <div class="float-card">
+      <img src="img/karthi G.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Karthick G</div>
+      <div class="float-card-role">Deputy President</div>
+    </div>
+      <div class="float-card">
+      <img src="img/push.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Pushparaj V. LLB</div>
+      <div class="float-card-role">Legal Advisor</div>
+    </div>
+     <div class="float-card">
+      <img src="img/sathish babu.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Sathees Babu p</div>
+      <div class="float-card-role">Join Secretary</div>
+    </div>
+    <div class="float-card">
+      <img src="img/kani_raja.jpeg" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Kaniraja R</div>
+      <div class="float-card-role">Advisory Committee</div>
+    </div>
+    <div class="float-card">
+      <img src="img/profile-default.png" onerror="this.src='img/profile-default.png'">
+      <div class="float-card-name">Murugan R</div>
+      <div class="float-card-role">Advisory Committee</div>
+    </div>
 </section>
 
 <section class="activities-section">
