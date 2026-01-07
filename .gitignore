@@ -1,0 +1,9 @@
+node_modules/
+.env
+
+users.json
+members.json
+pending-applications.json
+
+uploads/
+public/uploads/
