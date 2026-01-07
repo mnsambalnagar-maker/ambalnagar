@@ -127,8 +127,12 @@ verifyBtn.addEventListener('click', async () => {
     return;
   }
 
-  localStorage.setItem('currentUser', JSON.stringify(data.user));
-  window.location.href = 'dashboard.html';
+ localStorage.setItem('currentUser', JSON.stringify(data.user));
+ window.location.replace('/dashboard');
+ 
+
+
+
 });
 </script>
 

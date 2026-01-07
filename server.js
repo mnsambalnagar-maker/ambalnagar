@@ -20,6 +20,9 @@ app.use('/img', express.static(path.join(__dirname, 'img')));
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.static(__dirname));
+
 
 
 
@@ -449,7 +452,7 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-// LOGIN STEP 1 – OTP IN BROWSER (NO MAIL)
+// LOGIN STEP 1 – OTP IN BROWSER
 // ===================================================
 app.post('/api/login-step1', (req, res) => {
   const { username, password, email } = req.body;
@@ -480,11 +483,10 @@ app.post('/api/login-step1', (req, res) => {
     JSON.stringify(users, null, 2)
   );
 
-  // 🔥 OTP DIRECT TO BROWSER
   res.json({
     success: true,
     message: 'OTP generated',
-    otp
+    otp // 🔥 browser-only
   });
 });
 
@@ -495,8 +497,14 @@ app.post('/api/login-step1', (req, res) => {
 app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
 
+  if (!email || !otp) {
+    return res.json({ success: false, message: 'Email and OTP required' });
+  }
+
   const users = loadUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  const user = users.find(
+    u => u.email && u.email.toLowerCase() === email.toLowerCase()
+  );
 
   if (!user || !user.otp) {
     return res.json({ success: false, message: 'OTP not generated' });
@@ -519,6 +527,7 @@ app.post('/api/login-step2', (req, res) => {
 
   res.json({
     success: true,
+    message: 'Login success',
     user: {
       username: user.username,
       name: user.name || user.username,
@@ -526,7 +535,11 @@ app.post('/api/login-step2', (req, res) => {
       role: user.role || 'admin'
     }
   });
+
+ 
 });
+
+
 
 
 
