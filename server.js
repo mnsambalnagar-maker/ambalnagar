@@ -513,69 +513,76 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//               OTP VERIFY (DEV MODE)
+// LOGIN STEP 1 – OTP IN BROWSER (NO MAIL)
 // ===================================================
-app.post('/api/login-step2', (req, res) => {
-  const { email, otp } = req.body;
+app.post('/api/login-step1', (req, res) => {
+  const { username, password, email } = req.body;
 
-  if (!email || !otp) {
-    return res.status(400).json({
-      success: false,
-      message: 'Email and OTP required'
-    });
+  if (!username || !password || !email) {
+    return res.json({ success: false, message: 'All fields required' });
   }
 
   const users = loadUsers();
-
-  const userIndex = users.findIndex(
-    u => String(u.email).toLowerCase() === String(email).toLowerCase()
+  const user = users.find(
+    u =>
+      u.username.toLowerCase() === username.toLowerCase() &&
+      u.password === password &&
+      u.email.toLowerCase() === email.toLowerCase()
   );
 
-  if (userIndex === -1 || !users[userIndex].otp) {
-    return res.status(400).json({
-      success: false,
-      message: 'OTP not generated'
-    });
+  if (!user) {
+    return res.json({ success: false, message: 'Invalid credentials' });
   }
 
-  const user = users[userIndex];
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
 
-  // ⏰ Expiry check
-  if (Date.now() > user.otpExpiry) {
-    user.otp = null;
-    user.otpExpiry = null;
-
-    fs.writeFileSync(
-      path.join(__dirname, 'users.json'),
-      JSON.stringify(users, null, 2)
-    );
-
-    return res.status(400).json({
-      success: false,
-      message: 'OTP expired'
-    });
-  }
-
-  // ❌ Wrong OTP
-  if (String(user.otp) !== String(otp)) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid OTP'
-    });
-  }
-
-  // ✅ SUCCESS → clear OTP
-  user.otp = null;
-  user.otpExpiry = null;
+  user.otp = otp;
+  user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
   fs.writeFileSync(
     path.join(__dirname, 'users.json'),
     JSON.stringify(users, null, 2)
   );
 
+  // 🔥 OTP DIRECT TO BROWSER
   res.json({
     success: true,
-    message: 'Login success',
+    message: 'OTP generated',
+    otp
+  });
+});
+
+
+// ===================================================
+// OTP VERIFY
+// ===================================================
+app.post('/api/login-step2', (req, res) => {
+  const { email, otp } = req.body;
+
+  const users = loadUsers();
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+  if (!user || !user.otp) {
+    return res.json({ success: false, message: 'OTP not generated' });
+  }
+
+  if (Date.now() > user.otpExpiry) {
+    user.otp = null;
+    user.otpExpiry = null;
+    fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+    return res.json({ success: false, message: 'OTP expired' });
+  }
+
+  if (user.otp !== otp) {
+    return res.json({ success: false, message: 'Invalid OTP' });
+  }
+
+  user.otp = null;
+  user.otpExpiry = null;
+  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+
+  res.json({
+    success: true,
     user: {
       username: user.username,
       name: user.name || user.username,

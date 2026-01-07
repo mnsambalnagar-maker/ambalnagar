@@ -77,98 +77,61 @@ const otpBox = document.getElementById('otpBox');
 const otpInput = document.getElementById('otp');
 const verifyBtn = document.getElementById('verifyBtn');
 const otpMsg = document.getElementById('otpMsg');
+
 let step1Email = '';
 
-/* ===== STEP 1: SEND OTP ===== */
 loginForm.addEventListener('submit', async (e) => {
   e.preventDefault();
 
   const username = document.getElementById('username').value.trim();
   const password = document.getElementById('password').value.trim();
-  const email    = document.getElementById('email').value.trim();
+  const email = document.getElementById('email').value.trim();
 
-  if (!username || !password || !email) {
+  const res = await fetch('/api/login-step1', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password, email })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
     otpMsg.style.color = 'red';
-    otpMsg.textContent = 'Please fill all fields';
+    otpMsg.textContent = data.message;
     return;
   }
 
-  otpMsg.style.color = '#2563eb';
-  otpMsg.textContent = 'Sending OTP...';
+  // 🔥 SHOW OTP IN BROWSER
+  alert('Your OTP is: ' + data.otp);
 
-  try {
-    const res = await fetch('/api/login-step1', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password, email })
-    });
-
-    const text = await res.text();   // 🔥 IMPORTANT
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      throw new Error('Invalid JSON from server');
-    }
-
-    if (!data.success) {
-      otpMsg.style.color = '#dc2626';
-      otpMsg.textContent = data.message || 'Login failed';
-      return;
-    }
-
-    // ✅ FORCE SHOW OTP BOX
-    step1Email = email;
-    otpBox.style.display = 'block';
-    otpMsg.style.color = '#16a34a';
-    otpMsg.textContent = 'OTP sent. Check Email / Spam';
-
-  } catch (err) {
-    otpBox.style.display = 'block';   // 🔥 EVEN IF ERROR
-    otpMsg.style.color = '#16a34a';
-    otpMsg.textContent = 'OTP sent. Check Email / Spam';
-    console.error(err);
-  }
+  step1Email = email;
+  otpBox.style.display = 'block';
+  otpMsg.style.color = 'green';
+  otpMsg.textContent = 'Enter OTP shown above';
 });
 
-/* ===== STEP 2: VERIFY OTP ===== */
 verifyBtn.addEventListener('click', async () => {
   const otp = otpInput.value.trim();
 
-  if (!otp || !step1Email) {
-    otpMsg.style.color = '#dc2626';
-    otpMsg.textContent = 'Enter OTP';
+  const res = await fetch('/api/login-step2', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email: step1Email, otp })
+  });
+
+  const data = await res.json();
+
+  if (!data.success) {
+    otpMsg.style.color = 'red';
+    otpMsg.textContent = data.message;
     return;
   }
 
-  otpMsg.style.color = '#2563eb';
-  otpMsg.textContent = 'Verifying...';
-
-  try {
-    const res = await fetch('/api/login-step2', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: step1Email, otp })
-    });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      otpMsg.style.color = '#dc2626';
-      otpMsg.textContent = data.message || 'Invalid OTP';
-      return;
-    }
-
-    localStorage.setItem('currentUser', JSON.stringify(data.user));
-    window.location.href = 'dashboard.html';
-
-  } catch {
-    otpMsg.style.color = '#dc2626';
-    otpMsg.textContent = 'Server error';
-  }
+  localStorage.setItem('currentUser', JSON.stringify(data.user));
+  window.location.href = 'dashboard.html';
 });
 </script>
+
 
 
 </body>
