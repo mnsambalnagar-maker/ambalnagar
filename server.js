@@ -53,29 +53,6 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-
-async function sendBrevoMail({ to, subject, text, html }) {
-  const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: {
-      'accept': 'application/json',
-      'content-type': 'application/json',
-      'api-key': BREVO_API_KEY
-    },
-    body: JSON.stringify({
-      sender: { name: 'Sri Ambal Nagar', email: 'no-reply@sriambalnagar.org' },
-      to: [{ email: to }],
-      subject,
-      textContent: text,
-      htmlContent: html
-    })
-  });
-
-  if (!res.ok) {
-    throw new Error(await res.text());
-  }
-}
 
 
 
@@ -536,13 +513,16 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//           TWO-STEP LOGIN (SMTP)
+//           LOGIN STEP 1 (OTP IN BROWSER)
 // ===================================================
-app.post('/api/login-step1', async (req, res) => {
+app.post('/api/login-step1', (req, res) => {
   const { username, password, email } = req.body;
 
   if (!username || !password || !email) {
-    return res.status(400).json({ success: false, message: 'All fields required' });
+    return res.status(400).json({
+      success: false,
+      message: 'All fields required'
+    });
   }
 
   const users = loadUsers();
@@ -554,10 +534,15 @@ app.post('/api/login-step1', async (req, res) => {
   );
 
   if (!user) {
-    return res.status(400).json({ success: false, message: 'Invalid credentials' });
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid credentials'
+    });
   }
 
+  // ✅ OTP GENERATE
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
+
   user.otp = otp;
   user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
@@ -566,28 +551,13 @@ app.post('/api/login-step1', async (req, res) => {
     JSON.stringify(users, null, 2)
   );
 
-  try {
-    await sendBrevoMail({
-  to: user.email,
-  subject: 'Sri Ambal Nagar Login OTP',
-  text: `Your OTP is ${otp}. Valid for 5 minutes.`,
-  html: `
-    <h2>Sri Ambal Nagar Login OTP</h2>
-    <p>Your OTP is:</p>
-    <h1 style="letter-spacing:4px">${otp}</h1>
-    <p>Valid for 5 minutes</p>
-  `
+  // ✅ OTP RETURN TO BROWSER
+  res.json({
+    success: true,
+    message: 'OTP generated',
+    otp: otp   // 🔥 DIRECT OTP
+  });
 });
-
-
-    res.json({ success: true, message: 'OTP sent to email' });
-  } catch (err) {
-    console.error('❌ OTP MAIL ERROR:', err.message);
-    res.status(500).json({ success: false, message: 'OTP mail failed' });
-  }
-});
-
-
 // ===================================================
 //               OTP VERIFY
 // ===================================================
@@ -595,30 +565,54 @@ app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
 
   if (!email || !otp) {
-    return res.status(400).json({ success: false, message: 'Email and OTP required' });
+    return res.status(400).json({
+      success: false,
+      message: 'Email and OTP required'
+    });
   }
 
   const users = loadUsers();
-  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+  const user = users.find(
+    u => u.email.toLowerCase() === email.toLowerCase()
+  );
 
   if (!user || !user.otp) {
-    return res.status(400).json({ success: false, message: 'OTP not requested' });
+    return res.status(400).json({
+      success: false,
+      message: 'OTP not generated'
+    });
   }
 
   if (Date.now() > user.otpExpiry) {
     user.otp = null;
     user.otpExpiry = null;
-    fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
-    return res.status(400).json({ success: false, message: 'OTP expired' });
+
+    fs.writeFileSync(
+      path.join(__dirname, 'users.json'),
+      JSON.stringify(users, null, 2)
+    );
+
+    return res.status(400).json({
+      success: false,
+      message: 'OTP expired'
+    });
   }
 
   if (user.otp !== otp) {
-    return res.status(400).json({ success: false, message: 'Invalid OTP' });
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid OTP'
+    });
   }
 
+  // ✅ SUCCESS
   user.otp = null;
   user.otpExpiry = null;
-  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+
+  fs.writeFileSync(
+    path.join(__dirname, 'users.json'),
+    JSON.stringify(users, null, 2)
+  );
 
   res.json({
     success: true,
@@ -631,6 +625,7 @@ app.post('/api/login-step2', (req, res) => {
     }
   });
 });
+
 
 
 
