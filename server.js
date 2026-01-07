@@ -223,68 +223,111 @@ app.delete('/api/deleteUser/:username', (req, res) => {
     res.json({ success: false, message: 'Delete failed' });
   }
 });
-
 // ===================================================
-//         CONTACT WITH FILE UPLOAD (SMTP MAIL)
+//        CONTACT FILE UPLOAD CONFIG (MULTER)
 // ===================================================
-
-app.post('/api/contact-with-file', contactUpload.array('attachments', 10), async (req, res) => {
-  const { name, email, mobile, message } = req.body;
-
-  if (!name || !email || !mobile || !message) {
-    return res.status(400).json({ success: false, message: 'All fields required' });
-  }
-
-  let filesList = '';
-  if (req.files?.length) {
-    filesList = req.files.map(f => f.originalname).join(', ');
-  }
-
-  try {
-    await transporter.sendMail({
-      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
-      to: 'mnsambalnagar@gmail.com',
-      subject: `📩 New Contact Message – ${name}`,
-      html: `
-        <h2>New Contact Message</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Mobile:</b> ${mobile}</p>
-        <p><b>Message:</b><br>${message}</p>
-        <p><b>Attachments:</b> ${filesList || 'No files'}</p>
-      `
-    });
-
-    res.json({ success: true, message: 'Message sent successfully' });
-  } catch (err) {
-    console.error('❌ Contact mail error:', err.message);
-    res.status(500).json({ success: false, message: 'Mail failed' });
+const contactStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
+    if (!fs.existsSync(uploadDir)) {
+      fs.mkdirSync(uploadDir, { recursive: true });
+    }
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const safeName =
+      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, safeName);
   }
 });
 
-/* ---------- SIMPLE CONTACT ---------- */
-app.post('/api/contact', async (req, res) => {
-  const { name, email, message } = req.body;
-
-  try {
-    await transporter.sendMail({
-      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
-      to: 'mnsambalnagar@gmail.com',
-      subject: `📩 Contact – ${name}`,
-      html: `
-        <h2>Contact Message</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p>${message}</p>
-      `
-    });
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error('❌ Contact mail error:', err.message);
-    res.status(500).json({ success: false });
+const contactUpload = multer({
+  storage: contactStorage,
+  limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
+  fileFilter: (req, file, cb) => {
+    const allowed = [
+      'image/jpeg',
+      'image/png',
+      'image/jpg',
+      'application/pdf'
+    ];
+    if (allowed.includes(file.mimetype)) cb(null, true);
+    else cb(new Error('Only JPG, PNG, PDF allowed'));
   }
 });
+
+
+// ===================================================
+//         CONTACT WITH FILE UPLOAD (BREVO API MAIL)
+// ===================================================
+app.post(
+  '/api/contact-with-file',
+  contactUpload.array('attachments', 10),
+  async (req, res) => {
+    try {
+      const { name, email, mobile, message } = req.body;
+
+      // 🔍 Validation
+      if (!name || !email || !mobile || !message) {
+        return res.status(400).json({
+          success: false,
+          message: 'All fields required'
+        });
+      }
+
+      if (!/^\d{10}$/.test(mobile)) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid mobile number'
+        });
+      }
+
+      // 📎 File list
+      const filesList =
+        req.files && req.files.length
+          ? req.files.map(f => f.originalname).join(', ')
+          : 'No files';
+
+      // 📧 Brevo Mail
+      await sendBrevoMail({
+        to: 'mnsambalnagar@gmail.com',
+        subject: `📩 New Contact Message – ${name}`,
+        text: `
+Name   : ${name}
+Email  : ${email}
+Mobile : ${mobile}
+
+Message:
+${message}
+
+Attachments:
+${filesList}
+        `,
+        html: `
+          <h2>New Contact Message</h2>
+          <p><b>Name:</b> ${name}</p>
+          <p><b>Email:</b> ${email}</p>
+          <p><b>Mobile:</b> ${mobile}</p>
+          <p><b>Message:</b><br>${message}</p>
+          <p><b>Attachments:</b> ${filesList}</p>
+        `
+      });
+
+      res.json({
+        success: true,
+        message: 'Message sent successfully'
+      });
+    } catch (err) {
+      console.error('❌ Contact mail error:', err.message);
+      res.status(500).json({
+        success: false,
+        message: 'Mail failed'
+      });
+    }
+  }
+);
+
+
 
 
 // ===================================================
