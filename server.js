@@ -233,11 +233,9 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 // ===================================================
 const contactStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
-    }
-    cb(null, uploadDir);
+    const dir = path.join(__dirname, 'public/uploads/contacts');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
   },
   filename: (req, file, cb) => {
     const safeName =
@@ -249,16 +247,7 @@ const contactStorage = multer.diskStorage({
 const contactUpload = multer({
   storage: contactStorage,
   limits: { fileSize: 25 * 1024 * 1024 }, // 25MB
-  fileFilter: (req, file, cb) => {
-    const allowed = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only JPG, PNG, PDF allowed'));
-  }
 });
-
-// ===================================================
-//         CONTACT WITH FILE UPLOAD (BREVO API MAIL)
-// ===================================================
 app.post(
   '/api/contact-with-file',
   contactUpload.array('attachments', 10),
@@ -266,40 +255,25 @@ app.post(
     try {
       const { name, email, mobile, message } = req.body;
 
-      // 🔍 Validation
       if (!name || !email || !mobile || !message) {
-        return res.status(400).json({
-          success: false,
-          message: 'All fields required'
-        });
+        return res.status(400).json({ success: false, message: 'All fields required' });
       }
 
-      if (!/^\d{10}$/.test(mobile)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Invalid mobile number'
-        });
-      }
-
-      // 📎 File list
       const filesList =
-        req.files && req.files.length
-          ? req.files.map(f => f.originalname).join(', ')
-          : 'No files';
+        req.files?.length ? req.files.map(f => f.originalname).join(', ') : 'No files';
 
-      // 📧 Brevo Mail
       await sendBrevoMail({
         to: 'mnsambalnagar@gmail.com',
         subject: `📩 New Contact Message – ${name}`,
         text: `
-Name   : ${name}
-Email  : ${email}
-Mobile : ${mobile}
+Name: ${name}
+Email: ${email}
+Mobile: ${mobile}
 
 Message:
 ${message}
 
-Attachments:
+Files:
 ${filesList}
         `,
         html: `
@@ -312,58 +286,13 @@ ${filesList}
         `
       });
 
-      res.json({
-        success: true,
-        message: 'Message sent successfully'
-      });
+      res.json({ success: true, message: 'Message sent successfully' });
     } catch (err) {
-      console.error('❌ Contact mail error:', err.message);
-      res.status(500).json({
-        success: false,
-        message: 'Mail failed'
-      });
+      console.error(err);
+      res.status(500).json({ success: false, message: 'Mail failed' });
     }
   }
 );
-
-// ===================================================
-//           SIMPLE CONTACT (NO FILE)
-// ===================================================
-app.post('/api/contact', async (req, res) => {
-  try {
-    const { name, email, message } = req.body;
-
-    if (!name || !email || !message) {
-      return res.status(400).json({
-        success: false,
-        message: 'All fields required'
-      });
-    }
-
-    await sendBrevoMail({
-      to: 'mnsambalnagar@gmail.com',
-      subject: `📩 Contact Message – ${name}`,
-      text: `
-Name  : ${name}
-Email : ${email}
-
-Message:
-${message}
-      `,
-      html: `
-        <h2>Contact Message</h2>
-        <p><b>Name:</b> ${name}</p>
-        <p><b>Email:</b> ${email}</p>
-        <p><b>Message:</b><br>${message}</p>
-      `
-    });
-
-    res.json({ success: true, message: 'Message sent successfully' });
-  } catch (err) {
-    console.error('❌ Contact mail error:', err.message);
-    res.status(500).json({ success: false, message: 'Mail failed' });
-  }
-});
 
 
 
@@ -638,15 +567,18 @@ app.post('/api/login-step1', async (req, res) => {
   );
 
   try {
-    await transporter.sendMail({
-      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
-      to: user.email,
-      subject: 'Sri Ambal Nagar Login OTP',
-      html: `
-        <h2>Your OTP: ${otp}</h2>
-        <p>Valid for 5 minutes</p>
-      `
-    });
+    await sendBrevoMail({
+  to: user.email,
+  subject: 'Sri Ambal Nagar Login OTP',
+  text: `Your OTP is ${otp}. Valid for 5 minutes.`,
+  html: `
+    <h2>Sri Ambal Nagar Login OTP</h2>
+    <p>Your OTP is:</p>
+    <h1 style="letter-spacing:4px">${otp}</h1>
+    <p>Valid for 5 minutes</p>
+  `
+});
+
 
     res.json({ success: true, message: 'OTP sent to email' });
   } catch (err) {
