@@ -10,6 +10,12 @@
     if (!localStorage.getItem('currentUser')) window.location.replace('/login');;
     history.pushState(null, null, location.href);
     window.onpopstate = () => history.go(1);
+    
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('/login.html');
+  }
+
+
   </script>
   <style>
     :root {
