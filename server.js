@@ -53,44 +53,43 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+/* ===================================================
+   BREVO API MAIL (NO SMTP)
+=================================================== */
+const BREVO_API_KEY = process.env.BREVO_API_KEY;
+const BASE_URL = process.env.BASE_URL || 'https://ambalnagar-ma5z.onrender.com';
 
+async function sendBrevoMail({ to, subject, text, html }) {
+  try {
+    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
+      method: 'POST',
+      headers: {
+        accept: 'application/json',
+        'content-type': 'application/json',
+        'api-key': BREVO_API_KEY
+      },
+      body: JSON.stringify({
+        sender: {
+          name: 'Sri Ambal Nagar',
+          email: 'no-reply@sriambalnagar.org'
+        },
+        to: [{ email: to }],
+        subject,
+        textContent: text,
+        htmlContent: html
+      })
+    });
 
+    if (!res.ok) {
+      const e = await res.text();
+      throw new Error(e);
+    }
 
-
-
-
-// ===================================================
-//           MAIL TRANSPORT - FIXED SMTP
-// ===================================================
-
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: false, // ✅ MUST be false for port 587
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  },
-  connectionTimeout: 20000,
-  greetingTimeout: 20000
-});
-
-// 🔍 SMTP CHECK (RUNS ON SERVER START)
-transporter.verify((err, success) => {
-  if (err) {
-    console.error('❌ SMTP CONFIG ERROR:', err.message);
-  } else {
-    console.log('✅ SMTP READY (Brevo)');
+    console.log('✅ BREVO MAIL SENT →', to);
+  } catch (err) {
+    console.error('❌ BREVO MAIL ERROR:', err.message);
   }
-});
-
-
-
-
-
+}
 
 // ---------------------------------------------------
 // Helpers
@@ -240,7 +239,7 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 });
 
 // ===================================================
-//         CONTACT WITH FILE UPLOAD
+//         CONTACT WITH FILE UPLOAD (BREVO API)
 // ===================================================
 const contactStorage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -255,7 +254,7 @@ const contactStorage = multer.diskStorage({
   }
 });
 
-const contactUpload = multer({ 
+const contactUpload = multer({
   storage: contactStorage,
   limits: { fileSize: 25 * 1024 * 1024 },
   fileFilter: (req, file, cb) => {
@@ -264,94 +263,87 @@ const contactUpload = multer({
       'application/pdf', 'video/mp4', 'video/quicktime', 'video/x-msvideo'
     ];
     if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only images, PDF, MP4/MOV/AVI allowed (max 25MB per file)'));
+    else cb(new Error('Only images, PDF, MP4/MOV/AVI allowed'));
   }
 });
 
-app.post('/api/contact-with-file', contactUpload.array('attachments', 10), (req, res) => {
-  const { name, mobile, message } = req.body;
+/* ---------- CONTACT WITH FILE ---------- */
+app.post('/api/contact-with-file', contactUpload.array('attachments', 10), async (req, res) => {
+  const { name, email, mobile, message } = req.body;
 
-  if (!name || !mobile || !message) {
-    return res.status(400).json({ success: false, message: 'Please fill all fields' });
+  if (!name || !email || !mobile || !message) {
+    return res.status(400).json({ success: false, message: 'All fields required' });
   }
 
-  if (!/^[A-Za-z\s]+$/.test(String(name))) {
-    return res.status(400).json({ success: false, message: 'Name should contain letters only' });
+  if (!/^[A-Za-z\s]+$/.test(name)) {
+    return res.status(400).json({ success: false, message: 'Name must contain letters only' });
   }
 
-  if (!/^\d{10}$/.test(String(mobile))) {
+  if (!/^\d{10}$/.test(mobile)) {
     return res.status(400).json({ success: false, message: 'Mobile must be 10 digits' });
   }
 
-  let attachments = [];
+  let filesList = '';
   if (req.files && req.files.length) {
-    attachments = req.files.map(f => ({
-      filename: f.originalname,
-      path: path.join(__dirname, 'public/uploads/contacts', f.filename),
-      contentType: f.mimetype
-    }));
+    filesList = req.files.map(f => f.originalname).join(', ');
   }
 
-const mailOptions = {
-  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
-  to: 'mnsambalnagar@gmail.com',
-  replyTo: email,
-  subject: `New Contact Message from ${name}`,
-  text: `
+  await sendBrevoMail({
+    to: 'mnsambalnagar@gmail.com',
+    subject: `New Contact Message (With File) – ${name}`,
+    text: `
+Name   : ${name}
+Email  : ${email}
+Mobile : ${mobile}
+
+Message:
+${message}
+
+Attachments:
+${filesList || 'No files'}
+`,
+    html: `
+      <h2>New Contact Message</h2>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Mobile:</b> ${mobile}</p>
+      <p><b>Message:</b><br>${message}</p>
+      <p><b>Attachments:</b> ${filesList || 'No files'}</p>
+    `
+  });
+
+  res.json({ success: true, message: 'Message sent successfully' });
+});
+
+/* ---------- SIMPLE CONTACT (NO FILE) ---------- */
+app.post('/api/contact', async (req, res) => {
+  const { name, email, message } = req.body;
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ success: false, message: 'All fields required' });
+  }
+
+  await sendBrevoMail({
+    to: 'mnsambalnagar@gmail.com',
+    subject: `New Contact Message – ${name}`,
+    text: `
 Name   : ${name}
 Email  : ${email}
 
 Message:
 ${message}
-`
-};
-
-
-
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err) {
-      console.error('❌ CONTACT Email error:', err);
-      // DEV MODE: Don't crash, just log
-      return res.json({ success: true, message: 'Email failed (Dev Mode: Checked Console)' });
-    }
-    console.log('✅ CONTACT Email sent:', info.messageId);
-    res.json({ success: true, message: 'Email sent successfully' });
+`,
+    html: `
+      <h2>New Contact Message</h2>
+      <p><b>Name:</b> ${name}</p>
+      <p><b>Email:</b> ${email}</p>
+      <p><b>Message:</b><br>${message}</p>
+    `
   });
+
+  res.json({ success: true, message: 'Message sent successfully' });
 });
 
-app.post('/api/contact', (req, res) => {
-  const { name, email, message } = req.body;
-
-  if (!name || !email || !message) {
-    return res.status(400).json({ success: false, message: 'Please fill all fields' });
-  }
-
-  const mailOptions = {
-  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
-  to: 'mnsambalnagar@gmail.com',   // admin receive mail
-  replyTo: email,                 // user email (important)
-  subject: `New Contact Message from ${name}${attachments.length ? ' (with attachments)' : ''}`,
-  text: `
-  Name   : ${name}
-  Mobile : ${mobile}
-  Email  : ${email}
-
-  Message:
-  ${message}
-  `,
-  attachments
-};
-
-
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err) {
-      console.error('❌ CONTACT Email error:', err);
-      return res.status(500).json({ success: false, message: 'Failed to send email' });
-    }
-    console.log('✅ CONTACT Email sent:', info.messageId);
-    res.json({ success: true, message: 'Email sent successfully' });
-  });
-});
 
 // ===================================================
 //                     EVENTS SECTION
@@ -638,7 +630,7 @@ app.post('/api/login-step1', (req, res) => {
   console.log(`📨 OTP GENERATED → ${user.email}`);
 
  const mailOptions = {
-  from: `"Sri Ambal Nagar" <no-reply@smtp-brevo.com>`,
+  from: `"Sri Ambal Nagar" <mnsambalnagar@gmail.com>`,
   to: user.email,
   replyTo: 'mnsambalnagar@gmail.com', // optional but good
   subject: 'Sri Ambal Nagar Login OTP',
@@ -738,6 +730,7 @@ app.post('/api/login-step2', (req, res) => {
     }
   });
 });
+
 
 
 // ===================================================
@@ -1016,10 +1009,6 @@ app.get('/api/visitors', (req, res) => {
 
   res.json({ count: visitorCount });
 });
-
-
-
-
 
 // ===================================================
 //                  START SERVER
