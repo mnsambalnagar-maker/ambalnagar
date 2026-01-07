@@ -4,7 +4,6 @@ const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
 const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
 const QRCode = require('qrcode');
 const app = express();
 require('dotenv').config();
@@ -583,79 +582,44 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//           TWO-STEP LOGIN (ALL ROLES ALLOWED)
+//           TWO-STEP LOGIN (BREVO API)
 // ===================================================
-app.post('/api/login-step1', (req, res) => {
+app.post('/api/login-step1', async (req, res) => {
   const { username, password, email } = req.body;
 
-  console.log('🔍 LOGIN ATTEMPT:', { username, email });
-
   if (!username || !password || !email) {
-    return res.status(400).json({
-      success: false,
-      message: 'All fields required'
-    });
+    return res.status(400).json({ success: false, message: 'All fields required' });
   }
 
   const users = loadUsers();
   const user = users.find(
     u =>
-      String(u.username).toLowerCase() === String(username).toLowerCase() &&
-      String(u.password) === String(password) &&
-      String(u.email).toLowerCase() === String(email).toLowerCase()
+      u.username.toLowerCase() === username.toLowerCase() &&
+      u.password === password &&
+      u.email.toLowerCase() === email.toLowerCase()
   );
 
   if (!user) {
-    console.log('❌ INVALID LOGIN');
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid credentials'
-    });
+    return res.status(400).json({ success: false, message: 'Invalid credentials' });
   }
 
-  console.log('✅ USER FOUND:', user.username);
-
-  // 🔐 Generate OTP
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  const expiry = Date.now() + 5 * 60 * 1000;
-
   user.otp = otp;
-  user.otpExpiry = expiry;
+  user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
-  fs.writeFileSync(
-    path.join(__dirname, 'users.json'),
-    JSON.stringify(users, null, 2)
-  );
+  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
 
-  console.log(`📨 OTP GENERATED → ${user.email}`);
-
- const mailOptions = {
-  from: `"Sri Ambal Nagar" <mnsambalnagar@gmail.com>`,
-  to: user.email,
-  replyTo: 'mnsambalnagar@gmail.com', // optional but good
-  subject: 'Sri Ambal Nagar Login OTP',
-  text: `Your login OTP is ${otp}. It is valid for 5 minutes.`
- };
-
-
-  transporter.sendMail(mailOptions, (err, info) => {
-    if (err) {
-  console.error('❌ OTP EMAIL FAILED:', err.message);
-
-  // Still allow OTP entry (Brevo delay safety)
-  return res.json({
-    success: true,
-    message: 'OTP generated. Please check email (Inbox / Spam).'
+  // ✅ BREVO API MAIL
+  await sendBrevoMail({
+    to: user.email,
+    subject: 'Sri Ambal Nagar Login OTP',
+    text: `Your OTP is ${otp}. Valid for 5 minutes.`,
+    html: `<h2>Your OTP: ${otp}</h2><p>Valid for 5 minutes</p>`
   });
-}
 
-    console.log('✅ OTP EMAIL SENT:', info.messageId);
-    res.json({
-      success: true,
-      message: 'OTP sent to your email. Check Inbox / Spam.'
-    });
-  });
+  res.json({ success: true, message: 'OTP sent' });
 });
+
 
 
 // ===================================================
@@ -838,8 +802,8 @@ function saveMembers(data) {
   fs.writeFileSync(MEMBERS_FILE, JSON.stringify(data, null, 2));
 }
 
-// 🆕 MEMBERSHIP APPLICATION
-app.post('/api/submit-membership', (req, res) => {
+// 🆕 MEMBERSHIP APPLICATION (BREVO API MAIL)
+app.post('/api/submit-membership', async (req, res) => {
   const { name, mobile, refId } = req.body;
 
   console.log('🆕 MEMBERSHIP APPLY:', name, mobile, refId);
@@ -870,10 +834,9 @@ app.post('/api/submit-membership', (req, res) => {
   members.push(newMember);
   saveMembers(members);
 
-  // 📧 EMAIL ADMIN (FAIL SAFE)
-  transporter.sendMail({
-    from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
-    to: process.env.SMTP_USER,
+  /* 📧 ADMIN MAIL – BREVO API */
+  await sendBrevoMail({
+    to: 'mnsambalnagar@gmail.com',
     subject: `🆕 Membership Application | ${name}`,
     html: `
       <h2>New Membership Application</h2>
@@ -881,10 +844,8 @@ app.post('/api/submit-membership', (req, res) => {
       <p><b>Mobile:</b> ${mobile}</p>
       <p><b>Payment Ref:</b> ${refId}</p>
       <p><b>Amount:</b> ₹200</p>
-      <p>Status: <span style="color:red">Pending</span></p>
+      <p>Status: <b style="color:red">Pending</b></p>
     `
-  }, err => {
-    if (err) console.error('❌ Membership email error:', err.message);
   });
 
   res.json({
@@ -903,7 +864,7 @@ app.get('/api/admin/applications', (req, res) => {
 });
 
 // 🔥 ADMIN – APPROVE / REJECT MEMBERSHIP
-app.post('/api/admin/update/:id', (req, res) => {
+app.post('/api/admin/update/:id', async (req, res) => {
   const { id } = req.params;
   const { status } = req.body;
 
@@ -923,11 +884,24 @@ app.post('/api/admin/update/:id', (req, res) => {
 
   saveMembers(members);
 
-  // ✅ WhatsApp auto message on approval
+  // ✅ APPROVAL MAIL (OPTIONAL – BREVO)
   if (status === 'approved') {
     const m = members[index];
-    const BASE_URL = process.env.BASE_URL || 'https://yourdomain.com';
+    const BASE_URL = process.env.BASE_URL || 'https://ambalnagar-ma5z.onrender.com';
 
+    await sendBrevoMail({
+      to: 'mnsambalnagar@gmail.com',
+      subject: `✅ Membership Approved | ${m.name}`,
+      html: `
+        <h2>Membership Approved</h2>
+        <p><b>Name:</b> ${m.name}</p>
+        <p><b>Mobile:</b> ${m.mobile}</p>
+        <p><b>Amount:</b> ₹200</p>
+        <p>Status: <b style="color:green">Approved</b></p>
+      `
+    });
+
+    // WhatsApp auto message
     const whatsappMessage = `Sri Ambal Nagar Welfare Association
 
 ${BASE_URL}/img/logo.png
