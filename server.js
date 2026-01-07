@@ -7,6 +7,7 @@ const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
 const app = express();
 require('dotenv').config();
+const nodemailer = require('nodemailer');
 
 
 
@@ -52,43 +53,29 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-/* ===================================================
-   BREVO API MAIL (NO SMTP)
-=================================================== */
-const BREVO_API_KEY = process.env.BREVO_API_KEY;
-const BASE_URL = process.env.BASE_URL || 'https://ambalnagar-ma5z.onrender.com';
-
-async function sendBrevoMail({ to, subject, text, html }) {
-  try {
-    const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-        'api-key': BREVO_API_KEY
-      },
-      body: JSON.stringify({
-        sender: {
-          name: 'Sri Ambal Nagar',
-          email: 'no-reply@sriambalnagar.org'
-        },
-        to: [{ email: to }],
-        subject,
-        textContent: text,
-        htmlContent: html
-      })
-    });
-
-    if (!res.ok) {
-      const e = await res.text();
-      throw new Error(e);
-    }
-
-    console.log('✅ BREVO MAIL SENT →', to);
-  } catch (err) {
-    console.error('❌ BREVO MAIL ERROR:', err.message);
+// ===================================================
+//           SMTP TRANSPORT (BREVO)
+// ===================================================
+const transporter = nodemailer.createTransport({
+  host: 'smtp-relay.brevo.com',
+  port: 587,
+  secure: false,
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS
   }
-}
+});
+
+// Optional check (safe)
+transporter.verify((err, success) => {
+  if (err) {
+    console.error('❌ SMTP ERROR:', err.message);
+  } else {
+    console.log('✅ SMTP READY (Brevo)');
+  }
+});
+
+
 
 // ---------------------------------------------------
 // Helpers
@@ -238,35 +225,9 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 });
 
 // ===================================================
-//         CONTACT WITH FILE UPLOAD (BREVO API)
+//         CONTACT WITH FILE UPLOAD (SMTP MAIL)
 // ===================================================
-const contactStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads/contacts');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safeName = (req.body.name || 'contact').replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, `${safeName}_${Date.now()}${ext}`);
-  }
-});
 
-const contactUpload = multer({
-  storage: contactStorage,
-  limits: { fileSize: 25 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const allowed = [
-      'image/jpeg', 'image/png', 'image/gif', 'image/jpg',
-      'application/pdf', 'video/mp4', 'video/quicktime', 'video/x-msvideo'
-    ];
-    if (allowed.includes(file.mimetype)) cb(null, true);
-    else cb(new Error('Only images, PDF, MP4/MOV/AVI allowed'));
-  }
-});
-
-/* ---------- CONTACT WITH FILE ---------- */
 app.post('/api/contact-with-file', contactUpload.array('attachments', 10), async (req, res) => {
   const { name, email, mobile, message } = req.body;
 
@@ -274,73 +235,55 @@ app.post('/api/contact-with-file', contactUpload.array('attachments', 10), async
     return res.status(400).json({ success: false, message: 'All fields required' });
   }
 
-  if (!/^[A-Za-z\s]+$/.test(name)) {
-    return res.status(400).json({ success: false, message: 'Name must contain letters only' });
-  }
-
-  if (!/^\d{10}$/.test(mobile)) {
-    return res.status(400).json({ success: false, message: 'Mobile must be 10 digits' });
-  }
-
   let filesList = '';
-  if (req.files && req.files.length) {
+  if (req.files?.length) {
     filesList = req.files.map(f => f.originalname).join(', ');
   }
 
-  await sendBrevoMail({
-    to: 'mnsambalnagar@gmail.com',
-    subject: `New Contact Message (With File) – ${name}`,
-    text: `
-Name   : ${name}
-Email  : ${email}
-Mobile : ${mobile}
+  try {
+    await transporter.sendMail({
+      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
+      to: 'mnsambalnagar@gmail.com',
+      subject: `📩 New Contact Message – ${name}`,
+      html: `
+        <h2>New Contact Message</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p><b>Mobile:</b> ${mobile}</p>
+        <p><b>Message:</b><br>${message}</p>
+        <p><b>Attachments:</b> ${filesList || 'No files'}</p>
+      `
+    });
 
-Message:
-${message}
-
-Attachments:
-${filesList || 'No files'}
-`,
-    html: `
-      <h2>New Contact Message</h2>
-      <p><b>Name:</b> ${name}</p>
-      <p><b>Email:</b> ${email}</p>
-      <p><b>Mobile:</b> ${mobile}</p>
-      <p><b>Message:</b><br>${message}</p>
-      <p><b>Attachments:</b> ${filesList || 'No files'}</p>
-    `
-  });
-
-  res.json({ success: true, message: 'Message sent successfully' });
+    res.json({ success: true, message: 'Message sent successfully' });
+  } catch (err) {
+    console.error('❌ Contact mail error:', err.message);
+    res.status(500).json({ success: false, message: 'Mail failed' });
+  }
 });
 
-/* ---------- SIMPLE CONTACT (NO FILE) ---------- */
+/* ---------- SIMPLE CONTACT ---------- */
 app.post('/api/contact', async (req, res) => {
   const { name, email, message } = req.body;
 
-  if (!name || !email || !message) {
-    return res.status(400).json({ success: false, message: 'All fields required' });
+  try {
+    await transporter.sendMail({
+      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
+      to: 'mnsambalnagar@gmail.com',
+      subject: `📩 Contact – ${name}`,
+      html: `
+        <h2>Contact Message</h2>
+        <p><b>Name:</b> ${name}</p>
+        <p><b>Email:</b> ${email}</p>
+        <p>${message}</p>
+      `
+    });
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error('❌ Contact mail error:', err.message);
+    res.status(500).json({ success: false });
   }
-
-  await sendBrevoMail({
-    to: 'mnsambalnagar@gmail.com',
-    subject: `New Contact Message – ${name}`,
-    text: `
-Name   : ${name}
-Email  : ${email}
-
-Message:
-${message}
-`,
-    html: `
-      <h2>New Contact Message</h2>
-      <p><b>Name:</b> ${name}</p>
-      <p><b>Email:</b> ${email}</p>
-      <p><b>Message:</b><br>${message}</p>
-    `
-  });
-
-  res.json({ success: true, message: 'Message sent successfully' });
 });
 
 
@@ -582,7 +525,7 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 });
 
 // ===================================================
-//           TWO-STEP LOGIN (BREVO API)
+//           TWO-STEP LOGIN (SMTP)
 // ===================================================
 app.post('/api/login-step1', async (req, res) => {
   const { username, password, email } = req.body;
@@ -607,19 +550,28 @@ app.post('/api/login-step1', async (req, res) => {
   user.otp = otp;
   user.otpExpiry = Date.now() + 5 * 60 * 1000;
 
-  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+  fs.writeFileSync(
+    path.join(__dirname, 'users.json'),
+    JSON.stringify(users, null, 2)
+  );
 
-  // ✅ BREVO API MAIL
-  await sendBrevoMail({
-    to: user.email,
-    subject: 'Sri Ambal Nagar Login OTP',
-    text: `Your OTP is ${otp}. Valid for 5 minutes.`,
-    html: `<h2>Your OTP: ${otp}</h2><p>Valid for 5 minutes</p>`
-  });
+  try {
+    await transporter.sendMail({
+      from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
+      to: user.email,
+      subject: 'Sri Ambal Nagar Login OTP',
+      html: `
+        <h2>Your OTP: ${otp}</h2>
+        <p>Valid for 5 minutes</p>
+      `
+    });
 
-  res.json({ success: true, message: 'OTP sent' });
+    res.json({ success: true, message: 'OTP sent to email' });
+  } catch (err) {
+    console.error('❌ OTP MAIL ERROR:', err.message);
+    res.status(500).json({ success: false, message: 'OTP mail failed' });
+  }
 });
-
 
 
 // ===================================================
@@ -628,59 +580,31 @@ app.post('/api/login-step1', async (req, res) => {
 app.post('/api/login-step2', (req, res) => {
   const { email, otp } = req.body;
 
-  console.log('🔍 OTP VERIFY REQUEST:', email);
-
   if (!email || !otp) {
-    return res.status(400).json({
-      success: false,
-      message: 'Email and OTP required'
-    });
+    return res.status(400).json({ success: false, message: 'Email and OTP required' });
   }
 
   const users = loadUsers();
-  const user = users.find(
-    u => String(u.email).toLowerCase() === String(email).toLowerCase()
-  );
+  const user = users.find(u => u.email.toLowerCase() === email.toLowerCase());
 
-  if (!user || !user.otp || !user.otpExpiry) {
-    return res.status(400).json({
-      success: false,
-      message: 'OTP not requested'
-    });
+  if (!user || !user.otp) {
+    return res.status(400).json({ success: false, message: 'OTP not requested' });
   }
 
   if (Date.now() > user.otpExpiry) {
     user.otp = null;
     user.otpExpiry = null;
-
-    fs.writeFileSync(
-      path.join(__dirname, 'users.json'),
-      JSON.stringify(users, null, 2)
-    );
-
-    return res.status(400).json({
-      success: false,
-      message: 'OTP expired'
-    });
+    fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
+    return res.status(400).json({ success: false, message: 'OTP expired' });
   }
 
   if (user.otp !== otp) {
-    return res.status(400).json({
-      success: false,
-      message: 'Invalid OTP'
-    });
+    return res.status(400).json({ success: false, message: 'Invalid OTP' });
   }
 
-  // ✅ OTP VALID → CLEAR OTP
   user.otp = null;
   user.otpExpiry = null;
-
-  fs.writeFileSync(
-    path.join(__dirname, 'users.json'),
-    JSON.stringify(users, null, 2)
-  );
-
-  console.log('✅ LOGIN SUCCESS:', user.username);
+  fs.writeFileSync(path.join(__dirname, 'users.json'), JSON.stringify(users, null, 2));
 
   res.json({
     success: true,
@@ -689,8 +613,7 @@ app.post('/api/login-step2', (req, res) => {
       username: user.username,
       name: user.name || user.username,
       email: user.email,
-      role: user.role || 'admin',
-      phone: user.phone || ''
+      role: user.role || 'admin'
     }
   });
 });
@@ -788,36 +711,14 @@ app.delete('/api/members/:id', (req, res) => {
 });
 
 //==================================================
-//             MEMBERSHIP + QR CODE
+//             MEMBERSHIP + QR CODE (SMTP)
 //==================================================
 
-const MEMBERS_FILE = path.join(__dirname, 'members.json');
-
-/* ---------- HELPERS ---------- */
-function loadMembers() {
-  return loadJSON(MEMBERS_FILE);
-}
-
-function saveMembers(data) {
-  fs.writeFileSync(MEMBERS_FILE, JSON.stringify(data, null, 2));
-}
-
-// 🆕 MEMBERSHIP APPLICATION (BREVO API MAIL)
 app.post('/api/submit-membership', async (req, res) => {
   const { name, mobile, refId } = req.body;
 
-  console.log('🆕 MEMBERSHIP APPLY:', name, mobile, refId);
-
   if (!name || !mobile || !refId) {
     return res.json({ success: false, message: 'All fields required' });
-  }
-
-  if (!/^[A-Za-z\s]+$/.test(name)) {
-    return res.json({ success: false, message: 'Name must contain letters only' });
-  }
-
-  if (!/^\d{10}$/.test(mobile)) {
-    return res.json({ success: false, message: 'Invalid mobile number' });
   }
 
   const members = loadMembers();
@@ -834,25 +735,28 @@ app.post('/api/submit-membership', async (req, res) => {
   members.push(newMember);
   saveMembers(members);
 
-  /* 📧 ADMIN MAIL – BREVO API */
-  await sendBrevoMail({
-    to: 'mnsambalnagar@gmail.com',
-    subject: `🆕 Membership Application | ${name}`,
-    html: `
-      <h2>New Membership Application</h2>
-      <p><b>Name:</b> ${name}</p>
-      <p><b>Mobile:</b> ${mobile}</p>
-      <p><b>Payment Ref:</b> ${refId}</p>
-      <p><b>Amount:</b> ₹200</p>
-      <p>Status: <b style="color:red">Pending</b></p>
-    `
-  });
-
-  res.json({
-    success: true,
-    message: 'Application submitted successfully'
-  });
+  try {
+    await transporter.sendMail({
+  from: `"Sri Ambal Nagar" <${process.env.SMTP_USER}>`,
+  to: 'mnsambalnagar@gmail.com',
+  subject: `✅ Membership Approved | ${m.name}`,
+  html: `
+    <h2>Membership Approved</h2>
+    <p><b>Name:</b> ${m.name}</p>
+    <p><b>Mobile:</b> ${m.mobile}</p>
+    <p><b>Amount:</b> ₹200</p>
+    <p>Status: <b style="color:green">Approved</b></p>
+  `
 });
+
+
+    res.json({ success: true, message: 'Application submitted' });
+  } catch (err) {
+    console.error('❌ Membership mail error:', err.message);
+    res.status(500).json({ success: false });
+  }
+});
+
 
 // 🔥 ADMIN – VIEW MEMBERSHIP APPLICATIONS
 app.get('/api/admin/applications', (req, res) => {
