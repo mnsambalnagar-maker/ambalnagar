@@ -15,7 +15,7 @@ require('dotenv').config();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -28,6 +28,8 @@ app.use(express.static(__dirname));
 
 
 // ---------- PAGE ROUTES ----------
+
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
