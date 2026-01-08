@@ -4,9 +4,7 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>About Us - Sri Ambal Nagar</title>
-
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet"/>
-
 <style>
 *{box-sizing:border-box;}
 :root{
@@ -23,268 +21,273 @@ body{
   min-height:100vh;
 }
 
-/* ================= HEADER ================= */
+/* HEADER */
 header{
   background:#bc3208;
   padding:12px 0;
   box-shadow:0 8px 25px rgba(188,50,8,0.3);
-  position:fixed;
-  width:100%;
-  top:0;
-  z-index:1000;
+  position:fixed;width:100%;top:0;z-index:1000;
 }
 .header-container{
-  max-width:1200px;
-  margin:0 auto;
-  padding:0 20px;
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
+  max-width:1200px;margin:0 auto;padding:0 20px;
+  display:flex;align-items:center;justify-content:space-between;
 }
 .brand-flex{
-  display:flex;
-  align-items:center;
-  gap:14px;
-  color:#fff;
-  font-weight:700;
-  font-size:18px;
+  display:flex;align-items:center;gap:14px;color:#fff;
+  font-weight:700;font-size:19px;
 }
 .brand-flex img{
-  height:54px;
-  width:54px;
-  border-radius:50%;
-  background:#fff;
-  padding:4px;
-  box-shadow:0 4px 12px rgba(0,0,0,0.2);
-  object-fit:cover;
+  height:54px;width:54px;border-radius:50%;background:#fff;
+  padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.2);object-fit:cover;
 }
-
-nav ul{
-  display:flex;
-  gap:14px;
-  list-style:none;
-  margin:0;
-  padding:0;
-}
+nav ul{display:flex;gap:14px;list-style:none;margin:0;padding:0;}
 nav ul a{
-  color:#fff;
-  font-weight:600;
-  text-decoration:none;
-  padding:8px 16px;
-  border-radius:25px;
-  font-size:0.92rem;
+  color:#fff;font-weight:600;text-decoration:none;
+  padding:8px 16px;border-radius:25px;font-size:0.92rem;
   transition:all .2s ease;
 }
-nav ul a:hover,
-nav ul a.active{
-  background:#fff;
-  color:#111827;
-  transform:scale(1.05);
+nav ul a:hover,nav ul a.active{
+  background:linear-gradient(135deg,#fff,#f3f4f6);
+  color:#111827;transform:scale(1.05);
 }
-
 .menu-toggle{
-  display:none;
-  font-size:26px;
-  cursor:pointer;
-  background:#fff;
-  color:#002d80;
-  border:none;
-  border-radius:10px;
-  padding:6px 12px;
+  display:none;font-size:26px;cursor:pointer;background:#fff;
+  color:#002d80;border:none;border-radius:10px;padding:6px 12px;
 }
+body>*:not(header){padding-top:100px;}
 
-/* spacing below fixed header */
-main,section{padding-top:100px;}
-
-/* ================= HERO ================= */
+/* HERO */
 .hero-section{
-  height:280px;
-  background:url('/uploads/image.jpg') center/cover;
-  position:relative;
-  display:flex;
-  align-items:center;
-  justify-content:center;
+  height:280px;background:url('uploads/image.jpg') center/cover;
+  position:relative;display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
 }
 .hero-section::before{
-  content:'';
-  position:absolute;
-  inset:0;
-  background:linear-gradient(135deg,rgba(0,0,0,0.45),rgba(0,0,0,0.75));
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(0,0,0,0.4),rgba(0,0,0,0.7));
 }
 .hero-text{
-  position:relative;
-  z-index:2;
-  max-width:800px;
-  padding:0 20px;
-  color:#fff;
-  text-align:center;
-  animation:heroSlide 1.1s ease forwards;
+  position:relative;z-index:2;max-width:800px;padding:0 20px;
+  color:#fff;text-align:center;
+  animation:heroSlide 1.2s cubic-bezier(0.25,0.46,0.45,0.94) forwards;
+  opacity:0;transform:translateY(50px);
 }
 .hero-text h1{
-  font-size:2.6rem;
-  font-weight:700;
-  margin-bottom:12px;
+  font-size:2.8rem;font-weight:700;margin:0 0 12px;
+  background:linear-gradient(45deg,#fff,#ffd700);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
 }
-.hero-text p{font-size:1.1rem;}
+.hero-text p{font-size:1.2rem;margin:0;}
+.hero-text{opacity:1;transform:translateY(0);}
 
-@keyframes heroSlide{
-  from{opacity:0;transform:translateY(40px);}
-  to{opacity:1;transform:translateY(0);}
-}
-
-/* ================= MISSION + JOIN ================= */
+/* MISSION + JOIN */
 .mission-join-section{
-  max-width:1100px;
-  margin:60px auto;
-  padding:0 20px;
-  display:flex;
-  gap:40px;
-  flex-wrap:wrap;
+  max-width:1100px;margin:60px auto;padding:0 20px;
+  display:flex;justify-content:space-between;align-items:center;
+  gap:40px;flex-wrap:wrap;
 }
-.mission-card,
-.join-card{
-  flex:1;
-  background:#fff;
-  border-radius:22px;
-  padding:28px;
+.mission-card{
+  flex:1;max-width:480px;
+  background:linear-gradient(145deg,#fff,rgba(255,255,255,0.92));
+  border-radius:24px;padding:30px 24px;
   box-shadow:0 18px 40px rgba(15,23,42,0.2);
+  border:2px solid rgba(59,130,246,0.2);
+  backdrop-filter:blur(12px);
+  opacity:0;transform:translateX(-50px);
+  animation:slideLeft 0.8s 0.2s forwards;
 }
 .join-card{
-  border:2px solid rgba(249,115,22,0.35);
-  cursor:pointer;
+  flex:1;max-width:480px;
+  background:linear-gradient(145deg,#fff,rgba(255,255,255,0.92));
+  border-radius:24px;padding:30px 24px;
+  box-shadow:0 18px 40px rgba(15,23,42,0.2);
+  border:2px solid rgba(249,115,22,0.3);
+  backdrop-filter:blur(12px);
+  opacity:0;transform:translateX(50px);
+  animation:slideRight 0.8s 0.4s forwards;
 }
-.mission-card h3,
-.join-card h3{
-  margin-top:0;
-  font-size:1.3rem;
+.mission-card h3,.join-card h3{
+  color:#0f172a;font-size:1.3rem;margin:0 0 12px;font-weight:700;
 }
-.mission-card p,
-.join-card p{
-  color:#4b5563;
-  line-height:1.6;
+.mission-card p,.join-card p{
+  color:#4b5563;font-size:0.98rem;margin:0;line-height:1.6;
 }
 
-/* ================= BEARERS ================= */
-.bearers-section{
-  max-width:1100px;
-  margin:60px auto;
-  padding:0 20px;
+/* BEARERS + ACTIVITIES */
+.bearers-section,.activities-section{max-width:1100px;margin:60px auto;padding:0 20px;}
+.bearers-title,.activities-title{
+  text-align:center;color:#1f2937;font-size:2.2rem;margin-bottom:40px;
 }
-.bearers-title{
-  text-align:center;
-  font-size:2.1rem;
-  margin-bottom:40px;
+.bearers-title::after{
+  content:'';position:relative;display:block;
+  margin:10px auto 0;width:80px;height:4px;
+  background:linear-gradient(90deg,var(--accent1),var(--accent2));
+  border-radius:2px;
 }
 .float-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
-  gap:22px;
+  display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+  gap:24px;
 }
 .float-card{
-  background:#fff;
-  border-radius:18px;              /* ⬇️ slightly smaller */
-  padding:14px 10px;               /* ⬇️ card size reduced */
-  text-align:center;
-  box-shadow:0 8px 20px rgba(15,23,42,0.12);
-  transition:0.3s;
-  width: 160px;                    /* ⬇️ card width control */
+  background:linear-gradient(145deg,rgba(255,255,255,0.95),rgba(248,250,252,0.9));
+  border-radius:24px;padding:20px 12px 16px;text-align:center;
+  position:relative;overflow:hidden;box-shadow:0 12px 30px rgba(15,23,42,0.15);
+  transition:all .3s cubic-bezier(0.4,0,0.2,1);
+  opacity:0;transform:translateY(30px);
+  animation:floatUp 0.6s forwards;
 }
-
+.float-card:nth-child(1){animation-delay:0.1s;}
+.float-card:nth-child(2){animation-delay:0.2s;}
+.float-card:nth-child(3){animation-delay:0.3s;}
+.float-card:nth-child(4){animation-delay:0.4s;}
+.float-card:nth-child(5){animation-delay:0.5s;}
+.float-card:nth-child(6){animation-delay:0.6s;}
+.float-card:nth-child(7){animation-delay:0.7s;}
+.float-card:nth-child(8){animation-delay:0.8s;}
+.float-card:nth-child(9){animation-delay:0.9s;}
+.float-card:nth-child(10){animation-delay:1s;}
+.float-card:nth-child(11){animation-delay:1.1s;}
+.float-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:4px;
+  background:linear-gradient(90deg,var(--accent1),var(--accent3));
+}
 .float-card:hover{
-  transform:translateY(-4px);      /* ⬇️ subtle hover */
+  transform:translateY(-8px) scale(1.02);
+  box-shadow:0 25px 50px rgba(15,23,42,0.25);
 }
-
 .float-card img{
-  width:82px;                      /* ⬆️ image slightly bigger */
-  height:82px;
-  border-radius:50%;
-  object-fit:cover;
-  border:3px solid var(--accent2); /* ⬇️ border thinner */
-  margin-bottom:6px;
+  width:72px;height:72px;border-radius:50%;object-fit:cover;
+  border:4px solid var(--accent2);box-shadow:0 6px 16px rgba(59,130,246,0.3);
+  margin-bottom:10px;transition:transform .3s ease;
 }
+.float-card:hover img{transform:scale(1.1);}
+.float-card-name{font-weight:700;color:#111827;font-size:1rem;margin:0 0 2px;}
+.float-card-role{font-size:0.88rem;color:#6b7280;}
 
-.float-card-name{
-  font-weight:700;
-  font-size:0.95rem;               /* ⬇️ text slightly smaller */
-}
-
-.float-card-role{
-  font-size:0.8rem;
-  color:#6b7280;
-}
-
-
-/* ================= ACTIVITIES ================= */
-.activities-section{
-  max-width:1100px;
-  margin:60px auto;
-  padding:0 20px;
-}
-.activities-title{
-  text-align:center;
-  font-size:2rem;
-  margin-bottom:30px;
-}
 .activity-tags{
-  display:flex;
-  flex-wrap:wrap;
-  gap:12px;
-  justify-content:center;
+  display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
+  max-width:900px;margin:0 auto;
 }
 .activity-tag{
-  padding:12px 18px;
-  border-radius:30px;
-  background:rgba(59,130,246,0.12);
+  padding:12px 20px;border-radius:30px;
+  background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(249,115,22,0.12));
   border:2px solid rgba(59,130,246,0.3);
-  font-weight:600;
+  font-size:0.95rem;color:#111827;font-weight:600;
+  position:relative;overflow:hidden;
+  opacity:0;transform:scale(0.3);
+  animation:bounceIn 0.6s cubic-bezier(0.68,-0.55,0.265,1.55) forwards;
+  transition:all .3s ease;cursor:pointer;
+}
+.activity-tag:nth-child(1){animation-delay:0.1s;}
+.activity-tag:nth-child(2){animation-delay:0.2s;}
+.activity-tag:nth-child(3){animation-delay:0.3s;}
+.activity-tag:nth-child(4){animation-delay:0.4s;}
+.activity-tag:nth-child(5){animation-delay:0.5s;}
+.activity-tag:nth-child(6){animation-delay:0.6s;}
+.activity-tag:hover{
+  transform:translateY(-4px) scale(1.05);
+  box-shadow:0 15px 35px rgba(59,130,246,0.3);
 }
 
-/* ================= FOOTER ================= */
-footer{
-  margin-top:60px;
-  padding:24px;
-  background:rgba(15,23,42,0.08);
-  text-align:center;
-  color:#4b5563;
+/* FOOTER */
+footer{margin-top:60px;padding:24px;background:rgba(15,23,42,0.08);
+  color:#4b5563;text-align:center;}
+
+/* ANIMATIONS */
+@keyframes heroSlide{to{opacity:1;transform:translateY(0);}}
+@keyframes slideLeft{to{opacity:1;transform:translateX(0);}}
+@keyframes slideRight{to{opacity:1;transform:translateX(0);}}
+@keyframes floatUp{to{opacity:1;transform:translateY(0);}}
+@keyframes bounceIn{
+  0%{opacity:0;transform:scale(0.3);}
+  50%{opacity:1;transform:scale(1.15);}
+  100%{opacity:1;transform:scale(1);}
 }
 
-/* ================= MOBILE ================= */
+/* MOBILE ONLY */
 @media(max-width:768px){
+  /* header stack + toggle */
   .header-container{
     flex-direction:column;
     align-items:flex-start;
     gap:10px;
   }
+  .brand-flex{
+    font-size:16px;
+  }
   .menu-toggle{display:block;margin-left:auto;}
   nav ul{
-    position:absolute;
-    top:70px;
-    left:0;
-    right:0;
-    background:#111827;
+    position:absolute;top:64px;left:0;right:0;
     flex-direction:column;
-    padding:14px;
+    background:#111827;
+    width:100vw;
+    padding:14px 18px;
     display:none;
   }
   nav ul.show{display:flex;}
-  nav ul a{width:100%;}
+  nav ul a{
+    width:100%;
+    padding:10px 14px;
+  }
 
-  .hero-text h1{font-size:2rem;}
-  .mission-join-section{flex-direction:column;}
-  .activity-tags{flex-direction:column;}
+  /* hero height, text size */
+  .hero-section{
+    height:380px;
+  }
+  .hero-text h1{
+    font-size:2.1rem;
+  }
+  .hero-text p{
+    font-size:1rem;
+  }
+
+  /* mission/join stacking */
+  .mission-join-section{
+    flex-direction:column;
+    gap:20px;
+  }
+  .mission-card,.join-card{
+    width:100%;
+    max-width:none;
+    padding:22px 18px;
+  }
+
+  /* bearers grid tighter */
+  .float-grid{
+    grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+    gap:16px;
+  }
+  .float-card{
+    padding:16px 8px 14px;
+  }
+
+  /* activities tags column */
+  .activity-tags{
+    flex-direction:column;
+    align-items:stretch;
+    gap:10px;
+  }
+  .activity-tag{
+    width:100%;
+    text-align:center;
+  }
+
+  footer{
+    margin-top:40px;
+    padding:18px;
+    font-size:0.85rem;
+  }
 }
 </style>
 </head>
-
 <body>
 
 <header>
   <div class="header-container">
     <div class="brand-flex">
-      <img src="img/logo.png" alt="Logo">
-      <span>Sri Ambal Nagar Makkal Nalvazhu Sangam</span>
+      <img src="img/logo.png" alt="Logo"/>
+      <span>Sri AmbalNagar Makkal Nalvazhu Sangam</span>
     </div>
-
     <nav>
       <ul id="navMenu">
        <a href="/">Home</a>
@@ -296,138 +299,74 @@ footer{
 
       </ul>
     </nav>
-
-    <button class="menu-toggle" id="menuToggle">☰</button>
+    <button class="menu-toggle">&#9776;</button>
   </div>
 </header>
 
 <section class="hero-section">
   <div class="hero-text">
     <h1>About Our Community</h1>
-    <p>Building a united and caring neighborhood for everyone.</p>
+    <p>Bringing our neighborhood together for a future of shared happiness and progress.</p>
   </div>
 </section>
 
 <section class="mission-join-section">
   <div class="mission-card">
     <h3>Our Mission</h3>
-    <p>
-      To create a safe, supportive, and progressive neighborhood
-      where every family grows together with unity and trust.
-    </p>
+    <p>To create a lively, safe, and connected neighborhood where every individual and family flourish through unity and care.</p>
   </div>
-
   <div class="join-card" onclick="location.href='membership.html'">
-    <h3>Join Us</h3>
-    <p>
-      Become part of our community and help us build
-      a stronger tomorrow together.
-    </p>
-  </div>
+  <h3>Join Us</h3>
+  <p>
+    Become part of our dynamic community. Your participation builds a stronger,
+    happier neighborhood for all.
+  </p>
+</div>
+
 </section>
 
 <section class="bearers-section">
   <h2 class="bearers-title">Office Bearers</h2>
-
   <div class="float-grid">
-    <div class="float-card">
-      <img src="img/mohanraj.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Mohanrajan R</div>
-      <div class="float-card-role">Founder</div>
-    </div>
-
-    <div class="float-card">
-      <img src="img/5.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Ramesh D</div>
-      <div class="float-card-role">President</div>
-    </div>
+    <div class="float-card"><img src="img/mohanraj.jpeg"><div class="float-card-name">Mohanrajan R</div><div class="float-card-role">Founder</div></div>
+    <div class="float-card"><img src="img/5.png"><div class="float-card-name">Ramesh D</div><div class="float-card-role"> President</div></div>
+    <div class="float-card"><img src="img/shajhan.jpeg"><div class="float-card-name">Shajakan</div><div class="float-card-role">Excutive President</div></div>
+    <div class="float-card"><img src="img/3.png"><div class="float-card-name">Krishnamurthy K S</div><div class="float-card-role">Honorary President</div></div>
+    <div class="float-card"><img src="img/davadass.jpeg"><div class="float-card-name">Devadass M K</div><div class="float-card-role">Speaker</div></div>
+    <div class="float-card"><img src="img/2.png"><div class="float-card-name">Ganesh AS</div><div class="float-card-role">Secretary</div></div>
+    <div class="float-card"><img src="img/4.png"><div class="float-card-name">Murali B</div><div class="float-card-role">Treasurer</div></div>
+    <div class="float-card"><img src="img/1.png"><div class="float-card-name">Saravanan D</div><div class="float-card-role">Administrator</div></div>
+    <div class="float-card"><img src="img/karthi G.jpeg"><div class="float-card-name">Karthick G</div><div class="float-card-role">Deputy President</div></div>
+    <div class="float-card"><img src="img/push.jpeg"><div class="float-card-name">Pushparaj V. LLB</div><div class="float-card-role">Legal Advisor</div></div>
+    <div class="float-card"><img src="img/sathish babu.jpeg"><div class="float-card-name">Sathees Babu p</div><div class="float-card-role"></div>Join Secretary</div>
+    <div class="float-card"><img src="img/kani_raja.jpeg"><div class="float-card-name">Kaniraja R</div><div class="float-card-role">Advisory Committee</div></div>
+    <div class="float-card"><img src="img/profile-default.png"><div class="float-card-name">Murugan R</div><div class="float-card-role">Advisory Committee</div></div>
+    <div class="float-card"><img src="img/profile-default.png"><div class="float-card-name">Narayanan B</div><div class="float-card-role">Advisory Committee</div></div> 
   </div>
-  
-    <div class="float-card">
-      <img src="img/shajhan.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Shajakan</div>
-      <div class="float-card-role">Excutive President</div>
-    </div>
-    <div class="float-card">
-      <img src="img/3.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Krishnamurthy K S</div>
-      <div class="float-card-role">Honorary President</div>
-    </div>
-    <div class="float-card">
-      <img src="img/davadass.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Devadass M K</div>
-      <div class="float-card-role">Speaker</div>
-    </div>
-    <div class="float-card">
-      <img src="img/2.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Ganesh AS</div>
-      <div class="float-card-role">Secretary</div>
-    </div>
-    <div class="float-card">
-      <img src="img/4.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Murali B</div>
-      <div class="float-card-role">Treasurer</div>
-    </div>
-    <div class="float-card">
-      <img src="img/1.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Saravanan D</div>
-      <div class="float-card-role">Administrator</div>
-    </div>
-       <div class="float-card">
-      <img src="img/karthi G.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Karthick G</div>
-      <div class="float-card-role">Deputy President</div>
-    </div>
-      <div class="float-card">
-      <img src="img/push.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Pushparaj V. LLB</div>
-      <div class="float-card-role">Legal Advisor</div>
-    </div>
-     <div class="float-card">
-      <img src="img/sathish babu.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Sathees Babu p</div>
-      <div class="float-card-role">Join Secretary</div>
-    </div>
-    <div class="float-card">
-      <img src="img/kani_raja.jpeg" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Kaniraja R</div>
-      <div class="float-card-role">Advisory Committee</div>
-    </div>
-    <div class="float-card">
-      <img src="img/profile-default.png" onerror="this.src='img/profile-default.png'">
-      <div class="float-card-name">Murugan R</div>
-      <div class="float-card-role">Advisory Committee</div>
-    </div>
 </section>
 
 <section class="activities-section">
   <h2 class="activities-title">Activities</h2>
   <div class="activity-tags">
-    <div class="activity-tag">Road development</div>
-    <div class="activity-tag">Cleanliness drives</div>
-    <div class="activity-tag">Safety programs</div>
-    <div class="activity-tag">Cultural events</div>
+    <div class="activity-tag">Road & infrastructure improvement</div>
+    <div class="activity-tag">Streetlight and drainage maintenance</div>
+    <div class="activity-tag">Cleanliness and greenery drives</div>
+    <div class="activity-tag">Safety & neighborhood watch</div>
+    <div class="activity-tag">Cultural and social events</div>
+    <div class="activity-tag">Community welfare programs</div>
   </div>
 </section>
 
 <footer>
-  <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association</p>
+  <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association. All rights reserved.</p>
 </footer>
 
 <script>
-const menuToggle=document.getElementById('menuToggle');
-const navMenu=document.getElementById('navMenu');
-
+const menuToggle=document.querySelector('.menu-toggle');
+const navUl=document.querySelector('nav ul');
 menuToggle.addEventListener('click',()=>{
-  navMenu.classList.toggle('show');
-  menuToggle.textContent = navMenu.classList.contains('show') ? '×' : '☰';
-});
-
-document.querySelectorAll('#navMenu a').forEach(link=>{
-  link.addEventListener('click',()=>{
-    navMenu.classList.remove('show');
-    menuToggle.textContent='☰';
-  });
+  navUl.classList.toggle('show');
+  menuToggle.textContent=navUl.classList.contains('show')?'×':'☰';
 });
 </script>
 
