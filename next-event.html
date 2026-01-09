@@ -568,31 +568,38 @@
     }
 
     document.getElementById('eventForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(e.target);
+  e.preventDefault();
+  const formData = new FormData(e.target);
 
-      try {
-        if (editingId) {
-          formData.append('id', editingId);
-        }
+  try {
+    const url = editingId 
+      ? `/api/addevent/${editingId}` 
+      : '/api/addevent';
 
-        const res = await fetch('/api/addevent', {
-          method: editingId ? 'PUT' : 'POST',
-          body: formData
-        });
-
-        const data = await res.json();
-        if (data.success) {
-          alert(editingId ? 'Event updated!' : 'Event added!');
-          await loadEvents();
-          resetForm();
-        } else {
-          alert('Error!');
-        }
-      } catch (err) {
-        alert('Network error!');
-      }
+    const res = await fetch(url, {
+      method: editingId ? 'PUT' : 'POST',
+      body: formData
     });
+
+    if (!res.ok) {
+      throw new Error('Server error');
+    }
+
+    const data = await res.json();
+
+    if (data.success) {
+      alert(editingId ? 'Event updated!' : 'Event added!');
+      await loadEvents();
+      resetForm();
+    } else {
+      alert('❌ Server returned error');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('❌ Network / Server error');
+  }
+});
+
 
     document.getElementById('cancelBtn').addEventListener('click', resetForm);
 
