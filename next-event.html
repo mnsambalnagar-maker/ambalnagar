@@ -566,39 +566,39 @@
       document.getElementById('submitBtn').textContent = 'Upload Event';
       document.getElementById('cancelBtn').style.display = 'none';
     }
-
-    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+document.getElementById('eventForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const formData = new FormData(e.target);
 
-  try {
-    const url = editingId 
-      ? `/api/addevent/${editingId}` 
-      : '/api/addevent';
+  // 🔑 IMPORTANT: id hidden field already present
+  if (editingId) {
+    formData.append('id', editingId);
+  }
 
-    const res = await fetch(url, {
-      method: editingId ? 'PUT' : 'POST',
+  try {
+    const res = await fetch('/api/addevent', {
+      method: 'POST', // ✅ ALWAYS POST
       body: formData
     });
 
-    if (!res.ok) {
-      throw new Error('Server error');
-    }
-
     const data = await res.json();
 
-    if (data.success) {
-      alert(editingId ? 'Event updated!' : 'Event added!');
-      await loadEvents();
-      resetForm();
-    } else {
-      alert('❌ Server returned error');
+    if (!data.success) {
+      alert(data.message || '❌ Server error');
+      return;
     }
+
+    alert(editingId ? 'Event updated!' : 'Event added!');
+    await loadEvents();
+    resetForm();
+
   } catch (err) {
     console.error(err);
     alert('❌ Network / Server error');
   }
 });
+
 
 
     document.getElementById('cancelBtn').addEventListener('click', resetForm);

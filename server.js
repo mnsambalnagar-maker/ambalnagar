@@ -229,22 +229,23 @@ const eventUpload = multer({ storage: eventStorage });
 
 /* ---------- HELPERS ---------- */
 function loadEvents() {
-  return loadJSON(EVENTS_JSON);
+  try {
+    return JSON.parse(fs.readFileSync(EVENTS_JSON, 'utf-8'));
+  } catch {
+    return [];
+  }
 }
+
 function saveEvents(events) {
   fs.writeFileSync(EVENTS_JSON, JSON.stringify(events, null, 2));
 }
 
 /* ---------- GET EVENTS ---------- */
 app.get('/api/events', (req, res) => {
-  try {
-    res.json({ events: loadEvents() });
-  } catch {
-    res.json({ events: [] });
-  }
+  res.json({ events: loadEvents() });
 });
 
-/* ---------- ADD / UPDATE EVENT ---------- */
+/* ---------- ADD / UPDATE EVENT (POST ONLY) ---------- */
 app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
   try {
     const { id, title, date, description } = req.body;
@@ -255,12 +256,11 @@ app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
 
     let events = loadEvents();
 
-    // ✅ SAFE files handling (THIS IS THE FIX)
     const uploadedFiles = Array.isArray(req.files)
       ? req.files.map(f => `/uploads/events/${f.filename}`)
       : [];
 
-    // 🔄 UPDATE EVENT
+    // 🔄 UPDATE
     if (id) {
       const index = events.findIndex(e => String(e.id) === String(id));
       if (index === -1) {
@@ -281,7 +281,7 @@ app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
       return res.json({ success: true, mode: 'updated' });
     }
 
-    // ➕ ADD NEW EVENT
+    // ➕ CREATE
     const newEvent = {
       id: Date.now(),
       title,
@@ -328,6 +328,7 @@ app.delete('/api/addevent/:id', (req, res) => {
     res.json({ success: false, message: 'Delete failed' });
   }
 });
+
 
 
 // ===================================================
