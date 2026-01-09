@@ -57,11 +57,6 @@ app.get('/login', (req, res) => {
 app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
-
-
-
-
-
 // ---------------------------------------------------
 // Helpers
 // ---------------------------------------------------
@@ -209,13 +204,6 @@ app.delete('/api/deleteUser/:username', (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
 // ===================================================
 //                     EVENTS SECTION
 // ===================================================
@@ -231,7 +219,6 @@ const eventStorage = multer.diskStorage({
     cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
     const safeName =
       Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
     cb(null, safeName);
@@ -244,14 +231,17 @@ const eventUpload = multer({ storage: eventStorage });
 function loadEvents() {
   return loadJSON(EVENTS_JSON);
 }
-
 function saveEvents(events) {
   fs.writeFileSync(EVENTS_JSON, JSON.stringify(events, null, 2));
 }
 
 /* ---------- GET EVENTS ---------- */
 app.get('/api/events', (req, res) => {
-  res.json({ events: loadEvents() });
+  try {
+    res.json({ events: loadEvents() });
+  } catch {
+    res.json({ events: [] });
+  }
 });
 
 /* ---------- ADD / UPDATE EVENT ---------- */
@@ -264,15 +254,17 @@ app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
     }
 
     let events = loadEvents();
-    const uploadedFiles = (req.files || []).map(
-      f => `/uploads/events/${f.filename}`
-    );
+
+    // ✅ SAFE files handling (THIS IS THE FIX)
+    const uploadedFiles = Array.isArray(req.files)
+      ? req.files.map(f => `/uploads/events/${f.filename}`)
+      : [];
 
     // 🔄 UPDATE EVENT
     if (id) {
       const index = events.findIndex(e => String(e.id) === String(id));
       if (index === -1) {
-        return res.status(404).json({ success: false, message: 'Event not found' });
+        return res.json({ success: false, message: 'Event not found' });
       }
 
       events[index] = {
@@ -280,14 +272,16 @@ app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
         title,
         date,
         description,
-        files: [...(events[index].files || []), ...uploadedFiles]
+        files: uploadedFiles.length
+          ? [...(events[index].files || []), ...uploadedFiles]
+          : (events[index].files || [])
       };
 
       saveEvents(events);
-      return res.json({ success: true });
+      return res.json({ success: true, mode: 'updated' });
     }
 
-    // ➕ NEW EVENT
+    // ➕ ADD NEW EVENT
     const newEvent = {
       id: Date.now(),
       title,
@@ -299,10 +293,11 @@ app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
     events.push(newEvent);
     saveEvents(events);
 
-    res.json({ success: true });
+    res.json({ success: true, mode: 'created' });
+
   } catch (err) {
     console.error('❌ Event error:', err);
-    res.status(500).json({ success: false });
+    res.json({ success: false, message: 'Server error' });
   }
 });
 
@@ -313,26 +308,24 @@ app.delete('/api/addevent/:id', (req, res) => {
     const index = events.findIndex(e => String(e.id) === req.params.id);
 
     if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Event not found' });
+      return res.json({ success: false, message: 'Event not found' });
     }
 
     const event = events[index];
 
-    // 🗑️ DELETE FILES
     (event.files || []).forEach(file => {
       const filePath = path.join(__dirname, 'public', file);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
+      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     });
 
     events.splice(index, 1);
     saveEvents(events);
 
     res.json({ success: true });
+
   } catch (err) {
     console.error('❌ Delete event error:', err);
-    res.status(500).json({ success: false });
+    res.json({ success: false, message: 'Delete failed' });
   }
 });
 
