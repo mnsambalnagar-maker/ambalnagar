@@ -19,8 +19,8 @@
     "email": "mizzey1193@gmail.com",
     "avatar": "img/avatar2.png",
     "password": "12345",
-    "otp": "919630",
-    "otpExpiry": 1767425649099
+    "otp": null,
+    "otpExpiry": null
   },
   {
     "username": "Mukesh",

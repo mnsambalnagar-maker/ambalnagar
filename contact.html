@@ -6,71 +6,60 @@
   <title>Contact Us - Sri Ambal Nagar Peoples Welfare Association</title>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: 'Poppins', sans-serif;
-      background: linear-gradient(135deg, #8EC5FC, #E0C3FC);
-      margin: 0;
-      padding: 0;
-      min-height: 100vh;
-      position: relative;
+    
+    * { box-sizing: border-box; }
+    :root{
+      --bg1:#fef3c7;
+      --bg2:#dbeafe;
+      --accent1:#f97316;
+      --accent2:#3b82f6;
+      --accent3:#ec4899;
     }
-    .logo-bg {
-      position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      width: 100vw; height: 100vh;
-      background: url('logo.png') center center/cover no-repeat;
-      opacity: 0.13;
-      pointer-events: none;
-      z-index: 0;
+    body{
+      margin:0;
+      font-family:'Poppins',sans-serif;
+      background:linear-gradient(135deg,var(--bg1),var(--bg2));
+      min-height:100vh;
+      color:#0f172a;
     }
-    header, footer {
-      background: #0052cc;
-      color: white;
-      padding: 15px 0;
-      text-align: center;
-      position: relative;
-      z-index: 1;
+
+    /* HEADER (same as about.html) */
+    header{
+      background:#bc3208;
+      padding:4px 0;
+      box-shadow:0 8px 25px rgba(188,50,8,0.3);
+      position:fixed;width:100%;top:0;z-index:1000;
     }
-    .header-container {
-      max-width: 1100px;
-      margin: auto;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0 15px;
-      position: relative;
+    .header-container{
+      max-width:1200px;margin:0 auto;padding:0 20px;
+      display:flex;align-items:center;justify-content:space-between;
     }
-    .menu-toggle {
-      display: none;
-      font-size: 30px;
-      cursor: pointer;
-      position: absolute;
-      right: 16px;
-      top: 18px;
-      background: transparent;
-      border: none;
-      color: white;
-      z-index: 2000;
+    .brand-flex{
+      display:flex;align-items:center;gap:14px;color:#fff;
+      font-weight:700;font-size:19px;
     }
-    nav ul.menu {
-      display: flex;
-      gap: 20px;
-      list-style: none;
-      margin: 0;
-      padding: 0;
+    .brand-flex img{
+      height:54px;width:54px;border-radius:50%;background:#fff;
+      padding:4px;box-shadow:0 4px 12px rgba(0,0,0,0.2);object-fit:cover;
     }
-    nav ul.menu li a {
-      color: white;
-      text-decoration: none;
-      font-weight: 600;
-      padding: 6px 12px;
-      border-radius: 6px;
+    nav ul{
+      display:flex;gap:14px;list-style:none;margin:0;padding:0;
     }
-    nav ul.menu li a.active,
-    nav ul.menu li a:hover {
-      background: #e1e9fc;
-      color: #0052cc;
+    nav ul a{
+      color:#fff;font-weight:600;text-decoration:none;
+      padding:8px 16px;border-radius:25px;font-size:0.92rem;
+      transition:all .2s ease;
     }
+    nav ul a:hover,
+    nav ul a.active{
+      background:linear-gradient(135deg,#fff,#f3f4f6);
+      color:#111827;transform:scale(1.05);
+    }
+    .menu-toggle{
+      display:none;font-size:26px;cursor:pointer;background:#fff;
+      color:#002d80;border:none;border-radius:10px;padding:6px 12px;
+    }
+    body>*:not(header){padding-top:100px;}
     .contact-main {
       max-width: 960px;
       margin: 60px auto 40px auto;

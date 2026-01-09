@@ -99,169 +99,223 @@
   <footer>
     <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association. All rights reserved.</p>
   </footer>
-  <script>
-    const menuToggle = document.querySelector('.menu-toggle');
-    const navUl = document.querySelector('nav ul');
-    menuToggle.addEventListener('click', () => {
-      navUl.classList.toggle('show');
-      menuToggle.textContent = navUl.classList.contains('show') ? '×' : '☰';
-    });
-    const upcomingContainer = document.getElementById('upcoming-events');
-    const pastContainer = document.getElementById('past-events');
-    const modalBg = document.getElementById('modal-bg');
-    const modalMedia = document.getElementById('modal-media');
-    const modalTitle = document.getElementById('modal-title');
-    const modalDate = document.getElementById('modal-date');
-    const modalText = document.getElementById('modal-text');
-    let groupedData = { upcoming: {}, past: {} };
-    let currentGroupType = null;
-    let currentGroupIndex = 0;
-    let currentMediaIndex = 0;
-    function normalizeTitle(title) {
-      return (title || '').trim().toLowerCase();
-    }
-    async function loadEvents() {
-      try {
-        const res = await fetch('/api/events');
-        const data = await res.json();
-        const now = new Date().toISOString().slice(0,10);
-        const upcoming = data.events.filter(e => e.date >= now);
-        const past = data.events.filter(e => e.date < now);
-        groupedData = { upcoming: {}, past: {} };
-        function groupInto(bucketName, list) {
-          list.forEach(ev => {
-            const key = normalizeTitle(ev.title) || `event_${ev.id}`;
-            if (!groupedData[bucketName][key]) {
-              groupedData[bucketName][key] = {
-                title: ev.title,
-                dates: [],
-                descriptions: [],
-                files: []
-              };
-            }
-            groupedData[bucketName][key].dates.push(ev.date);
-            if (ev.description) groupedData[bucketName][key].descriptions.push(ev.description);
-            (ev.files || []).forEach(f => {
+<script>
+  const menuToggle = document.querySelector('.menu-toggle');
+  const navUl = document.querySelector('nav ul');
+
+  menuToggle.addEventListener('click', () => {
+    navUl.classList.toggle('show');
+    menuToggle.textContent = navUl.classList.contains('show') ? '×' : '☰';
+  });
+
+  const upcomingContainer = document.getElementById('upcoming-events');
+  const pastContainer = document.getElementById('past-events');
+  const modalBg = document.getElementById('modal-bg');
+  const modalMedia = document.getElementById('modal-media');
+  const modalTitle = document.getElementById('modal-title');
+  const modalDate = document.getElementById('modal-date');
+  const modalText = document.getElementById('modal-text');
+
+  let groupedData = { upcoming: {}, past: {} };
+  let currentGroupType = null;
+  let currentGroupIndex = 0;
+  let currentMediaIndex = 0;
+
+  function normalizeTitle(title) {
+    return (title || '').trim().toLowerCase();
+  }
+
+  async function loadEvents() {
+    try {
+      const res = await fetch('/api/events');
+
+      const result = await res.json();//Supabase returns array
+      // ✅ backend object / array rendu handle
+      const events = Array.isArray(result) ? result : result.events;
+
+     if (!Array.isArray(events)) {
+     throw new Error('Events data is not an array');
+     }
+
+
+      const now = new Date();
+
+      // ✅ SAFE DATE COMPARE
+      const upcoming = events.filter(e => new Date(e.date) >= now);
+      const past = events.filter(e => new Date(e.date) < now);
+
+      groupedData = { upcoming: {}, past: {} };
+
+      function groupInto(bucketName, list) {
+        list.forEach(ev => {
+          const key = normalizeTitle(ev.title) || `event_${ev.id}`;
+
+          if (!groupedData[bucketName][key]) {
+            groupedData[bucketName][key] = {
+              title: ev.title,
+              dates: [],
+              descriptions: [],
+              files: []
+            };
+          }
+
+          groupedData[bucketName][key].dates.push(ev.date);
+
+          if (ev.description) {
+            groupedData[bucketName][key].descriptions.push(ev.description);
+          }
+
+          // ✅ SAFE FILES FIX (NULL → SKIP)
+          if (Array.isArray(ev.files)) {
+            ev.files.forEach(f => {
               if (!groupedData[bucketName][key].files.includes(f)) {
                 groupedData[bucketName][key].files.push(f);
               }
             });
-          });
-        }
-        groupInto('upcoming', upcoming);
-        groupInto('past', past);
-        upcomingContainer.innerHTML = '';
-        pastContainer.innerHTML = '';
-        function createCard(group, type, index) {
-          const firstFile = group.files[0];
-          let imgHtml = `<div class="event-image"></div>`;
-          if (firstFile) {
-            if (firstFile.endsWith('.mp4') || firstFile.endsWith('.webm')) {
-              imgHtml = `<video class="event-image" muted src="${firstFile}"></video>`;
-            } else {
-              imgHtml = `<img src="${firstFile}" class="event-image" alt="${group.title}">`;
-            }
           }
-          const mainDate = group.dates.slice().sort()[0];
-          const desc = group.descriptions[0] || '';
-          return `
-            <div class="event-card" onclick="openModal('${type}', ${index})">
-              ${imgHtml}
-              <div class="event-body">
-                <h3 class="event-title">${group.title}</h3>
-                <span class="event-date">${new Date(mainDate).toLocaleDateString('en-IN')}</span>
-                <p class="event-desc">${desc}</p>
-              </div>
-            </div>
-          `;
-        }
-        const upcomingGroups = Object.values(groupedData.upcoming);
-        upcomingGroups.forEach((g, idx) => {
-          upcomingContainer.innerHTML += createCard(g, 'upcoming', idx);
         });
-        const pastGroups = Object.values(groupedData.past);
-        pastGroups.forEach((g, idx) => {
-          pastContainer.innerHTML += createCard(g, 'past', idx);
-        });
-        if (!upcomingGroups.length) upcomingContainer.innerHTML = '<p>No new events.</p>';
-        if (!pastGroups.length) pastContainer.innerHTML = '<p>No past events.</p>';
-      } catch (e) {
-        upcomingContainer.innerHTML = '<p>Unable to load events.</p>';
-        pastContainer.innerHTML = '';
       }
-    }
-    function getGroup(type, index) {
-      const groups = Object.values(groupedData[type] || {});
-      return groups[index] || null;
-    }
-    function renderCarousel() {
-      const group = getGroup(currentGroupType, currentGroupIndex);
-      if (!group) return;
-      const files = group.files || [];
-      modalMedia.innerHTML = '';
-      if (!files.length) {
-        modalMedia.innerHTML = '<p style="color:#fff;padding:20px;">No media available.</p>';
-      } else {
-        const file = files[currentMediaIndex];
-        if (file.endsWith('.mp4') || file.endsWith('.webm')) {
-          modalMedia.innerHTML = `<video controls src="${file}"></video>`;
-        } else {
-          modalMedia.innerHTML = `<img src="${file}" alt="${group.title}">`;
+
+      groupInto('upcoming', upcoming);
+      groupInto('past', past);
+
+      upcomingContainer.innerHTML = '';
+      pastContainer.innerHTML = '';
+
+      function createCard(group, type, index) {
+        const firstFile = group.files[0];
+        let imgHtml = `<div class="event-image"></div>`;
+
+        if (firstFile) {
+          if (firstFile.endsWith('.mp4') || firstFile.endsWith('.webm')) {
+            imgHtml = `<video class="event-image" muted src="${firstFile}"></video>`;
+          } else {
+            imgHtml = `<img src="${firstFile}" class="event-image" alt="${group.title}">`;
+          }
         }
-        if (files.length > 1) {
-          const controlsHtml = `
-            <div style="text-align:center;margin:12px 0;">
-              <button onclick="prevMedia()" style="margin-right:14px;font-size:1.1rem;padding:6px 10px;border:none;background:#e5e7eb;border-radius:999px;cursor:pointer;">‹ Prev</button>
-              <span style="font-size:0.9rem;color:#374151;">${currentMediaIndex + 1} / ${files.length}</span>
-              <button onclick="nextMedia()" style="margin-left:14px;font-size:1.1rem;padding:6px 10px;border:none;background:#e5e7eb;border-radius:999px;cursor:pointer;">Next ›</button>
+
+        const mainDate = group.dates.slice().sort()[0];
+        const desc = group.descriptions[0] || '';
+
+        return `
+          <div class="event-card" onclick="openModal('${type}', ${index})">
+            ${imgHtml}
+            <div class="event-body">
+              <h3 class="event-title">${group.title}</h3>
+              <span class="event-date">${new Date(mainDate).toLocaleDateString('en-IN')}</span>
+              <p class="event-desc">${desc}</p>
             </div>
-          `;
-          modalMedia.innerHTML += controlsHtml;
-        }
+          </div>
+        `;
       }
+
+      const upcomingGroups = Object.values(groupedData.upcoming);
+      upcomingGroups.forEach((g, idx) => {
+        upcomingContainer.innerHTML += createCard(g, 'upcoming', idx);
+      });
+
+      const pastGroups = Object.values(groupedData.past);
+      pastGroups.forEach((g, idx) => {
+        pastContainer.innerHTML += createCard(g, 'past', idx);
+      });
+
+      if (!upcomingGroups.length) upcomingContainer.innerHTML = '<p>No new events.</p>';
+      if (!pastGroups.length) pastContainer.innerHTML = '<p>No past events.</p>';
+
+    } catch (err) {
+      console.error(err);
+      upcomingContainer.innerHTML = '<p>Unable to load events.</p>';
+      pastContainer.innerHTML = '';
     }
-    function openModal(type, index){
-      currentGroupType = type;
-      currentGroupIndex = index;
-      currentMediaIndex = 0;
-      const group = getGroup(type, index);
-      if (!group) return;
-      modalTitle.textContent = group.title;
-      const allDates = group.dates.slice().sort();
-      const first = new Date(allDates[0]).toLocaleDateString('en-IN');
-      const last = new Date(allDates[allDates.length - 1]).toLocaleDateString('en-IN');
-      modalDate.textContent = allDates.length > 1 ? `${first} – ${last}` : first;
-      modalText.textContent = group.descriptions.join(' | ') || '';
-      renderCarousel();
-      modalBg.style.display = 'flex';
+  }
+
+  function getGroup(type, index) {
+    const groups = Object.values(groupedData[type] || {});
+    return groups[index] || null;
+  }
+
+  function renderCarousel() {
+    const group = getGroup(currentGroupType, currentGroupIndex);
+    if (!group) return;
+
+    const files = group.files || [];
+    modalMedia.innerHTML = '';
+
+    if (!files.length) {
+      modalMedia.innerHTML = '<p style="color:#fff;padding:20px;">No media available.</p>';
+      return;
     }
-    function closeModal(){
-      modalBg.style.display = 'none';
+
+    const file = files[currentMediaIndex];
+
+    if (file.endsWith('.mp4') || file.endsWith('.webm')) {
+      modalMedia.innerHTML = `<video controls src="${file}"></video>`;
+    } else {
+      modalMedia.innerHTML = `<img src="${file}" alt="${group.title}">`;
     }
-    modalBg.addEventListener('click',e=>{
-      if (e.target === modalBg) closeModal();
-    });
-    function nextMedia(){
-      const group = getGroup(currentGroupType, currentGroupIndex);
-      if (!group) return;
-      const files = group.files || [];
-      if (!files.length) return;
-      currentMediaIndex = (currentMediaIndex + 1) % files.length;
-      renderCarousel();
+
+    if (files.length > 1) {
+      modalMedia.innerHTML += `
+        <div style="text-align:center;margin:12px 0;">
+          <button onclick="prevMedia()">‹ Prev</button>
+          <span>${currentMediaIndex + 1} / ${files.length}</span>
+          <button onclick="nextMedia()">Next ›</button>
+        </div>
+      `;
     }
-    function prevMedia(){
-      const group = getGroup(currentGroupType, currentGroupIndex);
-      if (!group) return;
-      const files = group.files || [];
-      if (!files.length) return;
-      currentMediaIndex = (currentMediaIndex - 1 + files.length) % files.length;
-      renderCarousel();
-    }
-    window.openModal = openModal;
-    window.closeModal = closeModal;
-    window.nextMedia = nextMedia;
-    window.prevMedia = prevMedia;
-    loadEvents();
-  </script>
+  }
+
+  function openModal(type, index) {
+    currentGroupType = type;
+    currentGroupIndex = index;
+    currentMediaIndex = 0;
+
+    const group = getGroup(type, index);
+    if (!group) return;
+
+    modalTitle.textContent = group.title;
+
+    const dates = group.dates.slice().sort();
+    const first = new Date(dates[0]).toLocaleDateString('en-IN');
+    const last = new Date(dates[dates.length - 1]).toLocaleDateString('en-IN');
+    modalDate.textContent = dates.length > 1 ? `${first} – ${last}` : first;
+
+    modalText.textContent = group.descriptions.join(' | ') || '';
+
+    renderCarousel();
+    modalBg.style.display = 'flex';
+  }
+
+  function closeModal() {
+    modalBg.style.display = 'none';
+  }
+
+  modalBg.addEventListener('click', e => {
+    if (e.target === modalBg) closeModal();
+  });
+
+  function nextMedia() {
+    const group = getGroup(currentGroupType, currentGroupIndex);
+    if (!group || !group.files.length) return;
+    currentMediaIndex = (currentMediaIndex + 1) % group.files.length;
+    renderCarousel();
+  }
+
+  function prevMedia() {
+    const group = getGroup(currentGroupType, currentGroupIndex);
+    if (!group || !group.files.length) return;
+    currentMediaIndex = (currentMediaIndex - 1 + group.files.length) % group.files.length;
+    renderCarousel();
+  }
+
+  window.openModal = openModal;
+  window.closeModal = closeModal;
+  window.nextMedia = nextMedia;
+  window.prevMedia = prevMedia;
+
+  loadEvents();
+</script>
+
+
 </body>
 </html>

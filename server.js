@@ -1,4 +1,4 @@
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
@@ -7,6 +7,23 @@ const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
 const app = express();
 require('dotenv').config();
+const supabase = require('./supabase'); // ✅ ONLY THIS
+
+app.get('/test-db', async (req, res) => {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*');
+
+  if (error) return res.status(500).json(error);
+  res.json(data);
+});
+
+
+
+
+
+
+
 
 
 
@@ -250,88 +267,163 @@ function saveEvents(events) {
 }
 
 /* ---------- GET EVENTS ---------- */
-app.get('/api/events', (req, res) => {
-  res.json({ events: loadEvents() });
+app.get('/api/events', async (req, res) => {
+  try {
+    // 1️⃣ Get events from Supabase
+    const { data: events, error } = await supabase
+      .from('events')
+      .select('*')
+      .order('date', { ascending: true });
+
+    if (error) throw error;
+
+    // 2️⃣ Get gallery
+    const { data: gallery } = await supabase
+      .from('gallery')
+      .select('*');
+
+    // 3️⃣ Merge files into events (old format போல)
+    const finalEvents = events.map(ev => ({
+      id: ev.id,
+      title: ev.title,
+      date: ev.date,
+      description: ev.description,
+      files: gallery
+        .filter(g => String(g.event_id) === String(ev.id))
+        .map(g => g.file_url)
+    }));
+
+    res.json({ events: finalEvents });
+
+  } catch (err) {
+    console.error('❌ Load events error:', err);
+    res.json({ events: [] });
+  }
 });
 
-/* ---------- ADD / UPDATE EVENT ---------- */
-app.post('/api/addevent', eventUpload.array('files'), (req, res) => {
+/* ---------- UPDATE EVENT ---------- */
+app.post('/api/updateevent', async (req, res) => {
   try {
     const { id, title, date, description } = req.body;
+
+    if (!id || !title || !date) {
+      return res.json({ success: false, message: 'ID, Title & Date required' });
+    }
+
+    const { error } = await supabase
+      .from('events')
+      .update({ title, date, description })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('❌ Update failed:', err);
+    res.status(500).json({ success: false });
+  }
+});
+
+
+
+
+
+/* ---------- ADD EVENT (SUPABASE ONLY) ---------- */
+app.post('/api/addevent', eventUpload.array('files'), async (req, res) => {
+  try {
+    const { title, date, description } = req.body;
 
     if (!title || !date) {
       return res.json({ success: false, message: 'Title & Date required' });
     }
 
-    let events = loadEvents();
-    const uploadedFiles = (req.files || []).map(
-      f => `/uploads/events/${f.filename}`
-    );
+    // 1️⃣ Insert event into DB
+    const { data: event, error } = await supabase
+      .from('events')
+      .insert([{ title, date, description }])
+      .select()
+      .single();
 
-    // 🔄 UPDATE EVENT
-    if (id) {
-      const index = events.findIndex(e => String(e.id) === String(id));
-      if (index === -1) {
-        return res.status(404).json({ success: false, message: 'Event not found' });
-      }
-
-      events[index] = {
-        ...events[index],
-        title,
-        date,
-        description,
-        files: [...(events[index].files || []), ...uploadedFiles]
-      };
-
-      saveEvents(events);
-      return res.json({ success: true });
+    if (error) {
+      console.error('Supabase event insert error:', error);
+      return res.status(500).json({ success: false });
     }
 
-    // ➕ NEW EVENT
-    const newEvent = {
-      id: Date.now(),
-      title,
-      date,
-      description,
-      files: uploadedFiles
-    };
+    // 2️⃣ Insert gallery files (if any)
+    if (req.files && req.files.length) {
+      const galleryRows = req.files.map(file => ({
+        event_id: event.id,
+        file_url: `/uploads/events/${file.filename}`
+      }));
 
-    events.push(newEvent);
-    saveEvents(events);
+      const { error: galleryError } = await supabase
+        .from('gallery')
+        .insert(galleryRows);
+
+      if (galleryError) {
+        console.error('Gallery insert error:', galleryError);
+      }
+    }
 
     res.json({ success: true });
+
   } catch (err) {
-    console.error('❌ Event error:', err);
+    console.error('❌ Add event failed:', err);
     res.status(500).json({ success: false });
   }
 });
 
+
+/* ---------- GET EVENTS (PUBLIC + ADMIN LIST) ---------- */
+app.get('/api/events', async (req, res) => {
+  const { data, error } = await supabase
+    .from('events')
+    .select('*')
+    .order('date', { ascending: true });
+
+  if (error) return res.json({ events: [] });
+  res.json({ events: data });
+});
+
+
+/* ---------- GET EVENT GALLERY ---------- */
+app.get('/api/gallery/:eventId', async (req, res) => {
+  const { eventId } = req.params;
+
+  const { data, error } = await supabase
+    .from('gallery')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: true });
+
+  if (error) return res.json({ files: [] });
+  res.json({ files: data });
+});
+
 /* ---------- DELETE EVENT ---------- */
-app.delete('/api/addevent/:id', (req, res) => {
+app.delete('/api/deleteevent/:id', async (req, res) => {
   try {
-    let events = loadEvents();
-    const index = events.findIndex(e => String(e.id) === req.params.id);
+    const { id } = req.params;
 
-    if (index === -1) {
-      return res.status(404).json({ success: false, message: 'Event not found' });
-    }
+    // 1️⃣ delete gallery
+    await supabase
+      .from('gallery')
+      .delete()
+      .eq('event_id', id);
 
-    const event = events[index];
+    // 2️⃣ delete event
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', id);
 
-    // 🗑️ DELETE FILES
-    (event.files || []).forEach(file => {
-      const filePath = path.join(__dirname, 'public', file);
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
-      }
-    });
-
-    events.splice(index, 1);
-    saveEvents(events);
+    if (error) throw error;
 
     res.json({ success: true });
+
   } catch (err) {
-    console.error('❌ Delete event error:', err);
+    console.error('❌ Delete failed:', err);
     res.status(500).json({ success: false });
   }
 });

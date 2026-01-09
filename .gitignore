@@ -7,3 +7,5 @@ pending-applications.json
 
 uploads/
 public/uploads/
+SUPABASE_URL=https://xxxx.supabase.co
+SUPABASE_KEY=your_service_role_key
