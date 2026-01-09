@@ -568,24 +568,22 @@
     }
 document.getElementById('eventForm').addEventListener('submit', async (e) => {
   e.preventDefault();
-
   const formData = new FormData(e.target);
 
-  // 🔑 IMPORTANT: id hidden field already present
   if (editingId) {
-    formData.append('id', editingId);
+    formData.append('id', editingId); // 🔥 IMPORTANT
   }
 
   try {
     const res = await fetch('/api/addevent', {
-      method: 'POST', // ✅ ALWAYS POST
+      method: 'POST',
       body: formData
     });
 
     const data = await res.json();
 
     if (!data.success) {
-      alert(data.message || '❌ Server error');
+      alert(data.message || 'Server error');
       return;
     }
 
@@ -598,6 +596,7 @@ document.getElementById('eventForm').addEventListener('submit', async (e) => {
     alert('❌ Network / Server error');
   }
 });
+
 
 
 
