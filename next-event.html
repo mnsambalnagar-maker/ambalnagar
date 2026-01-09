@@ -566,39 +566,33 @@
       document.getElementById('submitBtn').textContent = 'Upload Event';
       document.getElementById('cancelBtn').style.display = 'none';
     }
-document.getElementById('eventForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const formData = new FormData(e.target);
 
-  if (editingId) {
-    formData.append('id', editingId); // 🔥 IMPORTANT
-  }
+    document.getElementById('eventForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(e.target);
 
-  try {
-    const res = await fetch('/api/addevent', {
-      method: 'POST',
-      body: formData
+      try {
+        if (editingId) {
+          formData.append('id', editingId);
+        }
+
+        const res = await fetch('/api/addevent', {
+          method: editingId ? 'PUT' : 'POST',
+          body: formData
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          alert(editingId ? 'Event updated!' : 'Event added!');
+          await loadEvents();
+          resetForm();
+        } else {
+          alert('Error!');
+        }
+      } catch (err) {
+        alert('Network error!');
+      }
     });
-
-    const data = await res.json();
-
-    if (!data.success) {
-      alert(data.message || 'Server error');
-      return;
-    }
-
-    alert(editingId ? 'Event updated!' : 'Event added!');
-    await loadEvents();
-    resetForm();
-
-  } catch (err) {
-    console.error(err);
-    alert('❌ Network / Server error');
-  }
-});
-
-
-
 
     document.getElementById('cancelBtn').addEventListener('click', resetForm);
 
