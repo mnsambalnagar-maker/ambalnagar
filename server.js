@@ -78,6 +78,10 @@ app.get('/membership', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'membership.html'));
 });
 
+app.get('/server', (req, res) => {
+  res.sendFile(path.join(__dirname, 'server.html'));
+});
+
 
 
 
