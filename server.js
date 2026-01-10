@@ -32,14 +32,11 @@ app.get('/test-db', async (req, res) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
-
 app.use('/img', express.static(path.join(__dirname, 'img')));
-
-app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(__dirname));
-app.use(express.static('public'));
+
 
 
 
