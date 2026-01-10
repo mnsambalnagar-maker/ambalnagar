@@ -29,10 +29,13 @@ app.get('/test-db', async (req, res) => {
 
 
 // ------------------ Static Files ------------------
+// ------------------ STATIC ------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/img', express.static(path.join(__dirname, 'img')));
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 
 
@@ -42,7 +45,6 @@ app.use('/img', express.static(path.join(__dirname, 'img')));
 
 // ---------- PAGE ROUTES ----------
 
-app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -71,6 +73,7 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
+// 🔥 MEMBERSHIP (THIS IS THE FIX)
 app.get('/membership', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'membership.html'));
 });
