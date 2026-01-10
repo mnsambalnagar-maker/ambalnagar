@@ -39,6 +39,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(express.json());
 app.use(express.static(__dirname));
+app.use(express.static('public'));
+
 
 
 
@@ -76,8 +78,9 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/membership', (req, res) => {
-  res.sendFile(path.join(__dirname, 'membership.html'));
+  res.sendFile(path.join(__dirname, 'public/membership.html'));
 });
+
 
 
 
