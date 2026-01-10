@@ -29,15 +29,18 @@ app.get('/test-db', async (req, res) => {
 
 
 // ------------------ Static Files ------------------
-// ------------------ STATIC ------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+
 
 app.use('/img', express.static(path.join(__dirname, 'img')));
-app.use(express.static(path.join(__dirname, 'public')));
 
-
-
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+app.use(express.json());
+app.use(express.static(__dirname));
 
 
 
@@ -75,7 +78,14 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/membership', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'membership.html'));
+  res.sendFile(path.join(__dirname, 'membership.html'));
+});
+
+app.get('/service', (req, res) => {
+  res.sendFile(path.join(__dirname, 'service.html'));
+});
+app.get('/newsview', (req, res) => {
+  res.sendFile(path.join(__dirname, 'newsview.html'));
 });
 
 
