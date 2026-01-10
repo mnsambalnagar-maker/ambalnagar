@@ -45,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // ---------- PAGE ROUTES ----------
 
+app.use(express.static(path.join(__dirname, 'public')));
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
@@ -73,13 +74,8 @@ app.get('/dashboard', (req, res) => {
   res.sendFile(path.join(__dirname, 'dashboard.html'));
 });
 
-// 🔥 MEMBERSHIP (THIS IS THE FIX)
 app.get('/membership', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'membership.html'));
-});
-
-app.get('/service', (req, res) => {
-  res.sendFile(path.join(__dirname, 'service.html'));
 });
 
 
