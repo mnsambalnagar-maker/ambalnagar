@@ -72,9 +72,8 @@ app.get('/dashboard', (req, res) => {
 });
 
 app.get('/membership', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public/membership.html'));
+  res.sendFile(path.join(__dirname, 'public', 'membership.html'));
 });
-
 
 
 
