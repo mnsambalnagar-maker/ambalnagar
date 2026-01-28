@@ -5,6 +5,7 @@ const path = require('path');
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
+const axios = require('axios');
 const app = express();
 require('dotenv').config();
 const supabase = require('./supabase'); // ✅ ONLY THIS
@@ -801,64 +802,127 @@ app.delete('/api/members/:id', (req, res) => {
   res.status(204).send();
 });
 
-//==================================================
-//             MEMBERSHIP + QR CODE (SMTP)
-//==================================================
+//========================//
+//membership +  QR Code//
+//========================//
 
+const MEMBERS_FILE = path.join(__dirname, 'members.json');
 
+function loadMembers() {
+  if (!fs.existsSync(MEMBERS_FILE)) return [];
+  return JSON.parse(fs.readFileSync(MEMBERS_FILE, 'utf8'));
+}
 
+function saveMembers(data) {
+  fs.writeFileSync(MEMBERS_FILE, JSON.stringify(data, null, 2));
+}
+//========================//
+// Telegream Send Function//
+//========================//
+async function sendTelegram(message) {
+  try {
+    await axios.post(
+      `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+      {
+        chat_id: process.env.TELEGRAM_CHAT_ID,
+        text: message
+      }
+    );
+  } catch (err) {
+    console.error('Telegram error:', err.message);
+  }
+}
+//=======================//
+//Member submit - Api //
+//====================//
+app.post('/api/submit-membership', async (req,res)=>{
+  const { name, mobile, refId } = req.body;
 
-// 🔥 ADMIN – VIEW MEMBERSHIP APPLICATIONS
-app.get('/api/admin/applications', (req, res) => {
+  if(!name || !mobile || !refId){
+    return res.json({ success:false, message:'Missing data' });
+  }
+
   const members = loadMembers();
-  const visible = members.filter(
-    m => m.status === 'pending' || m.status === 'approved'
-  );
-  res.json(visible);
-});
 
-// 🔥 ADMIN – APPROVE / REJECT MEMBERSHIP
-app.post('/api/admin/update/:id', async (req, res) => {
+  const newMember = {
+    id: Date.now().toString(),
+    name,
+    mobile,
+    refId,
+    status:'pending',
+    createdAt: new Date().toISOString()
+  };
+
+  members.push(newMember);
+  saveMembers(members);
+
+  await sendTelegram(
+`🆕 NEW MEMBERSHIP
+👤 ${name}
+📱 ${mobile}
+💳 Ref: ${refId}
+⏳ Pending approval`
+  );
+
+  res.json({ success:true });
+});
+//========================//
+//Admin - view Application//
+//=======================//
+app.get('/api/admin/applications',(req,res)=>{
+  const members = loadMembers();
+  res.json(members.filter(m=>m.status==='pending'||m.status==='approved'));
+});
+//=============================//
+// Admin -Approve + whatapp//
+//===========================//
+app.post('/api/admin/update/:id', async (req,res)=>{
   const { id } = req.params;
   const { status } = req.body;
 
-  let members = loadMembers();
-  const index = members.findIndex(m => String(m.id) === id);
+  const members = loadMembers();
+  const index = members.findIndex(m=>m.id===id);
 
-  if (index === -1) {
-    return res.status(404).json({ success: false, message: 'Application not found' });
+  if(index===-1){
+    return res.json({ success:false });
   }
 
   members[index].status = status;
-  members[index].updatedAt = new Date().toISOString();
-
-  if (status === 'approved') {
-    members[index].approvedAt = new Date().toISOString();
-  }
-
   saveMembers(members);
 
-});
+  let whatsapp = null;
 
-//==================================================
-//                 DYNAMIC QR CODE
-//==================================================
-app.get('/api/qr', async (req, res) => {
+  if(status === 'approved'){
+    const msg =
+`Sri Ambal Nagar Welfare Association ✅
+Hello ${members[index].name},
+Your membership is approved 🎉`;
+
+    whatsapp =
+`https://wa.me/91${members[index].mobile}?text=${encodeURIComponent(msg)}`;
+
+    await sendTelegram(
+`✅ APPROVED
+👤 ${members[index].name}
+📱 ${members[index].mobile}`
+    );
+  }
+
+  res.json({ success:true, whatsapp });
+});
+//=================================//
+//     QR -Api//
+//==================================//
+app.get('/api/qr', async (req,res)=>{
   const { upi } = req.query;
 
-  if (!upi) {
-    return res.json({ success: false, message: 'UPI ID required' });
-  }
+  const qrData = `upi://pay?pa=${upi}&am=200&cu=INR`;
+  const qr = await QRCode.toDataURL(qrData);
 
-  try {
-    const qrData = `upi://pay?pa=${upi}&am=200&cu=INR`;
-    const qrImage = await QRCode.toDataURL(qrData);
-    res.json({ success: true, qr: qrImage });
-  } catch (err) {
-    console.error('❌ QR Error:', err);
-    res.json({ success: false, message: 'QR generation failed' });
-  }
+  res.json({ success:true, qr });
 });
+
+
 
 //==================================================
 //            DASHBOARD SUPPORT APIS

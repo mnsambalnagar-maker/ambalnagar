@@ -260,52 +260,63 @@ button:hover{
 
 <script>
 document.getElementById('membershipForm').addEventListener('submit', async (e)=>{
-    e.preventDefault();
+  e.preventDefault();
 
-    const submitBtn=document.getElementById('submitBtn');
-    const loadingMsg=document.getElementById('loadingMsg');
-    const successMsg=document.getElementById('successMsg');
+  const name = document.getElementById('name').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const refId = document.getElementById('refId').value.trim();
 
-    const name=document.getElementById('name').value.trim();
-    const mobile=document.getElementById('mobile').value.trim();
-    const refId=document.getElementById('refId').value.trim();
+  if(!name || !mobile || !refId){
+    alert('Fill all fields');
+    return;
+  }
 
-    if(!name||!mobile||!refId) return alert('Fill all');
-    if(!/^\d{10}$/.test(mobile)) return alert('10 digits');
+  if(!/^\d{10}$/.test(mobile)){
+    alert('Mobile must be 10 digits');
+    return;
+  }
 
-    submitBtn.disabled=true;
-    submitBtn.textContent='Send...';
-    loadingMsg.style.display='block';
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerText = 'Sending...';
 
-    try{
-        const res=await fetch('/api/submit-membership',{
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body:JSON.stringify({name,mobile,refId})
-        });
-        const result=await res.json();
-        if(result.success){
-            successMsg.style.display='block';
-            document.getElementById('membershipForm').reset();
-        }else alert(result.message);
-    }catch{
-        alert('Network error');
-    }finally{
-        submitBtn.disabled=false;
-        submitBtn.textContent='SUBMIT';
-        loadingMsg.style.display='none';
+  try{
+    const res = await fetch('/api/submit-membership',{
+      method:'POST',
+      headers:{ 'Content-Type':'application/json' },
+      body: JSON.stringify({ name, mobile, refId })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      document.getElementById('successMsg').style.display = 'block';
+      document.getElementById('membershipForm').reset();
+    }else{
+      alert(data.message || 'Failed');
     }
+  }catch{
+    alert('Server error');
+  }finally{
+    btn.disabled = false;
+    btn.innerText = 'SUBMIT';
+  }
 });
 
 async function loadQR(){
-    try{
-        const res=await fetch('/api/qr?upi=mathisurendhar@okhdfcbank');
-        const data=await res.json();
-        document.querySelector('.qr-code').src=data.qr;
-    }catch{}
+  try{
+    const res = await fetch('/api/qr?upi=makkalnalvazhvusangam@tmb');
+    const data = await res.json();
+    if(data.success){
+      document.querySelector('.qr-code').src = data.qr;
+    }
+  }catch(e){
+    console.log('QR load failed');
+  }
 }
 loadQR();
 </script>
+
 
 </body>
 </html>
