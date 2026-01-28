@@ -559,6 +559,77 @@ app.delete('/api/deleteNews/:id', (req, res) => {
   }
 });
 
+// ===============================
+// CONTACT → TELEGRAM BOT
+// ===============================
+const axios = require('axios');
+
+const TELEGRAM_BOT_TOKEN = '8220659876:AAEbkPEIrZFwFB7U6om9g6SaSGldLQs9rDQ';
+const TELEGRAM_CHAT_ID = '8540078103';
+
+const contactStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, 'public/uploads/contact');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const safeName = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
+    cb(null, safeName);
+  }
+});
+
+const contactUpload = multer({
+  storage: contactStorage,
+  limits: { fileSize: 25 * 1024 * 1024 } // 25MB
+});
+
+app.post('/api/contact-with-file', contactUpload.array('attachments'), async (req, res) => {
+  try {
+    const { name, mobile, message } = req.body;
+
+    if (!name || !mobile || !message) {
+      return res.json({ success: false, message: 'Missing fields' });
+    }
+
+    let text = `📩 *New Contact Message*\n\n` +
+               `👤 *Name:* ${name}\n` +
+               `📞 *Mobile:* ${mobile}\n\n` +
+               `💬 *Message:*\n${message}`;
+
+    // 1️⃣ Send text message
+    await axios.post(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+      chat_id: TELEGRAM_CHAT_ID,
+      text,
+      parse_mode: 'Markdown'
+    });
+
+    // 2️⃣ Send attachments (if any)
+    if (req.files && req.files.length) {
+      for (const file of req.files) {
+        const filePath = path.join(__dirname, 'public/uploads/contact', file.filename);
+
+        const formData = new (require('form-data'))();
+        formData.append('chat_id', TELEGRAM_CHAT_ID);
+        formData.append('document', fs.createReadStream(filePath));
+
+        await axios.post(
+          `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendDocument`,
+          formData,
+          { headers: formData.getHeaders() }
+        );
+      }
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('Telegram contact error:', err);
+    res.status(500).json({ success: false });
+  }
+});
+
+
 // ===================================================
 // LOGIN STEP 1 – OTP IN BROWSER
 // ===================================================
