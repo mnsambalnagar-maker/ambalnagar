@@ -19,16 +19,6 @@ app.get('/test-db', async (req, res) => {
   res.json(data);
 });
 
-
-
-
-
-
-
-
-
-
-
 // ------------------ Static Files ------------------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -563,7 +553,7 @@ app.delete('/api/deleteNews/:id', (req, res) => {
 // ===============================
 // CONTACT → TELEGRAM BOT
 // ===============================
-const axios = require('axios');
+
 
 const TELEGRAM_BOT_TOKEN = '8220659876:AAEbkPEIrZFwFB7U6om9g6SaSGldLQs9rDQ';
 const TELEGRAM_CHAT_ID = '8540078103';
