@@ -433,31 +433,27 @@ app.get('/api/events/:id/gallery', async (req, res) => {
   }
 });
 async function uploadToSupabaseStorage(file) {
-  const fileExt = file.originalname.split('.').pop();
-  const fileName = `${Date.now()}-${Math.random()
-    .toString(36)
-    .substring(2)}.${fileExt}`;
+  const fileName = `${Date.now()}-${file.originalname}`;
 
-  const filePath = `events/${fileName}`;
-
-  const { error } = await supabase.storage
-    .from('events') // 🔴 BUCKET NAME
-    .upload(filePath, file.buffer, {
+  const { data, error } = await supabase.storage
+    .from('events') // 👈 bucket name EXACT
+    .upload(fileName, file.buffer, {
       contentType: file.mimetype,
       upsert: false
     });
 
   if (error) {
-    console.error('❌ STORAGE UPLOAD ERROR:', error);
+    console.error('STORAGE UPLOAD ERROR:', error);
     throw error;
   }
 
-  const { data } = supabase.storage
+  const { data: publicData } = supabase.storage
     .from('events')
-    .getPublicUrl(filePath);
+    .getPublicUrl(fileName);
 
-  return data.publicUrl;
+  return publicData.publicUrl;
 }
+
 
 
 // ===================================================
