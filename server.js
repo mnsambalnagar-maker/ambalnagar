@@ -16,7 +16,7 @@ const supabase = require('./supabase');
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB per file
+    fileSize: 50 * 1024 * 1024, // 10MB per file
     files: 10                  // max 10 files
   }
 });
@@ -292,20 +292,16 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 //                     EVENTS SECTION
 // ===================================================
 
-// ===================================================
-//                     EVENTS SECTION
-// ===================================================
-
-// ---------- ADD EVENT ----------
 app.post('/api/events', upload.array('files', 10), async (req, res) => {
   try {
+    console.log('FILES:', req.files); // 🔍 DEBUG
+
     const { title, date, description } = req.body;
 
-    // 🔒 VALIDATION
-    if (!title || !date || !description || isNaN(new Date(date))) {
+    if (!title || !date || !description) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid or missing fields'
+        message: 'Missing required fields'
       });
     }
 
@@ -320,14 +316,12 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
 
     const { error } = await supabase
       .from('events')
-      .insert([
-        {
-          title,
-          date,
-          description,
-          files: fileUrls
-        }
-      ]);
+      .insert([{
+        title,
+        date,
+        description,
+        files: fileUrls // ✅ JSONB
+      }]);
 
     if (error) throw error;
 
@@ -337,10 +331,11 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
     console.error('❌ ADD EVENT ERROR:', err);
     res.status(500).json({
       success: false,
-      message: 'Server error'
+      message: err.message
     });
   }
 });
+
 
 
 // ---------- GET EVENTS ----------
@@ -437,6 +432,33 @@ app.get('/api/events/:id/gallery', async (req, res) => {
     res.json({ files: [] });
   }
 });
+async function uploadToSupabaseStorage(file) {
+  const fileExt = file.originalname.split('.').pop();
+  const fileName = `${Date.now()}-${Math.random()
+    .toString(36)
+    .substring(2)}.${fileExt}`;
+
+  const filePath = `events/${fileName}`;
+
+  const { error } = await supabase.storage
+    .from('events') // 🔴 BUCKET NAME
+    .upload(filePath, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+
+  if (error) {
+    console.error('❌ STORAGE UPLOAD ERROR:', error);
+    throw error;
+  }
+
+  const { data } = supabase.storage
+    .from('events')
+    .getPublicUrl(filePath);
+
+  return data.publicUrl;
+}
+
 
 // ===================================================
 //                     NEWS SECTION
