@@ -12,8 +12,12 @@ const supabase = require('./supabase'); // ✅ ONLY THIS
 
 const upload = multer({
   storage: multer.memoryStorage(),
-  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+  limits: {
+    fileSize: 50 * 1024 * 1024, // per file
+    files: 10                  // 🔥 max 10 files
+  }
 });
+
 
 
 app.get('/test-db', async (req, res) => {
@@ -109,8 +113,10 @@ async function uploadToSupabaseStorage(file) {
   const { error } = await supabase.storage
     .from('events')
     .upload(fileName, file.buffer, {
-      contentType: file.mimetype
+    contentType: file.mimetype,
+    upsert: true
     });
+
 
   if (error) throw error;
 
@@ -255,14 +261,12 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 // ===================================================
 //                     EVENTS SECTION
 // ===================================================
-app.post('/api/events', upload.array('files'), async (req, res) => {
+app.post('/api/events', upload.array('files', 10), async (req, res) => {
   try {
-    const { title, date, description } = req.body;
-    if (!title || !date) {
-      return res.json({ success: false, message: 'Title & Date required' });
-    }
+    console.log('FILES COUNT:', req.files?.length);
 
-    // 1️⃣ Insert event
+    const { title, date, description } = req.body;
+
     const { data: event, error } = await supabase
       .from('events')
       .insert([{ title, date, description }])
@@ -271,8 +275,7 @@ app.post('/api/events', upload.array('files'), async (req, res) => {
 
     if (error) throw error;
 
-    // 2️⃣ Upload files
-    if (req.files && req.files.length) {
+    if (req.files?.length) {
       const galleryRows = [];
 
       for (const file of req.files) {
@@ -289,10 +292,11 @@ app.post('/api/events', upload.array('files'), async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error('❌ Add event error:', err);
-    res.status(500).json({ success: false });
+    console.error('ADD EVENT ERROR:', err);
+    res.status(500).json({ success: false, error: err.message });
   }
 });
+
 
 app.get('/api/events', async (req, res) => {
   try {
