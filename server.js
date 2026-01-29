@@ -292,14 +292,20 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 //                     EVENTS SECTION
 // ===================================================
 
+// ===================================================
+//                     EVENTS SECTION
+// ===================================================
+
+// ---------- ADD EVENT ----------
 app.post('/api/events', upload.array('files', 10), async (req, res) => {
   try {
-    const { title, date, description } = req.body; // ✅ IMPORTANT
+    const { title, date, description } = req.body;
 
-    if (!title || !date || !description) {
+    // 🔒 VALIDATION
+    if (!title || !date || !description || isNaN(new Date(date))) {
       return res.status(400).json({
         success: false,
-        message: 'Missing required fields'
+        message: 'Invalid or missing fields'
       });
     }
 
@@ -314,12 +320,14 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
 
     const { error } = await supabase
       .from('events')
-      .insert([{
-        title,
-        date,
-        description,
-        files: fileUrls
-      }]);
+      .insert([
+        {
+          title,
+          date,
+          description,
+          files: fileUrls
+        }
+      ]);
 
     if (error) throw error;
 
@@ -327,14 +335,15 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
 
   } catch (err) {
     console.error('❌ ADD EVENT ERROR:', err);
-    res.status(500).json({ success: false });
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
   }
 });
 
 
-
-
-
+// ---------- GET EVENTS ----------
 app.get('/api/events', async (req, res) => {
   try {
     const { data, error } = await supabase
@@ -361,10 +370,15 @@ app.get('/api/events', async (req, res) => {
 });
 
 
+// ---------- UPDATE EVENT ----------
 app.put('/api/events/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const { title, date, description } = req.body;
+
+    if (!title || !date || !description || isNaN(new Date(date))) {
+      return res.status(400).json({ success: false });
+    }
 
     const { error } = await supabase
       .from('events')
@@ -376,11 +390,13 @@ app.put('/api/events/:id', async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error('❌ Update event error:', err);
+    console.error('❌ UPDATE EVENT ERROR:', err);
     res.status(500).json({ success: false });
   }
 });
 
+
+// ---------- DELETE EVENT ----------
 app.delete('/api/events/:id', async (req, res) => {
   try {
     const { id } = req.params;
@@ -395,25 +411,32 @@ app.delete('/api/events/:id', async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error('❌ Delete event error:', err);
+    console.error('❌ DELETE EVENT ERROR:', err);
     res.status(500).json({ success: false });
   }
 });
 
 
+// ---------- EVENT GALLERY ----------
 app.get('/api/events/:id/gallery', async (req, res) => {
-  const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-  const { data, error } = await supabase
-    .from('gallery')
-    .select('*')
-    .eq('event_id', id)
-    .order('created_at', { ascending: true });
+    const { data, error } = await supabase
+      .from('gallery')
+      .select('*')
+      .eq('event_id', id)
+      .order('created_at', { ascending: true });
 
-  if (error) return res.json({ files: [] });
-  res.json({ files: data });
+    if (error) throw error;
+
+    res.json({ files: data || [] });
+
+  } catch (err) {
+    console.error('❌ GALLERY ERROR:', err);
+    res.json({ files: [] });
+  }
 });
-
 
 // ===================================================
 //                     NEWS SECTION
