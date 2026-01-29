@@ -414,7 +414,7 @@
 // 🔐 ADMIN PAGE PROTECTION
  (function() {
   if (!localStorage.getItem('currentUser')) {
-    window.location.replace('login.html');
+    window.location.replace('/login');
   }
  })();
 </script>
@@ -483,25 +483,19 @@
   // ===============================
   // LOAD EVENTS
   // ===============================
-  
   async function loadEvents() {
-  try {
-    const res = await fetch('/api/events');
-    const data = await res.json();
+    try {
+      const res = await fetch('/api/events');
+      const data = await res.json();
 
-    // ✅ FIX HERE
-    events = data.events || [];
+      events = data.events || [];
+      console.log('Loaded events:', events);
 
-    console.log('Loaded events:', events);
-
-    renderEvents();
-  } catch (err) {
-    console.error('Events load pannala:', err);
+      renderEvents();
+    } catch (err) {
+      console.error('Events load pannala:', err);
+    }
   }
-}
-
-
-
 
   // ===============================
   // RENDER EVENTS
@@ -542,28 +536,27 @@
         <div class="event-actions">
           <button class="btn-small btn-edit" data-id="${event.id}">Edit</button>
           <button class="btn-small btn-delete" data-id="${event.id}">Delete</button>
-
         </div>
       </div>
     `).join('');
-
-   document.getElementById('eventsGrid').addEventListener('click', (e) => {
-  const btn = e.target;
-  const id = btn.getAttribute('data-id');
-
-  if (!id) return;
-
-  if (btn.classList.contains('btn-edit')) {
-    editEvent(Number(id));
   }
 
-  if (btn.classList.contains('btn-delete')) {
-    deleteEvent(Number(id));
-  }
-});
+  // ===============================
+  // EVENT BUTTON HANDLER (ONCE)
+  // ===============================
+  document.getElementById('eventsGrid').addEventListener('click', (e) => {
+    const btn = e.target;
+    const id = btn.getAttribute('data-id');
+    if (!id) return;
 
+    if (btn.classList.contains('btn-edit')) {
+      editEvent(Number(id));
+    }
 
-}
+    if (btn.classList.contains('btn-delete')) {
+      deleteEvent(Number(id));
+    }
+  });
 
   // ===============================
   // EDIT EVENT
@@ -576,7 +569,8 @@
 
     document.getElementById('eventId').value = event.id;
     document.getElementById('titleInput').value = event.title;
-    document.getElementById('dateInput').value = event.date;
+    document.getElementById('dateInput').value =
+    event.date?.split('T')[0] || '';
     document.getElementById('descInput').value = event.description || '';
 
     const mode = document.getElementById('modeIndicator');
@@ -598,9 +592,9 @@
     if (!confirm('Event delete pannalama?')) return;
 
     try {
-     const res = await fetch(`/api/events/${id}`, {
-     method: 'DELETE'
-    });
+      const res = await fetch(`/api/events/${id}`, {
+        method: 'DELETE'
+      });
 
       const data = await res.json();
 
@@ -639,30 +633,47 @@
   document.getElementById('eventForm').addEventListener('submit', async (e) => {
     e.preventDefault();
 
-    const formData = new FormData(e.target);
-
     try {
-      let url = '/api/events';
+      // ADD EVENT (with files)
+      if (!editingId) {
+        const formData = new FormData(e.target);
 
+        const res = await fetch('/api/events', {
+          method: 'POST',
+          body: formData
+        });
 
-      // ✅ UPDATE
-      if (editingId) {
-      url = `/api/events/${editingId}`;
+        const data = await res.json();
+
+        if (data.success) {
+          alert('Event added!');
+          await loadEvents();
+          resetForm();
+        } else {
+          alert('Add failed');
+        }
+        return;
       }
 
-     const res = await fetch(url, {
-     method: editingId ? 'PUT' : 'POST',
-     body: formData
-     });
+      // UPDATE EVENT (text only)
+      const res = await fetch(`/api/events/${editingId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: document.getElementById('titleInput').value,
+          date: document.getElementById('dateInput').value,
+          description: document.getElementById('descInput').value
+        })
+      });
 
       const data = await res.json();
 
       if (data.success) {
-        alert(editingId ? 'Event updated!' : 'Event added!');
+        alert('Event updated!');
         await loadEvents();
         resetForm();
       } else {
-        alert('Error!');
+        alert('Update failed');
       }
 
     } catch (err) {
@@ -678,6 +689,7 @@
   // ===============================
   loadEvents();
 </script>
+
 
 </body>
 </html>
