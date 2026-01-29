@@ -293,31 +293,27 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 // ===================================================
 app.post('/api/events', upload.array('files', 10), async (req, res) => {
   try {
-    console.log('FILES COUNT:', req.files?.length);
-
     const { title, date, description } = req.body;
 
-    const { data: event, error } = await supabase
-      .from('events')
-      .insert([{ title, date, description }])
-      .select()
-      .single();
-
-    if (error) throw error;
+    let fileUrls = [];
 
     if (req.files?.length) {
-      const galleryRows = [];
-
       for (const file of req.files) {
         const fileUrl = await uploadToSupabaseStorage(file);
-        galleryRows.push({
-          event_id: event.id,
-          file_url: fileUrl
-        });
+        fileUrls.push(fileUrl);
       }
-
-      await supabase.from('gallery').insert(galleryRows);
     }
+
+    const { error } = await supabase
+      .from('events')
+      .insert([{
+        title,
+        date,
+        description,
+        files: fileUrls   // 🔥 jsonb column
+      }]);
+
+    if (error) throw error;
 
     res.json({ success: true });
 
@@ -328,36 +324,32 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
 });
 
 
+
 app.get('/api/events', async (req, res) => {
   try {
-    const { data: events, error } = await supabase
+    const { data, error } = await supabase
       .from('events')
-      .select('*')
+      .select('id, title, date, description, files')
       .order('date', { ascending: true });
 
     if (error) throw error;
 
-    const { data: gallery } = await supabase
-      .from('gallery')
-      .select('*');
-
-    const finalEvents = events.map(ev => ({
+    const finalEvents = (data || []).map(ev => ({
       id: ev.id,
       title: ev.title,
       date: ev.date,
       description: ev.description,
-      files: gallery
-        .filter(g => String(g.event_id) === String(ev.id))
-        .map(g => g.file_url)
+      files: Array.isArray(ev.files) ? ev.files : [] // ✅ jsonb safe
     }));
 
     res.json({ events: finalEvents });
 
   } catch (err) {
     console.error('❌ Load events error:', err);
-    res.json({ events: [] });
+    res.status(500).json({ events: [] });
   }
 });
+
 
 app.put('/api/events/:id', async (req, res) => {
   try {
