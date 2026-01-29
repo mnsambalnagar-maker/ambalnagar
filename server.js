@@ -86,6 +86,39 @@ app.get('/newsview', (req, res) => {
   res.sendFile(path.join(__dirname, 'newsview.html'));
 });
 
+app.get('/next-event', (req, res) => {
+  res.sendFile(path.join(__dirname, 'next-event.html'));
+});
+
+app.get('/news', (req, res) => {
+  res.sendFile(path.join(__dirname, 'news.html'));
+});
+
+app.get('/servicework', (req, res) => {
+  res.sendFile(path.join(__dirname, 'servicework.html'));
+});
+
+app.get('/add-member', (req, res) => {
+  res.sendFile(path.join(__dirname, 'add-member.html'));
+});
+
+app.get('/newslist', (req, res) => {
+  res.sendFile(path.join(__dirname, 'newslist.html'));
+});
+
+app.get('/admin-users', (req, res) => {
+  res.sendFile(path.join(__dirname, 'admin-users.html'));
+});
+
+app.get('/membership-applications', (req, res) => {
+  res.sendFile(path.join(__dirname, 'membership-applications.html'));
+});
+
+app.get('/manage-member', (req, res) => {
+  res.sendFile(path.join(__dirname, 'manage-member.html'));
+});
+
+
 
 
 
