@@ -97,6 +97,21 @@ function loadJSON(filePath) {
   }
 }
 
+async function uploadToSupabaseStorage(file) {
+  const fileName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+
+  const { error } = await supabase.storage
+    .from('events')
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype
+    });
+
+  if (error) throw error;
+
+  return `${process.env.SUPABASE_URL}/storage/v1/object/public/events/${fileName}`;
+}
+
+
 // ===================================================
 //                     USERS SECTION
 // ===================================================
@@ -231,50 +246,50 @@ app.delete('/api/deleteUser/:username', (req, res) => {
   }
 });
 
-
-
-
-
-
-
-
 // ===================================================
 //                     EVENTS SECTION
 // ===================================================
-const EVENTS_JSON = path.join(__dirname, 'events.json');
-
-/* ---------- EVENT FILE UPLOAD ---------- */
-const eventStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads/events');
-    if (!fs.existsSync(uploadDir)) {
-      fs.mkdirSync(uploadDir, { recursive: true });
+app.post('/api/events', upload.array('files'), async (req, res) => {
+  try {
+    const { title, date, description } = req.body;
+    if (!title || !date) {
+      return res.json({ success: false, message: 'Title & Date required' });
     }
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safeName =
-      Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, safeName);
+
+    // 1️⃣ Insert event
+    const { data: event, error } = await supabase
+      .from('events')
+      .insert([{ title, date, description }])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    // 2️⃣ Upload files
+    if (req.files && req.files.length) {
+      const galleryRows = [];
+
+      for (const file of req.files) {
+        const fileUrl = await uploadToSupabaseStorage(file);
+        galleryRows.push({
+          event_id: event.id,
+          file_url: fileUrl
+        });
+      }
+
+      await supabase.from('gallery').insert(galleryRows);
+    }
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('❌ Add event error:', err);
+    res.status(500).json({ success: false });
   }
 });
 
-const eventUpload = multer({ storage: eventStorage });
-
-/* ---------- HELPERS ---------- */
-function loadEvents() {
-  return loadJSON(EVENTS_JSON);
-}
-
-function saveEvents(events) {
-  fs.writeFileSync(EVENTS_JSON, JSON.stringify(events, null, 2));
-}
-
-/* ---------- GET EVENTS ---------- */
 app.get('/api/events', async (req, res) => {
   try {
-    // 1️⃣ Get events from Supabase
     const { data: events, error } = await supabase
       .from('events')
       .select('*')
@@ -282,12 +297,10 @@ app.get('/api/events', async (req, res) => {
 
     if (error) throw error;
 
-    // 2️⃣ Get gallery
     const { data: gallery } = await supabase
       .from('gallery')
       .select('*');
 
-    // 3️⃣ Merge files into events (old format போல)
     const finalEvents = events.map(ev => ({
       id: ev.id,
       title: ev.title,
@@ -306,14 +319,10 @@ app.get('/api/events', async (req, res) => {
   }
 });
 
-/* ---------- UPDATE EVENT ---------- */
-app.post('/api/updateevent', async (req, res) => {
+app.put('/api/events/:id', async (req, res) => {
   try {
-    const { id, title, date, description } = req.body;
-
-    if (!id || !title || !date) {
-      return res.json({ success: false, message: 'ID, Title & Date required' });
-    }
+    const { id } = req.params;
+    const { title, date, description } = req.body;
 
     const { error } = await supabase
       .from('events')
@@ -325,112 +334,40 @@ app.post('/api/updateevent', async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error('❌ Update failed:', err);
+    console.error('❌ Update event error:', err);
     res.status(500).json({ success: false });
   }
 });
 
-
-
-
-
-/* ---------- ADD EVENT (SUPABASE ONLY) ---------- */
-app.post('/api/addevent', eventUpload.array('files'), async (req, res) => {
+app.delete('/api/events/:id', async (req, res) => {
   try {
-    const { title, date, description } = req.body;
+    const { id } = req.params;
 
-    if (!title || !date) {
-      return res.json({ success: false, message: 'Title & Date required' });
-    }
+    // delete gallery
+    await supabase.from('gallery').delete().eq('event_id', id);
 
-    // 1️⃣ Insert event into DB
-    const { data: event, error } = await supabase
-      .from('events')
-      .insert([{ title, date, description }])
-      .select()
-      .single();
-
-    if (error) {
-      console.error('Supabase event insert error:', error);
-      return res.status(500).json({ success: false });
-    }
-
-    // 2️⃣ Insert gallery files (if any)
-    if (req.files && req.files.length) {
-      const galleryRows = req.files.map(file => ({
-        event_id: event.id,
-        file_url: `/uploads/events/${file.filename}`
-      }));
-
-      const { error: galleryError } = await supabase
-        .from('gallery')
-        .insert(galleryRows);
-
-      if (galleryError) {
-        console.error('Gallery insert error:', galleryError);
-      }
-    }
+    // delete event
+    await supabase.from('events').delete().eq('id', id);
 
     res.json({ success: true });
 
   } catch (err) {
-    console.error('❌ Add event failed:', err);
+    console.error('❌ Delete event error:', err);
     res.status(500).json({ success: false });
   }
 });
 
-
-/* ---------- GET EVENTS (PUBLIC + ADMIN LIST) ---------- */
-app.get('/api/events', async (req, res) => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*')
-    .order('date', { ascending: true });
-
-  if (error) return res.json({ events: [] });
-  res.json({ events: data });
-});
-
-
-/* ---------- GET EVENT GALLERY ---------- */
-app.get('/api/gallery/:eventId', async (req, res) => {
-  const { eventId } = req.params;
+app.get('/api/events/:id/gallery', async (req, res) => {
+  const { id } = req.params;
 
   const { data, error } = await supabase
     .from('gallery')
     .select('*')
-    .eq('event_id', eventId)
+    .eq('event_id', id)
     .order('created_at', { ascending: true });
 
   if (error) return res.json({ files: [] });
   res.json({ files: data });
-});
-
-/* ---------- DELETE EVENT ---------- */
-app.delete('/api/deleteevent/:id', async (req, res) => {
-  try {
-    const { id } = req.params;
-
-    // 1️⃣ delete gallery
-    await supabase
-      .from('gallery')
-      .delete()
-      .eq('event_id', id);
-
-    // 2️⃣ delete event
-    const { error } = await supabase
-      .from('events')
-      .delete()
-      .eq('id', id);
-
-    if (error) throw error;
-
-    res.json({ success: true });
-
-  } catch (err) {
-    console.error('❌ Delete failed:', err);
-    res.status(500).json({ success: false });
-  }
 });
 
 
