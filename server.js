@@ -376,11 +376,12 @@ app.delete('/api/events/:id', async (req, res) => {
   try {
     const { id } = req.params;
 
-    // delete gallery
-    await supabase.from('gallery').delete().eq('event_id', id);
+    const { error } = await supabase
+      .from('events')
+      .delete()
+      .eq('id', id);
 
-    // delete event
-    await supabase.from('events').delete().eq('id', id);
+    if (error) throw error;
 
     res.json({ success: true });
 
@@ -389,6 +390,7 @@ app.delete('/api/events/:id', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
 
 app.get('/api/events/:id/gallery', async (req, res) => {
   const { id } = req.params;
