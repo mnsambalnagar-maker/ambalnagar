@@ -598,9 +598,9 @@
     if (!confirm('Event delete pannalama?')) return;
 
     try {
-      const res = await fetch(`/api/deleteevent/${id}`, {
-        method: 'DELETE'
-      });
+     const res = await fetch(`/api/events/${id}`, {
+     method: 'DELETE'
+    });
 
       const data = await res.json();
 
@@ -642,18 +642,18 @@
     const formData = new FormData(e.target);
 
     try {
-      let url = '/api/addevent';
+      let url = '/api/events';
+
 
       // ✅ UPDATE
       if (editingId) {
-        url = '/api/updateevent';
-        formData.append('id', editingId);
+      url = `/api/events/${editingId}`;
       }
 
-      const res = await fetch(url, {
-        method: 'POST',
-        body: formData
-      });
+     const res = await fetch(url, {
+     method: editingId ? 'PUT' : 'POST',
+     body: formData
+     });
 
       const data = await res.json();
 
