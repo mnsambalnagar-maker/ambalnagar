@@ -10,6 +10,12 @@ const app = express();
 require('dotenv').config();
 const supabase = require('./supabase'); // ✅ ONLY THIS
 
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 50 * 1024 * 1024 } // 50MB
+});
+
+
 app.get('/test-db', async (req, res) => {
   const { data, error } = await supabase
     .from('events')
