@@ -50,8 +50,8 @@ app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(bodyParser.json());
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(__dirname));
 
