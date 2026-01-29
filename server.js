@@ -24,12 +24,16 @@ const upload = multer({
 // ===============================
 // MIDDLEWARES (KEEP ONLY THIS)
 // ===============================
+// ===============================
+// GLOBAL MIDDLEWARES (ONLY ONCE)
+// ===============================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/img', express.static(path.join(__dirname, 'img')));
+
 
 // ===============================
 // TEST DB
@@ -39,25 +43,6 @@ app.get('/test-db', async (req, res) => {
   if (error) return res.status(500).json(error);
   res.json(data);
 });
-
-
-// ------------------ Static Files ------------------
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
-
-
-app.use('/img', express.static(path.join(__dirname, 'img')));
-
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-app.use(express.static(__dirname));
-
-
-
-
 
 // ---------- PAGE ROUTES ----------
 
