@@ -297,10 +297,10 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
 
     let fileUrls = [];
 
-    if (req.files?.length) {
+    if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const fileUrl = await uploadToSupabaseStorage(file);
-        fileUrls.push(fileUrl);
+        const url = await uploadToSupabaseStorage(file);
+        fileUrls.push(url);
       }
     }
 
@@ -310,7 +310,7 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
         title,
         date,
         description,
-        files: fileUrls   // 🔥 jsonb column
+        files: fileUrls // ✅ SAVE TO JSONB
       }]);
 
     if (error) throw error;
@@ -318,10 +318,11 @@ app.post('/api/events', upload.array('files', 10), async (req, res) => {
     res.json({ success: true });
 
   } catch (err) {
-    console.error('ADD EVENT ERROR:', err);
-    res.status(500).json({ success: false, error: err.message });
+    console.error('❌ ADD EVENT ERROR:', err);
+    res.status(500).json({ success: false });
   }
 });
+
 
 
 
@@ -334,18 +335,18 @@ app.get('/api/events', async (req, res) => {
 
     if (error) throw error;
 
-    const finalEvents = (data || []).map(ev => ({
-      id: ev.id,
-      title: ev.title,
-      date: ev.date,
-      description: ev.description,
-      files: Array.isArray(ev.files) ? ev.files : [] // ✅ jsonb safe
-    }));
-
-    res.json({ events: finalEvents });
+    res.json({
+      events: (data || []).map(e => ({
+        id: e.id,
+        title: e.title,
+        date: e.date,
+        description: e.description,
+        files: Array.isArray(e.files) ? e.files : []
+      }))
+    });
 
   } catch (err) {
-    console.error('❌ Load events error:', err);
+    console.error('❌ GET EVENTS ERROR:', err);
     res.status(500).json({ events: [] });
   }
 });
