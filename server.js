@@ -291,6 +291,16 @@ app.delete('/api/deleteUser/:username', (req, res) => {
 // ===================================================
 //                     EVENTS SECTION
 // ===================================================
+
+if (!title || !date || !description) {
+  return res.status(400).json({ success: false, message: 'Missing fields' });
+}
+
+// date validation
+if (isNaN(Date.parse(date))) {
+  return res.status(400).json({ success: false, message: 'Invalid date format' });
+}
+
 app.post('/api/events', upload.array('files', 10), async (req, res) => {
   try {
     const { title, date, description } = req.body;
