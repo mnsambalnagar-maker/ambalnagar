@@ -3,31 +3,43 @@ const express = require('express');
 const fs = require('fs');
 const path = require('path');
 const multer = require('multer');
-const bodyParser = require('body-parser');
 const QRCode = require('qrcode');
 const axios = require('axios');
 const app = express();
-require('dotenv').config();
-const supabase = require('./supabase'); // ✅ ONLY THIS
 
+require('dotenv').config();
+const supabase = require('./supabase');
+
+// ===============================
+// MULTER CONFIG (SAFE FOR RENDER)
+// ===============================
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 50 * 1024 * 1024, // per file
-    files: 10                  // 🔥 max 10 files
+    fileSize: 10 * 1024 * 1024, // 10MB per file
+    files: 10                  // max 10 files
   }
 });
 
+// ===============================
+// MIDDLEWARES (KEEP ONLY THIS)
+// ===============================
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
+app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
+app.use('/img', express.static(path.join(__dirname, 'img')));
 
+// ===============================
+// TEST DB
+// ===============================
 app.get('/test-db', async (req, res) => {
-  const { data, error } = await supabase
-    .from('events')
-    .select('*');
-
+  const { data, error } = await supabase.from('events').select('*');
   if (error) return res.status(500).json(error);
   res.json(data);
 });
+
 
 // ------------------ Static Files ------------------
 app.use(express.json());
