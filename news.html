@@ -244,7 +244,7 @@
 </style>
 </head>
 <div class="home-float">
-    <a href="index.html" aria-label="Go to home">
+    <a href="/index" aria-label="Go to home">
       <img src="img/home.png" alt="Home" />
     </a>
   </div>
@@ -354,7 +354,7 @@ document.getElementById('newsForm').addEventListener('submit', async (e) => {
 
   if (data.success) {
     document.getElementById('msg').innerText = 'News posted — redirecting...';
-    setTimeout(() => window.location.href = 'newslist.html', 800);
+    setTimeout(() => window.location.href = '/newslist', 800);
   } else {
     document.getElementById('msg').innerText = data.message || 'Failed to post news';
   }
