@@ -279,7 +279,7 @@
 
         <div>
           <label>Media (optional)</label>
-          <input type="file" name="image" accept="image/*,video/mp4" />
+          <input type="file" name="media" accept="image/*,video/mp4" />
           <div class="file-note">JPEG / PNG image or MP4 video, up to 100 MB.</div>
           <div id="previewWrap"></div>
         </div>
@@ -303,7 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   const form = document.getElementById('newsForm');
-  const mediaInput = document.querySelector('input[name="image"]');
+  const mediaInput = document.querySelector('input[name="media"]');
   const previewWrap = document.getElementById('previewWrap');
   const msg = document.getElementById('msg');
 
