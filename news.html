@@ -286,7 +286,7 @@
 
         <div>
           <label>Media (optional)</label>
-          <input type="file" name="media" accept="image/*,video/mp4" />
+          <input type="file" name="image" accept="image/*,video/mp4" />
           <div class="file-note">JPEG / PNG image or MP4 video, up to 100 MB.</div>
           <div id="previewWrap"></div>
         </div>
@@ -300,70 +300,81 @@
   </div>
 
 <script>
-  const stored = localStorage.getItem('currentUser');
- if (!stored) {
-  window.location.replace('login.html');
-}
+/* 🔐 ADMIN PAGE PROTECTION */
+(function () {
+  if (!localStorage.getItem('currentUser')) {
+    window.location.replace('login.html');
+  }
+})();
 
-const mediaInput = document.querySelector('input[name="media"]');
+/* 📷 PREVIEW IMAGE / VIDEO */
+const mediaInput = document.querySelector('input[name="image"]');
 const previewWrap = document.getElementById('previewWrap');
 
 mediaInput.addEventListener('change', (e) => {
   previewWrap.innerHTML = '';
   const f = e.target.files[0];
   if (!f) return;
+
   if (f.type.startsWith('image/')) {
     const img = document.createElement('img');
     img.src = URL.createObjectURL(f);
     img.className = 'preview';
     previewWrap.appendChild(img);
-  } else if (f.type.startsWith('video/')) {
+  } 
+  else if (f.type.startsWith('video/')) {
     const vid = document.createElement('video');
     vid.src = URL.createObjectURL(f);
     vid.controls = true;
     vid.className = 'preview';
     previewWrap.appendChild(vid);
-  } else {
+  } 
+  else {
     previewWrap.textContent = 'Preview not available';
   }
 });
 
+/* 📰 SUBMIT NEWS */
 document.getElementById('newsForm').addEventListener('submit', async (e) => {
   e.preventDefault();
+
   const form = e.target;
   const formData = new FormData(form);
+
   const title = formData.get('title')?.trim();
   const content = formData.get('content')?.trim();
-  if (!title || !content) return alert('Title and content are required');
 
- document.getElementById('newsForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const formData = new FormData(e.target);
-
-  const res = await fetch('/api/news', {
-    method: 'POST',
-    body: formData
-  });
-
-  const data = await res.json();
-
-  if (data.success) {
-    document.getElementById('msg').innerText = 'News posted — redirecting...';
-    setTimeout(() => window.location.href = '/newslist', 800);
-  } else {
-    document.getElementById('msg').innerText = data.message || 'Failed to post news';
+  if (!title || !content) {
+    alert('Title and content are required');
+    return;
   }
-});
 
+  try {
+    const res = await fetch('/api/news', {
+      method: 'POST',
+      body: formData
+    });
 
-  if (data.success) {
-    document.getElementById('msg').innerText = 'News posted — redirecting...';
-    setTimeout(() => window.location.href = '/newslist', 800);
-  } else {
-    document.getElementById('msg').innerText = data.message || 'Failed to post news';
+    const data = await res.json();
+
+    if (data.success) {
+      document.getElementById('msg').innerText = 'News posted successfully';
+      form.reset();
+      previewWrap.innerHTML = '';
+
+      setTimeout(() => {
+        window.location.href = '/newslist';
+      }, 800);
+    } else {
+      document.getElementById('msg').innerText =
+        data.message || 'Failed to post news';
+    }
+  } catch (err) {
+    console.error(err);
+    document.getElementById('msg').innerText = 'Server error';
   }
 });
 </script>
+
 </body>
 </html>

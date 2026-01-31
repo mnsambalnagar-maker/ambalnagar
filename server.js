@@ -465,120 +465,97 @@ async function uploadToSupabaseStorage(file) {
 
 
 // ===================================================
-//                     NEWS SECTION
+//                     NEWS SECTION (SUPABASE)
 // ===================================================
-const NEWS_JSON = path.join(__dirname, 'news.json');
 
-function loadNews() {
-  return loadJSON(NEWS_JSON);
-}
-
-const newsStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const mime = (file.mimetype || '').toLowerCase();
-    const base = mime.startsWith('video/') ? 'public/uploads/videos' : 'public/uploads/news';
-    const uploadDir = path.join(__dirname, base);
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const safe = Date.now() + '-' + file.originalname.replace(/[^a-zA-Z0-9._-]/g, '_');
-    cb(null, safe + ext);
-  }
-});
-
-const newsUpload = multer({
-  storage: newsStorage,
-  limits: { fileSize: 100 * 1024 * 1024 },
-  fileFilter: (req, file, cb) => {
-    const mim = file.mimetype || '';
-    if (mim.startsWith('image/') || mim.startsWith('video/')) cb(null, true);
-    else cb(new Error('Only image or video allowed'));
-  }
-});
-
-app.post('/api/addNews', (req, res) => {
-  const { title, content } = req.body;
-  if (!title || !content) return res.json({ success: false, message: 'Missing title or content' });
-
-  const allNews = loadNews();
-  allNews.push({
-    id: Date.now(),
-    title, content,
-    media: null,
-    mediaType: null,
-    date: new Date().toISOString()
-  });
-
-  fs.writeFileSync(NEWS_JSON, JSON.stringify(allNews, null, 2));
-  res.json({ success: true });
-});
-
-app.post('/api/addNewsMedia', newsUpload.single('media'), (req, res) => {
+app.post('/api/news', upload.single('media'), async (req, res) => {
   try {
     const { title, content } = req.body;
-    let mediaUrl = null, mediaType = null;
 
+    if (!title || !content) {
+      return res.json({ success: false, message: 'Missing fields' });
+    }
+
+    let imageUrl = null;
+
+    // upload image/video to Supabase storage (news bucket)
     if (req.file) {
-      if (req.file.mimetype.startsWith('video/')) {
-        mediaUrl = `/uploads/videos/${req.file.filename}`;
-        mediaType = 'video';
-      } else {
-        mediaUrl = `/uploads/news/${req.file.filename}`;
-        mediaType = 'image';
-      }
+      imageUrl = await uploadToSupabaseStorage(req.file, 'news');
     }
 
-    const allNews = loadNews();
-    allNews.push({
-      id: Date.now(),
-      title, content,
-      media: mediaUrl,
-      mediaType: mediaType,
-      date: new Date().toISOString()
-    });
+    const { error } = await supabase
+      .from('news')
+      .insert([{
+        title,
+        content,
+        image_url: imageUrl
+      }]);
 
-    fs.writeFileSync(NEWS_JSON, JSON.stringify(allNews, null, 2));
+    if (error) throw error;
+
     res.json({ success: true });
+
   } catch (err) {
-    console.error('addNewsMedia error:', err);
+    console.error('❌ ADD NEWS ERROR:', err);
     res.status(500).json({ success: false });
   }
 });
 
-app.get('/api/getNews', (req, res) => {
-  res.json(loadNews());
-});
-
-app.get('/api/news/:id', (req, res) => {
-  const allNews = loadNews();
-  const item = allNews.find(item => String(item.id) === req.params.id);
-  if (!item) return res.status(404).json({ success: false });
-  res.json(item);
-});
-
-app.delete('/api/deleteNews/:id', (req, res) => {
+app.get('/api/news', async (req, res) => {
   try {
-    const newsId = req.params.id;
-    let allNews = loadNews();
-    const item = allNews.find(n => String(n.id) === newsId);
+    const { data, error } = await supabase
+      .from('news')
+      .select('*')
+      .order('created_at', { ascending: false });
 
-    if (!item) return res.status(404).json({ success: false });
+    if (error) throw error;
 
-    if (item.media) {
-      const filePath = path.join(__dirname, 'public', item.media.replace(/^\/uploads\//, 'uploads/'));
-      if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
-    }
+    res.json({ news: data || [] });
 
-    allNews = allNews.filter(n => String(n.id) !== newsId);
-    fs.writeFileSync(NEWS_JSON, JSON.stringify(allNews, null, 2));
-    res.json({ success: true });
   } catch (err) {
-    console.error('deleteNews error:', err);
+    console.error('❌ GET NEWS ERROR:', err);
+    res.json({ news: [] });
+  }
+});
+
+app.put('/api/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, content } = req.body;
+
+    const { error } = await supabase
+      .from('news')
+      .update({ title, content })
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+
+  } catch (err) {
     res.status(500).json({ success: false });
   }
 });
+
+app.delete('/api/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { error } = await supabase
+      .from('news')
+      .delete()
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+
+  } catch (err) {
+    res.status(500).json({ success: false });
+  }
+});
+
+
 
 // ===============================
 // CONTACT → TELEGRAM BOT
