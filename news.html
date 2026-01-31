@@ -336,21 +336,26 @@ document.getElementById('newsForm').addEventListener('submit', async (e) => {
   const content = formData.get('content')?.trim();
   if (!title || !content) return alert('Title and content are required');
 
-  const mediaFile = formData.get('media');
-  const hasMedia = mediaFile && mediaFile.size > 0;
-  let res, data;
+ document.getElementById('newsForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
 
-  if (hasMedia) {
-    res = await fetch('/api/addNewsMedia', { method: 'POST', body: formData });
-    data = await res.json();
+  const formData = new FormData(e.target);
+
+  const res = await fetch('/api/news', {
+    method: 'POST',
+    body: formData
+  });
+
+  const data = await res.json();
+
+  if (data.success) {
+    document.getElementById('msg').innerText = 'News posted — redirecting...';
+    setTimeout(() => window.location.href = '/newslist', 800);
   } else {
-    res = await fetch('/api/addNews', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ title, content })
-    });
-    data = await res.json();
+    document.getElementById('msg').innerText = data.message || 'Failed to post news';
   }
+});
+
 
   if (data.success) {
     document.getElementById('msg').innerText = 'News posted — redirecting...';
