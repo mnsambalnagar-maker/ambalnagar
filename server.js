@@ -47,9 +47,17 @@ app.get('/test-db', async (req, res) => {
 // ---------- PAGE ROUTES ----------
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+// 👇 ADD THIS
+app.get('/index', (req, res) => {
+  res.redirect('/');
+});
+
+// Home page
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
+
 
 app.get('/about', (req, res) => {
   res.sendFile(path.join(__dirname, 'about.html'));
