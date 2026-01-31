@@ -248,14 +248,7 @@
       <img src="img/home.png" alt="Home" />
     </a>
   </div>
-  <script>
- // 🔐 ADMIN PAGE PROTECTION
- (function() {
-  if (!localStorage.getItem('currentUser')) {
-    window.location.replace('login.html');
-  }
- })();
-</script>
+  
 
 <body>
   <div class="page">
@@ -298,28 +291,29 @@
       </form>
     </div>
   </div>
-</body>
 
-<script>
+  <script>
 document.addEventListener('DOMContentLoaded', () => {
 
-  // 🔐 Admin check
-  if (!localStorage.getItem('currentUser')) {
+  // 🔐 Admin protection
+  const stored = localStorage.getItem('currentUser');
+  if (!stored) {
     window.location.replace('login.html');
     return;
   }
 
   const form = document.getElementById('newsForm');
-  const mediaInput = document.querySelector('input[name="media"]');
+  const mediaInput = document.querySelector('input[name="image"]');
   const previewWrap = document.getElementById('previewWrap');
   const msg = document.getElementById('msg');
 
-  if (!form) {
-    console.error('newsForm not found');
+  // ✅ Safety check
+  if (!form || !mediaInput) {
+    console.error('Form or media input not found');
     return;
   }
 
-  // Preview
+  // ---------- Preview ----------
   mediaInput.addEventListener('change', () => {
     previewWrap.innerHTML = '';
     const file = mediaInput.files[0];
@@ -339,11 +333,12 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 
-  // Submit
+  // ---------- Submit ----------
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
     const formData = new FormData(form);
+
     const title = formData.get('title')?.trim();
     const content = formData.get('content')?.trim();
 
@@ -361,20 +356,25 @@ document.addEventListener('DOMContentLoaded', () => {
       const data = await res.json();
 
       if (data.success) {
-        msg.innerText = '✅ News posted';
+        msg.innerText = 'News posted successfully';
         setTimeout(() => {
           window.location.href = '/newslist';
         }, 800);
       } else {
-        msg.innerText = data.message || '❌ Failed';
+        msg.innerText = data.message || 'Failed to post news';
       }
+
     } catch (err) {
       console.error(err);
-      msg.innerText = '❌ Server error';
+      msg.innerText = 'Server error';
     }
   });
 
 });
 </script>
+
+</body>
+
+
 
 </html>
