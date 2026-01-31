@@ -300,81 +300,73 @@
   </div>
 
 <script>
-/* 🔐 ADMIN PAGE PROTECTION */
-(function () {
+  // 🔐 ADMIN CHECK
   if (!localStorage.getItem('currentUser')) {
     window.location.replace('login.html');
   }
-})();
 
-/* 📷 PREVIEW IMAGE / VIDEO */
-const mediaInput = document.querySelector('input[name="image"]');
-const previewWrap = document.getElementById('previewWrap');
+  const form = document.getElementById('newsForm');
+  const mediaInput = document.querySelector('input[name="media"]');
+  const previewWrap = document.getElementById('previewWrap');
+  const msg = document.getElementById('msg');
 
-mediaInput.addEventListener('change', (e) => {
-  previewWrap.innerHTML = '';
-  const f = e.target.files[0];
-  if (!f) return;
+  // 🔍 Preview image / video
+  mediaInput.addEventListener('change', () => {
+    previewWrap.innerHTML = '';
+    const file = mediaInput.files[0];
+    if (!file) return;
 
-  if (f.type.startsWith('image/')) {
-    const img = document.createElement('img');
-    img.src = URL.createObjectURL(f);
-    img.className = 'preview';
-    previewWrap.appendChild(img);
-  } 
-  else if (f.type.startsWith('video/')) {
-    const vid = document.createElement('video');
-    vid.src = URL.createObjectURL(f);
-    vid.controls = true;
-    vid.className = 'preview';
-    previewWrap.appendChild(vid);
-  } 
-  else {
-    previewWrap.textContent = 'Preview not available';
-  }
-});
-
-/* 📰 SUBMIT NEWS */
-document.getElementById('newsForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const form = e.target;
-  const formData = new FormData(form);
-
-  const title = formData.get('title')?.trim();
-  const content = formData.get('content')?.trim();
-
-  if (!title || !content) {
-    alert('Title and content are required');
-    return;
-  }
-
-  try {
-    const res = await fetch('/api/news', {
-      method: 'POST',
-      body: formData
-    });
-
-    const data = await res.json();
-
-    if (data.success) {
-      document.getElementById('msg').innerText = 'News posted successfully';
-      form.reset();
-      previewWrap.innerHTML = '';
-
-      setTimeout(() => {
-        window.location.href = '/newslist';
-      }, 800);
-    } else {
-      document.getElementById('msg').innerText =
-        data.message || 'Failed to post news';
+    if (file.type.startsWith('image/')) {
+      const img = document.createElement('img');
+      img.src = URL.createObjectURL(file);
+      img.className = 'preview';
+      previewWrap.appendChild(img);
+    } else if (file.type.startsWith('video/')) {
+      const video = document.createElement('video');
+      video.src = URL.createObjectURL(file);
+      video.controls = true;
+      video.className = 'preview';
+      previewWrap.appendChild(video);
     }
-  } catch (err) {
-    console.error(err);
-    document.getElementById('msg').innerText = 'Server error';
-  }
-});
+  });
+
+  // 🚀 Submit news
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(form);
+    const title = formData.get('title')?.trim();
+    const content = formData.get('content')?.trim();
+
+    if (!title || !content) {
+      alert('Title and description required');
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/news', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        msg.innerText = '✅ News posted successfully';
+        setTimeout(() => {
+          window.location.href = '/newslist';
+        }, 800);
+      } else {
+        msg.innerText = data.message || '❌ Failed to post news';
+      }
+
+    } catch (err) {
+      console.error(err);
+      msg.innerText = '❌ Server error';
+    }
+  });
 </script>
+
 
 </body>
 </html>
