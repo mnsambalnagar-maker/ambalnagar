@@ -389,7 +389,7 @@ async function startNewsNotifyBar() {
           <div class="card-desc">${escapeHtml(n.content.substring(0, 60))}...</div>
           <div class="card-meta">
             ${new Date(n.created_at).toLocaleString()} ·
-            <a href="newsview.html?id=${n.id}" target="_blank">Read</a>
+            <a href="/newsview?id=${n.id}" target="_blank">Read</a>
           </div>
         </div>
       `;
