@@ -298,11 +298,15 @@
       </form>
     </div>
   </div>
+</body>
 
 <script>
-  // 🔐 ADMIN CHECK
+document.addEventListener('DOMContentLoaded', () => {
+
+  // 🔐 Admin check
   if (!localStorage.getItem('currentUser')) {
     window.location.replace('login.html');
+    return;
   }
 
   const form = document.getElementById('newsForm');
@@ -310,7 +314,12 @@
   const previewWrap = document.getElementById('previewWrap');
   const msg = document.getElementById('msg');
 
-  // 🔍 Preview image / video
+  if (!form) {
+    console.error('newsForm not found');
+    return;
+  }
+
+  // Preview
   mediaInput.addEventListener('change', () => {
     previewWrap.innerHTML = '';
     const file = mediaInput.files[0];
@@ -330,7 +339,7 @@
     }
   });
 
-  // 🚀 Submit news
+  // Submit
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
 
@@ -352,21 +361,20 @@
       const data = await res.json();
 
       if (data.success) {
-        msg.innerText = '✅ News posted successfully';
+        msg.innerText = '✅ News posted';
         setTimeout(() => {
           window.location.href = '/newslist';
         }, 800);
       } else {
-        msg.innerText = data.message || '❌ Failed to post news';
+        msg.innerText = data.message || '❌ Failed';
       }
-
     } catch (err) {
       console.error(err);
       msg.innerText = '❌ Server error';
     }
   });
+
+});
 </script>
 
-
-</body>
 </html>
