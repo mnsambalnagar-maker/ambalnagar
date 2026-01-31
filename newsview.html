@@ -20,27 +20,47 @@
 <script>
 const params = new URLSearchParams(window.location.search);
 const id = params.get('id');
-if(!id) document.getElementById('wrap').innerText = 'No id provided';
+
+const wrap = document.getElementById('wrap');
+
+if (!id) {
+  wrap.innerText = 'No news id provided';
+  throw new Error('No ID');
+}
+
 fetch('/api/news/' + id)
-  .then(r => r.json())
+  .then(res => res.json())
   .then(n => {
-    if(!n || !n.id) return document.getElementById('wrap').innerText = 'Not found';
-    const mediaHtml = n.media ? (n.mediaType === 'video' ? `<video controls src="${n.media}"></video>` : `<img src="${n.media}" alt="media">`) : '';
-    document.getElementById('wrap').innerHTML = `
+    if (!n || !n.id) {
+      wrap.innerText = 'News not found';
+      return;
+    }
+
+    const mediaHtml = n.image_url
+      ? `<img src="${n.image_url}" alt="news image">`
+      : '';
+
+    wrap.innerHTML = `
       <h1>${escapeHtml(n.title)}</h1>
-      <div class="meta">${new Date(n.date).toLocaleString()}</div>
+      <div class="meta">${new Date(n.created_at).toLocaleString()}</div>
       ${mediaHtml}
       <p>${escapeHtml(n.content)}</p>
     `;
   })
-  .catch(e => {
-    console.error(e);
-    document.getElementById('wrap').innerText = 'Error loading news';
+  .catch(err => {
+    console.error(err);
+    wrap.innerText = 'Error loading news';
   });
+
 function escapeHtml(s) {
-  if(!s) return '';
-  return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  if (!s) return '';
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;');
 }
 </script>
+
 </body>
 </html>

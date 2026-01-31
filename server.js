@@ -478,18 +478,13 @@ app.post('/api/news', upload.single('media'), async (req, res) => {
 
     let imageUrl = null;
 
-    // upload image/video to Supabase storage (news bucket)
     if (req.file) {
       imageUrl = await uploadToSupabaseStorage(req.file, 'news');
     }
 
     const { error } = await supabase
       .from('news')
-      .insert([{
-        title,
-        content,
-        image_url: imageUrl
-      }]);
+      .insert([{ title, content, image_url: imageUrl }]);
 
     if (error) throw error;
 
@@ -500,6 +495,7 @@ app.post('/api/news', upload.single('media'), async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+
 
 app.get('/api/news', async (req, res) => {
   try {
@@ -554,6 +550,28 @@ app.delete('/api/news/:id', async (req, res) => {
     res.status(500).json({ success: false });
   }
 });
+app.get('/api/news/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const { data, error } = await supabase
+      .from('news')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ success: false });
+    }
+
+    res.json(data);
+
+  } catch (err) {
+    console.error('❌ GET NEWS BY ID ERROR:', err);
+    res.status(500).json({ success: false });
+  }
+});
+
 
 
 

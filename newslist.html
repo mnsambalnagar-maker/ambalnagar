@@ -198,20 +198,25 @@
 </div>
 <script>
 async function load() {
-  const res = await fetch('/api/getNews');
+  const res = await fetch('/api/news');
   const data = await res.json();
   const box = document.getElementById('list');
-  if(!data || data.length === 0){
+
+  if (!data.news || data.news.length === 0) {
     box.innerHTML = '<b>No news yet</b>';
     return;
   }
-  box.innerHTML = data.map(n => {
-    const mediaHtml = n.media ? (n.mediaType === 'video' ? `<video controls src="${n.media}"></video>` : `<img src="${n.media}" alt="media">`) : '';
+
+  box.innerHTML = data.news.map(n => {
+    const mediaHtml = n.image_url
+      ? `<img src="${n.image_url}" alt="media">`
+      : '';
+
     return `
       <div class="item">
         <div class="meta">
           <strong>${escapeHtml(n.title)}</strong>
-          <div class="date">${new Date(n.date).toLocaleString()}</div>
+          <div class="date">${new Date(n.created_at).toLocaleString()}</div>
           <p>${escapeHtml(n.content)}</p>
           <div class="actions">
             <a class="view" href="newsview.html?id=${n.id}" target="_blank">View</a>
@@ -223,15 +228,28 @@ async function load() {
     `;
   }).join('');
 }
-function escapeHtml(s){ if(!s) return ''; return String(s).replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;'); }
+
+function escapeHtml(s){
+  if(!s) return '';
+  return String(s)
+    .replaceAll('&','&amp;')
+    .replaceAll('<','&lt;')
+    .replaceAll('>','&gt;')
+    .replaceAll('"','&quot;');
+}
+
 async function del(id){
   if(!confirm('Delete this news?')) return;
-  const res = await fetch('/api/deleteNews/' + id, { method: 'DELETE' });
+
+  const res = await fetch('/api/news/' + id, { method: 'DELETE' });
   const data = await res.json();
+
   if(data.success) load();
   else alert('Delete failed');
 }
+
 load();
 </script>
+
 </body>
 </html>

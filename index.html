@@ -359,23 +359,26 @@ footer p{ text-align:center; padding:10px; font-size:16px; color:black; margin-t
 <script>
 async function startNewsNotifyBar() {
   try {
-    const res = await fetch('/api/getNews');
+    const res = await fetch('/api/news');
     const data = await res.json();
-    if (!data || data.length === 0) {
+
+    if (!data.news || data.news.length === 0) {
       document.getElementById('notify-card').innerHTML = '<div>No news now</div>';
       return;
     }
-    data.sort((a,b)=>b.id-a.id);
+
+    const newsList = data.news.sort((a, b) => b.id - a.id);
     let idx = 0;
     const bar = document.getElementById('notify-card');
+
     function render() {
-      const n = data[idx];
-      let media = "";
-      if(n.media) {
-        media = n.mediaType==="video"
-          ? `<video src="${n.media}" muted playsinline preload="metadata"></video>`
-          : `<img src="${n.media}" alt="thumb" />`;
+      const n = newsList[idx];
+
+      let media = '';
+      if (n.image_url) {
+        media = `<img src="${n.image_url}" alt="news" />`;
       }
+
       bar.classList.remove("off");
       bar.classList.add("on");
 
@@ -383,24 +386,32 @@ async function startNewsNotifyBar() {
         ${media}
         <div class="card-main">
           <div class="card-title">${escapeHtml(n.title)}</div>
-          <div class="card-desc">${escapeHtml(n.content.substring(0,60))}...</div>
-          <div class="card-meta">${new Date(n.date).toLocaleTimeString()} · <a href="newsview.html?id=${n.id}" style="color:#003d99;text-decoration:none" target="_blank">Read</a></div>
-        </div>`;
-      
-      setTimeout(()=>{
+          <div class="card-desc">${escapeHtml(n.content.substring(0, 60))}...</div>
+          <div class="card-meta">
+            ${new Date(n.created_at).toLocaleString()} ·
+            <a href="newsview.html?id=${n.id}" target="_blank">Read</a>
+          </div>
+        </div>
+      `;
+
+      setTimeout(() => {
         bar.classList.remove("on");
         bar.classList.add("off");
-        setTimeout(()=>{
-          idx = (idx+1)%data.length;
+        setTimeout(() => {
+          idx = (idx + 1) % newsList.length;
           render();
         }, 1900);
       }, 4000);
     }
+
     render();
-  } catch(err) {
+
+  } catch (err) {
+    console.error(err);
     document.getElementById('notify-card').innerHTML = 'Unable to load news';
   }
 }
+
 function escapeHtml(str) {
   if (!str) return '';
   return String(str)
@@ -410,7 +421,8 @@ function escapeHtml(str) {
     .replaceAll('"','&quot;')
     .replaceAll("'",'&#039;');
 }
-startNewsNotifyBar();
+
+startNewsNotifyBar()
 
 // 🔐 Home user pill: logout ஆன பிறகு show ஆகக்கூடாது
 const stored = localStorage.getItem('currentUser');
