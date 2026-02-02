@@ -44,7 +44,7 @@ app.get('/test-db', async (req, res) => {
 
 // ---------- PAGE ROUTES ----------
 
-app.use(express.static(path.join(__dirname, 'public')));
+
 
 // 👇 ADD THIS
 app.get('/index', (req, res) => {
@@ -160,6 +160,12 @@ async function uploadToSupabaseStorage(file) {
   if (error) throw error;
 
   return `${process.env.SUPABASE_URL}/storage/v1/object/public/events/${fileName}`;
+}
+
+function loadUsers() {
+  const file = path.join(__dirname, 'users.json');
+  if (!fs.existsSync(file)) return [];
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
 
 
@@ -992,6 +998,12 @@ app.get('/api/visitors', (req, res) => {
 
   res.json({ count: visitorCount });
 });
+
+// ===============================
+// STATIC FILES (ALWAYS LAST)
+// ===============================
+app.use(express.static(path.join(__dirname, 'public')));
+
 
 
 

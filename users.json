@@ -8,8 +8,8 @@
     "phone": "",
     "joined": "",
     "avatar": "img/avatar1.png",
-    "otp": "506934",
-    "otpExpiry": 1768024615339
+    "otp": null,
+    "otpExpiry": null
   },
   {
     "username": "saravanan",
