@@ -167,6 +167,9 @@ async function uploadToSupabaseStorage(file) {
 
 
 
+
+
+
 // ================================
 // ADD MEMBER (WITH PHOTO)
 // ================================
@@ -304,10 +307,8 @@ app.delete('/api/deleteUser/:id', async (req, res) => {
   res.json({ success: true });
 });
 
-// ================================
-app.listen(3000, () => {
-  console.log('✅ Member server running on http://localhost:3000');
-});
+
+
 
 
 // ===================================================
@@ -991,6 +992,9 @@ app.get('/api/visitors', (req, res) => {
 
   res.json({ count: visitorCount });
 });
+
+
+
 
 // ===================================================
 //                  START SERVER
