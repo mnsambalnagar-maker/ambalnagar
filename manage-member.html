@@ -149,12 +149,19 @@
   <script>
   const membersContainer = document.getElementById('membersContainer');
 
-  async function deleteMember(username) {
-    if (!confirm(`Are you sure to delete member "${username}"? This action cannot be undone.`)) return;
+  // -------------------------------
+  // DELETE MEMBER (ID BASED)
+  // -------------------------------
+  async function deleteMember(id) {
+    if (!confirm('Are you sure to delete this member? This action cannot be undone.')) return;
 
     try {
-      const res = await fetch(`/api/deleteUser/${encodeURIComponent(username)}`, { method: 'DELETE' });
+      const res = await fetch(`/api/deleteUser/${id}`, {
+        method: 'DELETE'
+      });
+
       const data = await res.json();
+
       if (data.success) {
         alert('Member deleted successfully.');
         location.reload();
@@ -167,34 +174,44 @@
     }
   }
 
+  // -------------------------------
+  // LOAD MEMBERS
+  // -------------------------------
   fetch('/api/getUsers')
     .then(res => res.json())
     .then(users => {
       membersContainer.innerHTML = '';
-      // member role மட்டும் show பண்ணு
+
       users
         .filter(user => (user.role || 'admin') === 'member')
         .forEach(user => {
+
           const card = document.createElement('div');
           card.className = 'member-card';
 
-          const photo = user.photo ? user.photo : 'img/profile-default.png';
+          const photo = user.photo_url || 'img/profile-default.png';
 
           card.innerHTML = `
-            <img src="${photo}" alt="${user.username} photo" class="member-photo"
-                 onerror="this.src='img/profile-default.png'"/>
+            <img src="${photo}"
+                 alt="${user.username} photo"
+                 class="member-photo"
+                 onerror="this.src='img/profile-default.png'" />
+
             <div class="member-info">
               <h3>${user.username}</h3>
               <p><strong>Phone:</strong> ${user.phone || '-'}</p>
-              <p><strong>Role:</strong> ${(user.role || 'member')}</p>
+              <p><strong>Role:</strong> ${user.role || 'member'}</p>
             </div>
+
             <div class="button-row">
-              <a href="edit-member.html?username=${encodeURIComponent(user.username)}"
+              <a href="/edit-member?id=${user.id}"
                  class="edit-button">Edit</a>
+
               <button class="delete-button"
-                      onclick="deleteMember('${user.username}')">Delete</button>
+                      onclick="deleteMember('${user.id}')">Delete</button>
             </div>
           `;
+
           membersContainer.appendChild(card);
         });
 
@@ -206,12 +223,15 @@
       membersContainer.innerHTML = '<p>Unable to load member profiles.</p>';
     });
 
-    const stored = localStorage.getItem('currentUser');
-   if (!stored) {
-   window.location.replace('login.html');
-}
- 
+  // -------------------------------
+  // BASIC LOGIN CHECK
+  // -------------------------------
+  const stored = localStorage.getItem('currentUser');
+  if (!stored) {
+    window.location.replace('login.html');
+  }
 </script>
+
 
 
 </body>

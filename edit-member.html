@@ -81,71 +81,94 @@
   </div>
 
   <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const username = urlParams.get('username');
+  // -------------------------------
+  // GET ID FROM URL
+  // -------------------------------
+  const urlParams = new URLSearchParams(window.location.search);
+  const id = urlParams.get('id');
 
-    async function fetchMemberData() {
-      try {
-        const res = await fetch('/api/getUsers');
-        const users = await res.json();
-        const member = users.find(u => u.username === username);
-        if (!member) {
-          alert('Member not found!');
-          window.location.href = 'manage-members.html';
-          return;
-        }
-        document.getElementById('username').value = member.username;
-        document.getElementById('email').value = member.email || '';
-        document.getElementById('phone').value = member.phone || '';
-        document.getElementById('role').value = member.role || 'member';
-        const photoURL = `uploads/${member.username}.jpg`;
-        document.getElementById('memberPhoto').src = photoURL;
-        document.getElementById('memberPhoto').onerror = () => {
-          document.getElementById('memberPhoto').src = 'img/profile-default.jpeg';
-        };
-      } catch (err) {
-        alert('Error loading member data');
-        console.error(err);
+  // -------------------------------
+  // FETCH MEMBER DATA
+  // -------------------------------
+  async function fetchMemberData() {
+    try {
+      const res = await fetch('/api/getUsers');
+      const users = await res.json();
+
+      const member = users.find(u => u.id === id);
+
+      if (!member) {
+        alert('Member not found!');
+        window.location.href = '/manage-member';
+        return;
       }
+
+      // fill form fields
+      document.getElementById('username').value = member.username || '';
+      document.getElementById('email').value = member.email || '';
+      document.getElementById('phone').value = member.phone || '';
+      document.getElementById('role').value = member.role || 'member';
+
+      // set photo (Supabase URL)
+      document.getElementById('memberPhoto').src =
+        member.photo_url || 'img/profile-default.jpeg';
+
+    } catch (err) {
+      alert('Error loading member data');
+      console.error(err);
+    }
+  }
+
+  fetchMemberData();
+
+  // -------------------------------
+  // PHOTO PREVIEW
+  // -------------------------------
+  document.getElementById('photoInput').addEventListener('change', (e) => {
+    if (e.target.files[0]) {
+      document.getElementById('memberPhoto').src =
+        URL.createObjectURL(e.target.files[0]);
+    }
+  });
+
+  // -------------------------------
+  // UPDATE MEMBER
+  // -------------------------------
+  document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData();
+    formData.append('id', id); // IMPORTANT
+    formData.append('username', document.getElementById('username').value);
+    formData.append('email', document.getElementById('email').value);
+    formData.append('phone', document.getElementById('phone').value);
+    formData.append('role', document.getElementById('role').value);
+
+    const photoFile = document.getElementById('photoInput').files[0];
+    if (photoFile) {
+      formData.append('photo', photoFile);
     }
 
-    fetchMemberData();
+    try {
+      const res = await fetch('/api/updateUserWithPhoto', {
+        method: 'POST',
+        body: formData
+      });
 
-    // Photo preview
-    document.getElementById('photoInput').addEventListener('change', (e) => {
-      if(e.target.files[0]) {
-        document.getElementById('memberPhoto').src = URL.createObjectURL(e.target.files[0]);
+      const data = await res.json();
+
+      if (data.success) {
+        alert('Member updated successfully!');
+        window.location.href = '/members';
+      } else {
+        alert('Failed to update member.');
       }
-    });
+    } catch (err) {
+      alert('Server error, try again later.');
+      console.error(err);
+    }
+  });
+</script>
 
-    // Save updated member data with photo
-    document.getElementById('editMemberForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData();
-      formData.append('username', document.getElementById('username').value);
-      formData.append('email', document.getElementById('email').value);
-      formData.append('phone', document.getElementById('phone').value);
-      formData.append('role', document.getElementById('role').value);
-      const photoFile = document.getElementById('photoInput').files[0];
-      if(photoFile) formData.append('photo', photoFile);
-
-      try {
-        const res = await fetch('/api/updateUserWithPhoto', {
-          method: 'POST',
-          body: formData
-        });
-        const data = await res.json();
-        if(data.success) {
-          alert('Member updated successfully!');
-          window.location.href = 'members.html'; // redirect to public members page
-        } else {
-          alert('Failed to update member.');
-        }
-      } catch(err) {
-        alert('Server error, try again later.');
-        console.error(err);
-      }
-    });
-  </script>
 </body>
 </html>

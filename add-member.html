@@ -269,39 +269,40 @@
   </div>
 
   <script>
-    document.getElementById('addMemberForm').onsubmit = async function(e) {
-      e.preventDefault();
+  document.getElementById('addMemberForm').addEventListener('submit', async function (e) {
+    e.preventDefault();
 
-      const formData = new FormData();
-      formData.append('username', document.getElementById('username').value.trim());
-      formData.append('phone', document.getElementById('phone').value);
-      formData.append('role', document.getElementById('role').value);
-      formData.append('joined', document.getElementById('joined').value);
+    const formData = new FormData();
+    formData.append('username', document.getElementById('username').value.trim());
+    formData.append('phone', document.getElementById('phone').value);
+    formData.append('role', document.getElementById('role').value);
+    formData.append('joined', document.getElementById('joined').value);
 
-      const photoFile = document.getElementById('photoInput').files[0];
-      if (photoFile) {
-        formData.append('photo', photoFile);
+    const photoFile = document.getElementById('photoInput').files[0];
+    if (photoFile) {
+      formData.append('photo', photoFile);
+    }
+
+    try {
+      const res = await fetch('/api/addUserWithPhoto', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        alert('Member added successfully!');
+        window.location.href = '/members';
+      } else {
+        alert(data.message || 'Failed to add member.');
       }
+    } catch (error) {
+      alert('Server error, please try again later.');
+      console.error(error);
+    }
+  });
+</script>
 
-      try {
-        const res = await fetch('/api/addUserWithPhoto', {
-          method: 'POST',
-          body: formData
-        });
-
-        const data = await res.json();
-
-        if (data.success) {
-          alert('Member added successfully!');
-          location.href = 'members.html';
-        } else {
-          alert(data.message || 'Failed to add member.');
-        }
-      } catch (error) {
-        alert('Server error, please try again later.');
-        console.error(error);
-      }
-    };
-  </script>
 </body>
 </html>

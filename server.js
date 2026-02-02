@@ -21,16 +21,14 @@ const upload = multer({
   }
 });
 
-// ===============================
-// MIDDLEWARES (KEEP ONLY THIS)
-// ===============================
+
 // ===============================
 // GLOBAL MIDDLEWARES (ONLY ONCE)
 // ===============================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.use(express.static(path.join(__dirname, 'public')));
+
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/img', express.static(path.join(__dirname, 'img')));
 
@@ -126,6 +124,9 @@ app.get('/manage-member', (req, res) => {
   res.sendFile(path.join(__dirname, 'manage-member.html'));
 });
 
+app.get('/edit-member', (req, res) => {
+  res.sendFile(path.join(__dirname, 'edit-member.html'));
+});
 
 
 
@@ -162,139 +163,152 @@ async function uploadToSupabaseStorage(file) {
 }
 
 
-// ===================================================
-//                     USERS SECTION
-// ===================================================
-function loadUsers() {
-  return loadJSON(path.join(__dirname, 'users.json'));
-}
 
-const userPhotoStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const uploadDir = path.join(__dirname, 'public/uploads');
-    if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
-    cb(null, uploadDir);
-  },
-  filename: (req, file, cb) => {
-    const ext = path.extname(file.originalname).toLowerCase();
-    const base = (req.body.username && String(req.body.username).trim()) || String(Date.now());
-    const safeBase = base.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 80);
-    cb(null, `${safeBase}${ext}`);
+
+
+
+// ================================
+// ADD MEMBER (WITH PHOTO)
+// ================================
+app.post('/api/addUserWithPhoto', upload.single('photo'), async (req, res) => {
+  try {
+    const { username, phone, role, joined } = req.body;
+    let photo_url = null;
+
+    if (!username) {
+      return res.json({ success: false, message: 'Username required' });
+    }
+
+    // upload photo
+    if (req.file) {
+      const ext = req.file.originalname.split('.').pop();
+      const fileName = `member_${Date.now()}_${username}.${ext}`;
+
+      const { error: uploadErr } = await supabase
+        .storage
+        .from('member-photos')
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype
+        });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data } = supabase
+        .storage
+        .from('member-photos')
+        .getPublicUrl(fileName);
+
+      photo_url = data.publicUrl;
+    }
+
+    const { error } = await supabase
+      .from('members')
+      .insert([{
+        username,
+        phone,
+        role: role || 'member',
+        joined,
+        photo_url
+      }]);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false, message: 'Add member failed' });
   }
 });
-const userPhotoUpload = multer({ storage: userPhotoStorage });
 
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const users = loadUsers();
-  const user = users.find(u => String(u.username).toLowerCase() === String(username).toLowerCase());
+// ================================
+// GET ALL MEMBERS (ADMIN + PUBLIC)
+// ================================
+app.get('/api/getUsers', async (req, res) => {
+  const { data, error } = await supabase
+    .from('members')
+    .select('*')
+    .order('created_at', { ascending: false });
 
-  if (!user || String(user.password) !== String(password)) {
-    return res.json({ success: false, message: 'Invalid username or password' });
+  if (error) {
+    console.error(error);
+    return res.json([]);
   }
 
-  return res.json({
-    success: true,
-    username: user.username,
-    name: user.name || user.username,
-    role: user.role || 'admin'
-  });
+  res.json(data);
 });
 
-app.get('/api/getUsers', (req, res) => {
-  res.json(loadUsers());
+// ================================
+// UPDATE MEMBER (WITH PHOTO)
+// ================================
+app.post('/api/updateUserWithPhoto', upload.single('photo'), async (req, res) => {
+  try {
+    const { id, username, phone, role, joined } = req.body;
+
+    if (!id) {
+      return res.json({ success: false, message: 'ID required' });
+    }
+
+    let updateData = { username, phone, role, joined };
+
+    if (req.file) {
+      const ext = req.file.originalname.split('.').pop();
+      const fileName = `member_${Date.now()}_${username}.${ext}`;
+
+      const { error: uploadErr } = await supabase
+        .storage
+        .from('member-photos')
+        .upload(fileName, req.file.buffer, {
+          contentType: req.file.mimetype
+        });
+
+      if (uploadErr) throw uploadErr;
+
+      const { data } = supabase
+        .storage
+        .from('member-photos')
+        .getPublicUrl(fileName);
+
+      updateData.photo_url = data.publicUrl;
+    }
+
+    const { error } = await supabase
+      .from('members')
+      .update(updateData)
+      .eq('id', id);
+
+    if (error) throw error;
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.json({ success: false });
+  }
 });
 
-app.post('/api/addUser', (req, res) => {
-  const newUser = req.body;
-  const file = path.join(__dirname, 'users.json');
-  const users = loadUsers();
+// ================================
+// DELETE MEMBER
+// ================================
+app.delete('/api/deleteUser/:id', async (req, res) => {
+  const { id } = req.params;
 
-  if (users.find(u => u.username === newUser.username)) {
-    return res.json({ success: false, message: 'Username already exists' });
+  const { error } = await supabase
+    .from('members')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    console.error(error);
+    return res.json({ success: false });
   }
 
-  users.push(newUser);
-  fs.writeFileSync(file, JSON.stringify(users, null, 2));
   res.json({ success: true });
 });
 
-app.post('/api/addUserWithPhoto', userPhotoUpload.single('photo'), (req, res) => {
-  try {
-    const newUser = req.body || {};
-    const filePath = path.join(__dirname, 'users.json');
-    const users = loadUsers();
-
-    if (req.file && req.file.filename) {
-      newUser.photo = '/uploads/' + req.file.filename;
-    }
-
-    if (users.find(u => u.username === newUser.username)) {
-      return res.json({ success: false, message: 'Username already exists' });
-    }
-
-    users.push(newUser);
-    fs.writeFileSync(filePath, JSON.stringify(users, null, 2));
-    res.json({ success: true });
-  } catch (err) {
-    console.error('addUserWithPhoto error:', err);
-    res.json({ success: false, message: 'Server error' });
-  }
+// ================================
+app.listen(3000, () => {
+  console.log('✅ Member server running on http://localhost:3000');
 });
 
-app.post('/api/updateUser', (req, res) => {
-  try {
-    const updatedUser = req.body;
-    const file = path.join(__dirname, 'users.json');
-    let users = loadUsers();
-
-    users = users.map(u => (u.username === updatedUser.username ? { ...u, ...updatedUser } : u));
-    fs.writeFileSync(file, JSON.stringify(users, null, 2));
-    res.json({ success: true });
-  } catch (err) {
-    res.json({ success: false, message: 'Server error' });
-  }
-});
-
-app.post('/api/updateUserWithPhoto', userPhotoUpload.single('photo'), (req, res) => {
-  try {
-    const updatedUser = req.body || {};
-    if (req.file && req.file.filename) {
-      updatedUser.photo = '/uploads/' + req.file.filename;
-    }
-
-    const file = path.join(__dirname, 'users.json');
-    let users = loadUsers();
-
-    users = users.map(u => (u.username === updatedUser.username ? { ...u, ...updatedUser } : u));
-    fs.writeFileSync(file, JSON.stringify(users, null, 2));
-    res.json({ success: true });
-  } catch (err) {
-    console.error('updateUserWithPhoto error:', err);
-    res.json({ success: false, message: 'Server error' });
-  }
-});
-
-app.delete('/api/deleteUser/:username', (req, res) => {
-  try {
-    const usernameToDelete = req.params.username;
-    const file = path.join(__dirname, 'users.json');
-    let users = loadUsers();
-
-    users = users.filter(u => u.username !== usernameToDelete);
-    fs.writeFileSync(file, JSON.stringify(users, null, 2));
-
-    const jpg = path.join(__dirname, 'public/uploads', `${usernameToDelete}.jpg`);
-    const png = path.join(__dirname, 'public/uploads', `${usernameToDelete}.png`);
-    if (fs.existsSync(jpg)) fs.unlinkSync(jpg);
-    if (fs.existsSync(png)) fs.unlinkSync(png);
-
-    res.json({ success: true });
-  } catch (err) {
-    console.error('deleteUser error:', err);
-    res.json({ success: false, message: 'Delete failed' });
-  }
-});
 
 // ===================================================
 //                     EVENTS SECTION
