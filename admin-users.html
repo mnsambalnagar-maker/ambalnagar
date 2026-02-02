@@ -255,7 +255,7 @@
 
       async function loadUsers() {
         try {
-          const res = await fetch('/api/getUsers');
+          const res = await fetch('/api/users');
           const users = await res.json();
           renderUsers(users);
         } catch (err) {
@@ -455,7 +455,7 @@
 
         if (!confirm('Delete user "' + username + '" ?')) return;
         try {
-          const res = await fetch('/api/deleteUser/' + encodeURIComponent(username), {
+          fetch('/api/deleteAdmin/' + encodeURIComponent(username), {
             method:'DELETE'
           });
           const data = await res.json();

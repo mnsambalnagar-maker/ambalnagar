@@ -747,6 +747,109 @@ app.post('/api/login-step2', (req, res) => {
   });
 });
 
+// ===============================
+// ADMIN USERS (users.json)
+// ===============================
+const USERS_FILE = path.join(__dirname, 'users.json');
+
+// ---------- helpers ----------
+function readUsers() {
+  if (!fs.existsSync(USERS_FILE)) return [];
+  try {
+    return JSON.parse(fs.readFileSync(USERS_FILE, 'utf8'));
+  } catch {
+    return [];
+  }
+}
+
+function writeUsers(data) {
+  fs.writeFileSync(USERS_FILE, JSON.stringify(data, null, 2));
+}
+
+// ===============================
+// GET ALL USERS (ADMIN PAGE)
+// ===============================
+app.get('/api/users', (req, res) => {
+  const users = readUsers();
+  res.json(users);
+});
+
+// ===============================
+// ADD USER (ADMIN CREATE)
+// ===============================
+app.post('/api/addUser', (req, res) => {
+  const users = readUsers();
+  const { username, password, role, phone, joined, email, avatar } = req.body;
+
+  if (!username) {
+    return res.json({ success: false, message: 'Username required' });
+  }
+
+  if (users.some(u => u.username === username)) {
+    return res.json({ success: false, message: 'Username already exists' });
+  }
+
+  users.push({
+    username,
+    password: password || '',
+    role: role || 'admin',
+    phone: phone || '',
+    joined: joined || '',
+    email: email || '',
+    avatar: avatar || 'img/avatar1.png',
+    otp: null,
+    otpExpiry: null
+  });
+
+  writeUsers(users);
+  res.json({ success: true });
+});
+
+// ===============================
+// UPDATE USER (ADMIN EDIT)
+// ===============================
+app.post('/api/updateUser', (req, res) => {
+  const users = readUsers();
+  const { username, password, role, phone, joined, email, avatar } = req.body;
+
+  const idx = users.findIndex(u => u.username === username);
+  if (idx === -1) {
+    return res.json({ success: false, message: 'User not found' });
+  }
+
+  users[idx] = {
+    ...users[idx],
+    role: role ?? users[idx].role,
+    phone: phone ?? users[idx].phone,
+    joined: joined ?? users[idx].joined,
+    email: email ?? users[idx].email,
+    avatar: avatar ?? users[idx].avatar,
+    password: password ? password : users[idx].password
+  };
+
+  writeUsers(users);
+  res.json({ success: true });
+});
+
+// ===============================
+// DELETE USER (ADMIN DELETE)
+// ===============================
+app.delete('/api/deleteAdmin/:username', (req, res) => {
+  const { username } = req.params;
+  const users = readUsers();
+
+  // ❌ safety: never delete mainadmin
+  if (username === 'mainadmin') {
+    return res.json({ success: false, message: 'Cannot delete mainadmin' });
+  }
+
+  const filtered = users.filter(u => u.username !== username);
+  writeUsers(filtered);
+
+  res.json({ success: true });
+});
+
+
 
 // ===================================================
 //             CATEGORY & MEMBERS SYSTEM
