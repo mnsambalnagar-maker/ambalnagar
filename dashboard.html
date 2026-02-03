@@ -617,7 +617,7 @@
 
     async function loadPendingApplications() {
   try {
-    const res = await fetch('/api/membership/pending');
+    const res = await fetch('/api/admin/applications');
     const data = await res.json();
 
     document.getElementById('pendingCount').textContent = data.length;
