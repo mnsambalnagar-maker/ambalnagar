@@ -199,28 +199,7 @@ body{
   </div>
 </div>
 
-<!-- Supabase CDN -->
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-
 <script>
-/* =========================
-   SUPABASE CONFIG
-========================= */
-const SUPABASE_URL = "YOUR_SUPABASE_URL";
-const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
-
-/* ⚠️ IMPORTANT
-   supabase variable name change panniruken
-   to avoid 'already declared' error
-*/
-const supabaseClient = supabase.createClient(
-  SUPABASE_URL,
-  SUPABASE_ANON_KEY
-);
-
-/* =========================
-   ADD OFFICE BEARER
-========================= */
 async function addBearer() {
   const name = document.getElementById("name").value.trim();
   const role = document.getElementById("role").value;
@@ -231,32 +210,23 @@ async function addBearer() {
     return;
   }
 
-  const fileName = Date.now() + "-" + file.name;
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("role", role);
+  formData.append("photo", file);
 
-  // Upload image to Supabase Storage
-  const { error: uploadError } = await supabaseClient
-    .storage
-    .from("office-bearers")
-    .upload(fileName, file);
+  const res = await fetch("/api/office-bearers", {
+    method: "POST",
+    body: formData
+  });
 
-  if (uploadError) {
-    alert(uploadError.message);
+  const data = await res.json();
+
+  if (!data.success) {
+    alert("Upload failed");
     return;
   }
 
-  const image_url =
-    SUPABASE_URL +
-    "/storage/v1/object/public/office-bearers/" +
-    fileName;
-
-  // Save data to DB via server API
-  await fetch("/api/office-bearers", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, role, image_url })
-  });
-
-  // Clear form
   document.getElementById("name").value = "";
   document.getElementById("role").value = "";
   document.getElementById("photo").value = "";
@@ -264,9 +234,6 @@ async function addBearer() {
   loadBearers();
 }
 
-/* =========================
-   LOAD OFFICE BEARERS
-========================= */
 async function loadBearers() {
   const res = await fetch("/api/office-bearers");
   const data = await res.json();
@@ -277,7 +244,7 @@ async function loadBearers() {
   data.forEach(b => {
     list.innerHTML += `
       <div class="card">
-        <img src="${b.image_url}" alt="">
+        <img src="${b.image_url}">
         <b>${b.name}</b>
         <span>${b.role}</span>
         <button onclick="deleteBearer(${b.id})">Delete</button>
@@ -286,19 +253,11 @@ async function loadBearers() {
   });
 }
 
-/* =========================
-   DELETE OFFICE BEARER
-========================= */
 async function deleteBearer(id) {
-  await fetch("/api/office-bearers/" + id, {
-    method: "DELETE"
-  });
+  await fetch("/api/office-bearers/" + id, { method: "DELETE" });
   loadBearers();
 }
 
-/* =========================
-   INITIAL LOAD
-========================= */
 loadBearers();
 </script>
 

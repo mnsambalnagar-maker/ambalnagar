@@ -1119,66 +1119,46 @@ app.get('/api/visitors', (req, res) => {
 });
 
 
-//==============================
-// office - baraers
-//==============================
-/* ================================
-   GET – Office Bearers
-   (About page)
-================================ */
-app.get('/api/office-bearers', async (req, res) => {
-  const { data, error } = await supabase
-    .from('office_bearers')
-    .select('*')
-    .order('id', { ascending: true });
+app.post('/api/office-bearers', upload.single('photo'), async (req, res) => {
+  try {
+    const { name, role } = req.body;
 
-  if (error) {
-    return res.status(500).json(error);
+    if (!name || !role || !req.file) {
+      return res.json({ success: false });
+    }
+
+    const safeName = req.file.originalname.replace(/\s+/g, '_');
+    const fileName = `office_${Date.now()}_${safeName}`;
+
+    const { error: uploadError } = await supabase.storage
+      .from('office-bearers')
+      .upload(fileName, req.file.buffer, {
+        contentType: req.file.mimetype,
+        upsert: true
+      });
+
+    if (uploadError) throw uploadError;
+
+    const { data } = supabase.storage
+      .from('office-bearers')
+      .getPublicUrl(fileName);
+
+    const image_url = data.publicUrl;
+
+    const { error: dbError } = await supabase
+      .from('office_bearers')
+      .insert([{ name, role, image_url }]);
+
+    if (dbError) throw dbError;
+
+    res.json({ success: true });
+
+  } catch (err) {
+    console.error('OFFICE BEARER ERROR:', err);
+    res.json({ success: false });
   }
-
-  res.json(data);
 });
 
-/* ================================
-   POST – Add Office Bearer
-   (Admin page)
-================================ */
-app.post('/api/office-bearers', async (req, res) => {
-  const { name, role, image_url } = req.body;
-
-  if (!name || !role || !image_url) {
-    return res.status(400).json({ error: 'Missing fields' });
-  }
-
-  const { error } = await supabase
-    .from('office_bearers')
-    .insert([{ name, role, image_url }]);
-
-  if (error) {
-    return res.status(500).json(error);
-  }
-
-  res.json({ success: true });
-});
-
-/* ================================
-   DELETE – Office Bearer
-   (Admin page)
-================================ */
-app.delete('/api/office-bearers/:id', async (req, res) => {
-  const { id } = req.params;
-
-  const { error } = await supabase
-    .from('office_bearers')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    return res.status(500).json(error);
-  }
-
-  res.json({ success: true });
-});
 
 // ===============================
 // STATIC FILES (ALWAYS LAST)
