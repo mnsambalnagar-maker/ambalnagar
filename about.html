@@ -327,23 +327,9 @@ footer{margin-top:60px;padding:24px;background:rgba(15,23,42,0.08);
 
 <section class="bearers-section">
   <h2 class="bearers-title">Office Bearers</h2>
-  <div class="float-grid">
-    <div class="float-card"><img src="img/mohanraj.jpeg"><div class="float-card-name">Mohanrajan R</div><div class="float-card-role">Founder</div></div>
-    <div class="float-card"><img src="img/5.png"><div class="float-card-name">Ramesh D</div><div class="float-card-role"> President</div></div>
-    <div class="float-card"><img src="img/shajhan.jpeg"><div class="float-card-name">Shajakan</div><div class="float-card-role">Excutive President</div></div>
-    <div class="float-card"><img src="img/3.png"><div class="float-card-name">Krishnamurthy K S</div><div class="float-card-role">Honorary President</div></div>
-    <div class="float-card"><img src="img/davadass.jpeg"><div class="float-card-name">Devadass M K</div><div class="float-card-role">Speaker</div></div>
-    <div class="float-card"><img src="img/2.png"><div class="float-card-name">Ganesh AS</div><div class="float-card-role">Secretary</div></div>
-    <div class="float-card"><img src="img/4.png"><div class="float-card-name">Murali B</div><div class="float-card-role">Treasurer</div></div>
-    <div class="float-card"><img src="img/1.png"><div class="float-card-name">Saravanan D</div><div class="float-card-role">Administrator</div></div>
-    <div class="float-card"><img src="img/karthi G.jpeg"><div class="float-card-name">Karthick G</div><div class="float-card-role">Deputy President</div></div>
-    <div class="float-card"><img src="img/push.jpeg"><div class="float-card-name">Pushparaj V. LLB</div><div class="float-card-role">Legal Advisor</div></div>
-    <div class="float-card"><img src="img/sathish babu.jpeg"><div class="float-card-name">Sathees Babu p</div><div class="float-card-role"></div>Join Secretary</div>
-    <div class="float-card"><img src="img/kani_raja.jpeg"><div class="float-card-name">Kaniraja R</div><div class="float-card-role">Advisory Committee</div></div>
-    <div class="float-card"><img src="img/profile-default.png"><div class="float-card-name">Murugan R</div><div class="float-card-role">Advisory Committee</div></div>
-    <div class="float-card"><img src="img/profile-default.png"><div class="float-card-name">Narayanan B</div><div class="float-card-role">Advisory Committee</div></div> 
-  </div>
+  <div class="float-grid" id="bearersGrid"></div>
 </section>
+
 
 <section class="activities-section">
   <h2 class="activities-title">Activities</h2>
@@ -368,6 +354,23 @@ menuToggle.addEventListener('click',()=>{
   navUl.classList.toggle('show');
   menuToggle.textContent=navUl.classList.contains('show')?'×':'☰';
 });
+fetch('/api/office-bearers')
+  .then(res => res.json())
+  .then(data => {
+    const grid = document.getElementById('bearersGrid');
+    grid.innerHTML = '';
+
+    data.forEach(b => {
+      grid.innerHTML += `
+        <div class="float-card">
+          <img src="${b.image_url}">
+          <div class="float-card-name">${b.name}</div>
+          <div class="float-card-role">${b.role}</div>
+        </div>
+      `;
+    });
+  })
+  .catch(err => console.error(err));
 </script>
 
 </body>

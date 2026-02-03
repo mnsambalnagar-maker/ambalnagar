@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Admin | Office Bearers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+
+<style>
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Poppins;
+  background:#f1f5f9;
+}
+
+/* ===== LAYOUT ===== */
+.dashboard{
+  display:grid;
+  grid-template-columns:280px 1fr;
+  min-height:100vh;
+}
+
+/* ===== SIDEBAR ===== */
+.sidebar{
+  background:#0f172a;
+  color:#fff;
+  padding:30px 20px;
+}
+
+.sidebar h2{
+  margin:0 0 40px;
+  font-size:1.4rem;
+  text-align:center;
+}
+
+.sidebar p{
+  font-size:.9rem;
+  opacity:.7;
+  text-align:center;
+}
+
+/* ===== MAIN ===== */
+.main{
+  padding:40px;
+  overflow-y:auto;
+}
+
+/* ===== FORM ===== */
+.form-box{
+  background:#ffffff;
+  border-radius:18px;
+  padding:30px;
+  box-shadow:0 20px 40px rgba(0,0,0,.1);
+  margin-bottom:40px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:2fr 2fr 2fr;
+  gap:16px;
+}
+
+.form-grid input,
+.form-grid select{
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #cbd5f5;
+  font-size:.95rem;
+}
+
+.form-grid input[type=file]{
+  grid-column:span 3;
+}
+
+.add-btn{
+  grid-column:span 3;
+  padding:16px;
+  border:none;
+  border-radius:40px;
+  background:linear-gradient(135deg,#3b82f6,#f97316);
+  color:#fff;
+  font-size:1rem;
+  font-weight:600;
+  cursor:pointer;
+}
+
+/* ===== LIST ===== */
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(260px,1fr));
+  gap:20px;
+}
+
+.card{
+  background:#ffffff;
+  border-radius:20px;
+  padding:20px;
+  text-align:center;
+  box-shadow:0 15px 30px rgba(15,23,42,.15);
+}
+
+.card img{
+  width:90px;
+  height:90px;
+  border-radius:50%;
+  object-fit:cover;
+  border:4px solid #3b82f6;
+  margin-bottom:10px;
+}
+
+.card b{
+  display:block;
+  font-size:1rem;
+  color:#0f172a;
+}
+
+.card span{
+  font-size:.9rem;
+  color:#64748b;
+}
+
+.card button{
+  margin-top:12px;
+  background:#ef4444;
+  color:#fff;
+  border:none;
+  padding:8px 14px;
+  border-radius:20px;
+  cursor:pointer;
+}
+
+/* ===== MOBILE ===== */
+@media(max-width:900px){
+  .dashboard{
+    grid-template-columns:1fr;
+  }
+  .sidebar{
+    text-align:center;
+  }
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+  .form-grid input[type=file],
+  .add-btn{
+    grid-column:span 1;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<div class="dashboard">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <h2>Admin Panel</h2>
+    <p>Office Bearers Management</p>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- ADD FORM -->
+    <div class="form-box">
+      <h3>Add Office Bearer</h3>
+
+      <div class="form-grid">
+        <input type="text" id="name" placeholder="Full Name">
+
+        <select id="role">
+          <option value="">Select Role</option>
+          <option>Founder</option>
+          <option>President</option>
+          <option>Executive President</option>
+          <option>Honorary President</option>
+          <option>Speaker</option>
+          <option>Secretary</option>
+          <option>Joint Secretary</option>
+          <option>Treasurer</option>
+          <option>Administrator</option>
+          <option>Deputy President</option>
+          <option>Legal Advisor</option>
+          <option>Advisory Committee</option>
+        </select>
+
+        <input type="file" id="photo" accept="image/*">
+
+        <button class="add-btn" onclick="addBearer()">Add Office Bearer</button>
+      </div>
+    </div>
+
+    <!-- LIST -->
+    <div class="grid" id="list"></div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script>
+const SUPABASE_URL = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+async function addBearer(){
+  const name = document.getElementById('name').value;
+  const role = document.getElementById('role').value;
+  const file = document.getElementById('photo').files[0];
+
+  if(!name || !role || !file){
+    alert('All fields required');
+    return;
+  }
+
+  const fileName = Date.now() + '-' + file.name;
+
+  const { error } = await supabase
+    .storage
+    .from('office-bearers')
+    .upload(fileName, file);
+
+  if(error){ alert(error.message); return; }
+
+  const image_url =
+    SUPABASE_URL + '/storage/v1/object/public/office-bearers/' + fileName;
+
+  await fetch('/api/office-bearers',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({ name, role, image_url })
+  });
+
+  document.getElementById('name').value='';
+  document.getElementById('role').value='';
+  document.getElementById('photo').value='';
+
+  load();
+}
+
+async function load(){
+  const res = await fetch('/api/office-bearers');
+  const data = await res.json();
+  const list = document.getElementById('list');
+  list.innerHTML='';
+
+  data.forEach(b=>{
+    list.innerHTML += `
+      <div class="card">
+        <img src="${b.image_url}">
+        <b>${b.name}</b>
+        <span>${b.role}</span>
+        <button onclick="del(${b.id})">Delete</button>
+      </div>
+    `;
+  });
+}
+
+async function del(id){
+  await fetch('/api/office-bearers/'+id,{method:'DELETE'});
+  load();
+}
+
+load();
+</script>
+
+</body>
+</html>

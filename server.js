@@ -128,6 +128,10 @@ app.get('/edit-member', (req, res) => {
   res.sendFile(path.join(__dirname, 'edit-member.html'));
 });
 
+app.get('/office-bearers', (req, res) => {
+  res.sendFile(path.join(__dirname, 'office-bearers.html'));
+});
+
 
 
 
@@ -1112,6 +1116,68 @@ app.get('/api/visitors', (req, res) => {
   );
 
   res.json({ count: visitorCount });
+});
+
+
+//==============================
+// office - baraers
+//==============================
+/* ================================
+   GET – Office Bearers
+   (About page)
+================================ */
+app.get('/api/office-bearers', async (req, res) => {
+  const { data, error } = await supabase
+    .from('office_bearers')
+    .select('*')
+    .order('id', { ascending: true });
+
+  if (error) {
+    return res.status(500).json(error);
+  }
+
+  res.json(data);
+});
+
+/* ================================
+   POST – Add Office Bearer
+   (Admin page)
+================================ */
+app.post('/api/office-bearers', async (req, res) => {
+  const { name, role, image_url } = req.body;
+
+  if (!name || !role || !image_url) {
+    return res.status(400).json({ error: 'Missing fields' });
+  }
+
+  const { error } = await supabase
+    .from('office_bearers')
+    .insert([{ name, role, image_url }]);
+
+  if (error) {
+    return res.status(500).json(error);
+  }
+
+  res.json({ success: true });
+});
+
+/* ================================
+   DELETE – Office Bearer
+   (Admin page)
+================================ */
+app.delete('/api/office-bearers/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from('office_bearers')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json(error);
+  }
+
+  res.json({ success: true });
 });
 
 // ===============================
