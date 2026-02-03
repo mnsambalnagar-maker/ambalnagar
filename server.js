@@ -1031,11 +1031,23 @@ app.post('/api/admin/update/:id', async (req,res)=>{
 
   let whatsapp = null;
 
-  if(status === 'approved'){
-    const msg =
-`Sri Ambal Nagar Welfare Association ✅
-Hello ${members[index].name},
-Your membership is approved 🎉`;
+  if (status === 'approved') {
+ const msg = `
+ 🤝 AmbalNagar Makkal Nalvazhu Sangam 🤝
+
+ Hello ${members[index].name} 👋,
+
+ We are happy to inform you that your *membership application has been successfully approved* ✅🎉
+
+ You are now an official member of *AmbalNagar Makkal Nalvazhu Sangam* 🤍
+
+ Thank you for joining us.
+ We look forward to your active participation in our community programs 🌱
+
+ 📍 Stay connected. Stay united.
+ `;
+
+
 
     whatsapp =
 `https://wa.me/91${members[index].mobile}?text=${encodeURIComponent(msg)}`;
