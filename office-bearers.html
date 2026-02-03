@@ -199,74 +199,110 @@ body{
   </div>
 </div>
 
+<!-- Supabase CDN -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const SUPABASE_URL = 'YOUR_SUPABASE_URL';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+/* =========================
+   SUPABASE CONFIG
+========================= */
+const SUPABASE_URL = "YOUR_SUPABASE_URL";
+const SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
 
-const supabase = supabaseJs.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/* ⚠️ IMPORTANT
+   supabase variable name change panniruken
+   to avoid 'already declared' error
+*/
+const supabaseClient = supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
 
-async function addBearer(){
-  const name = document.getElementById('name').value;
-  const role = document.getElementById('role').value;
-  const file = document.getElementById('photo').files[0];
+/* =========================
+   ADD OFFICE BEARER
+========================= */
+async function addBearer() {
+  const name = document.getElementById("name").value.trim();
+  const role = document.getElementById("role").value;
+  const file = document.getElementById("photo").files[0];
 
-  if(!name || !role || !file){
-    alert('All fields required');
+  if (!name || !role || !file) {
+    alert("All fields required");
     return;
   }
 
-  const fileName = Date.now() + '-' + file.name;
+  const fileName = Date.now() + "-" + file.name;
 
-  const { error } = await supabase
+  // Upload image to Supabase Storage
+  const { error: uploadError } = await supabaseClient
     .storage
-    .from('office-bearers')
+    .from("office-bearers")
     .upload(fileName, file);
 
-  if(error){ alert(error.message); return; }
+  if (uploadError) {
+    alert(uploadError.message);
+    return;
+  }
 
   const image_url =
-    SUPABASE_URL + '/storage/v1/object/public/office-bearers/' + fileName;
+    SUPABASE_URL +
+    "/storage/v1/object/public/office-bearers/" +
+    fileName;
 
-  await fetch('/api/office-bearers',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({ name, role, image_url })
+  // Save data to DB via server API
+  await fetch("/api/office-bearers", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name, role, image_url })
   });
 
-  document.getElementById('name').value='';
-  document.getElementById('role').value='';
-  document.getElementById('photo').value='';
+  // Clear form
+  document.getElementById("name").value = "";
+  document.getElementById("role").value = "";
+  document.getElementById("photo").value = "";
 
-  load();
+  loadBearers();
 }
 
-async function load(){
-  const res = await fetch('/api/office-bearers');
+/* =========================
+   LOAD OFFICE BEARERS
+========================= */
+async function loadBearers() {
+  const res = await fetch("/api/office-bearers");
   const data = await res.json();
-  const list = document.getElementById('list');
-  list.innerHTML='';
 
-  data.forEach(b=>{
+  const list = document.getElementById("list");
+  list.innerHTML = "";
+
+  data.forEach(b => {
     list.innerHTML += `
       <div class="card">
-        <img src="${b.image_url}">
+        <img src="${b.image_url}" alt="">
         <b>${b.name}</b>
         <span>${b.role}</span>
-        <button onclick="del(${b.id})">Delete</button>
+        <button onclick="deleteBearer(${b.id})">Delete</button>
       </div>
     `;
   });
 }
 
-async function del(id){
-  await fetch('/api/office-bearers/'+id,{method:'DELETE'});
-  load();
+/* =========================
+   DELETE OFFICE BEARER
+========================= */
+async function deleteBearer(id) {
+  await fetch("/api/office-bearers/" + id, {
+    method: "DELETE"
+  });
+  loadBearers();
 }
 
-load();
+/* =========================
+   INITIAL LOAD
+========================= */
+loadBearers();
 </script>
+
+
 
 </body>
 </html>
