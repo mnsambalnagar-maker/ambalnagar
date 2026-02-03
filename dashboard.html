@@ -387,7 +387,7 @@
     <div class="membership-section" id="membershipSection" style="display: none;">
       <div class="section-header">
         <div class="section-title">🆕 New Membership Applications</div>
-        <button class="toggle-btn" onclick="toggleMembershipSection()">
+        <button class="toggle-btn" id="membershipToggleBtn" onclick="toggleMembershipSection()">
           <i class="fas fa-chevron-down"></i> Toggle
         </button>
       </div>
@@ -523,16 +523,26 @@
       document.getElementById('pendingCount').textContent = '4';
     }
     function initializeUser() {
-      try {
-        const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
-        document.getElementById('loggedUserName').textContent = user.name || user.username || 'Admin';
-        isSuperAdmin = user.role === 'super' || user.role === 'superadmin' || user.role === 'admin';
-        if (isSuperAdmin) {
-          document.getElementById('adminLinks').style.display = 'block';
-          document.getElementById('membershipSection').style.display = 'block';
-        }
-      } catch(e) {}
+   try {
+    const user = JSON.parse(localStorage.getItem('currentUser') || '{}');
+
+    document.getElementById('loggedUserName').textContent =
+      user.name || user.username || 'Admin';
+
+    // ✅ admin + super ku mattum access
+    const isAdmin = user.role === 'admin' || user.role === 'super';
+
+    if (isAdmin) {
+      document.getElementById('adminLinks').style.display = 'block';
+      document.getElementById('membershipSection').style.display = 'block';
+      document.getElementById('membershipToggleBtn').style.display = 'inline-block';
+
     }
+   } catch (e) {
+    console.error('User init error', e);
+   }
+   }
+
     function updateTime() {
       const now = new Date();
       document.getElementById('dayNum').textContent = now.getDate();

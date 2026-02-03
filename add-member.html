@@ -205,19 +205,21 @@
 </div>
 
 <body>
-  <!-- main admin மட்டுமே இந்த page க்கு access -->
   <script>
-    const cu = localStorage.getItem('currentUser');
-    if (!cu) {
-      window.location.href = 'login.html';
-    } else {
-      const user = JSON.parse(cu);
-      if (user.role !== 'super') {
-        alert('Only main admin can add new users.');
-        window.location.href = 'dashboard.html';
-      }
+  const cu = localStorage.getItem('currentUser');
+  if (!cu) {
+    window.location.href = 'login.html';
+  } else {
+    const user = JSON.parse(cu);
+
+    // ✅ mainadmin (super) + admin both allowed
+    if (user.role !== 'super' && user.role !== 'admin') {
+      alert('Only admin can add members.');
+      window.location.href = '/dashboard';
     }
-  </script>
+  }
+</script>
+
 
   <div class="page">
     <div class="page-header">
