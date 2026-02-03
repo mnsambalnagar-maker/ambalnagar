@@ -428,21 +428,7 @@
         pending: 'பெண்டிங் விண்ணப்பங்கள்'
       }
     };
-    async function loadMembersData() {
-      try {
-        const response = await fetch('members.json');
-        if (!response.ok) throw new Error('members.json not found');
-        membersData = await response.json();
-        const pendingCount = membersData.filter(app => app.status === 'pending').length;
-        document.getElementById('pendingCount').textContent = pendingCount.toLocaleString();
-        if (isSuperAdmin) {
-          loadMembershipTable(membersData);
-        }
-      } catch (error) {
-        console.log('❌ members.json not found - Demo mode');
-        document.getElementById('pendingCount').textContent = '4';
-      }
-    }
+    
     function loadMembershipTable(data) {
       const pendingApps = data.filter(app => app.status === 'pending');
       let tableHTML = '';
@@ -463,26 +449,32 @@
         '<tr><td colspan="4" style="text-align:center;color:#64748b;padding:20px;">No pending applications</td></tr>';
     }
     async function loadRealData() {
-      try {
-        const usersResponse = await fetch('users.json');
-        if (usersResponse.ok) {
-          const usersData = await usersResponse.json();
-          const totalMembers = getArrayLength(usersData);
-          document.getElementById('membersCount').textContent = totalMembers.toLocaleString();
-        }
-        const eventsResponse = await fetch('events.json');
-        if (eventsResponse.ok) {
-          const eventsData = await eventsResponse.json();
-          const totalEvents = getArrayLength(eventsData);
-          document.getElementById('eventsCount').textContent = totalEvents.toLocaleString();
-        }
-        document.getElementById('visitorsCount').textContent = '1,247';
-        await loadMembersData();
-      } catch (error) {
-        console.log('❌ Some JSON files missing - Demo mode');
-        loadDemoData();
-      }
+   try {
+    const usersResponse = await fetch('users.json');
+    if (usersResponse.ok) {
+      const usersData = await usersResponse.json();
+      const totalMembers = getArrayLength(usersData);
+      document.getElementById('membersCount').textContent =
+        totalMembers.toLocaleString();
     }
+
+    const eventsResponse = await fetch('events.json');
+    if (eventsResponse.ok) {
+      const eventsData = await eventsResponse.json();
+      const totalEvents = getArrayLength(eventsData);
+      document.getElementById('eventsCount').textContent =
+        totalEvents.toLocaleString();
+    }
+
+    document.getElementById('visitorsCount').textContent = '1,247';
+
+    // ❌ await loadMembersData();  <-- REMOVE THIS LINE
+  } catch (error) {
+    console.log('❌ Some JSON files missing - Demo mode');
+    loadDemoData();
+  }
+   }
+
     async function approveMembership(id) {
       if (confirm('✅ Approve membership application?')) {
         try {
@@ -613,13 +605,56 @@
       else stopStatsCycle();
     }
     document.addEventListener('DOMContentLoaded', () => {
-      initializeUser();
-      loadRealData();
-      setInterval(updateTime, 1000);
-      setInterval(loadRealData, 30000);
-      updateTime();
-      startStatsCycle();
-    });
-  </script>
+  initializeUser();
+  loadRealData();
+  loadPendingApplications();   // ⭐ THIS IS REQUIRED
+  setInterval(updateTime, 1000);
+  setInterval(loadRealData, 30000);
+  updateTime();
+  startStatsCycle();
+});
+
+
+    async function loadPendingApplications() {
+  try {
+    const res = await fetch('/api/membership/pending');
+    const data = await res.json();
+
+    document.getElementById('pendingCount').textContent = data.length;
+
+    renderDashboardApprovals(data);
+  } catch (e) {
+    console.error('Pending load error', e);
+  }
+}
+function renderDashboardApprovals(list) {
+  const tbody = document.getElementById('membershipTableBody');
+  tbody.innerHTML = '';
+
+  if (list.length === 0) {
+    tbody.innerHTML =
+      `<tr><td colspan="4" style="text-align:center;">No pending applications</td></tr>`;
+    return;
+  }
+
+  list.forEach(app => {
+    tbody.innerHTML += `
+      <tr>
+        <td>${app.name}</td>
+        <td>${app.mobile}</td>
+        <td>${app.refId}</td>
+        <td style="text-align:center;">
+          <button class="approve-btn"
+            onclick="approveMembership('${app.id}')">
+            ✅ Approve
+          </button>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+
+</script>
 </body>
 </html>
