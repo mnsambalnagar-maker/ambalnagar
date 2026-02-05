@@ -164,30 +164,100 @@ body>*:not(header){padding-top:100px;}
 .float-card-name{font-weight:700;color:#111827;font-size:1rem;margin:0 0 2px;}
 .float-card-role{font-size:0.88rem;color:#6b7280;}
 
-.activity-tags{
-  display:flex;flex-wrap:wrap;gap:12px;justify-content:center;
-  max-width:900px;margin:0 auto;
+/* ===== ACTIVITIES TIMELINE TEMPLATE (NEW) ===== */
+
+.activities-timeline{
+  max-width:900px;
+  margin:0 auto;
+  position:relative;
+  padding-left:30px;
 }
-.activity-tag{
-  padding:12px 20px;border-radius:30px;
-  background:linear-gradient(135deg,rgba(59,130,246,0.12),rgba(249,115,22,0.12));
-  border:2px solid rgba(59,130,246,0.3);
-  font-size:0.95rem;color:#111827;font-weight:600;
-  position:relative;overflow:hidden;
-  opacity:0;transform:scale(0.3);
-  animation:bounceIn 0.6s cubic-bezier(0.68,-0.55,0.265,1.55) forwards;
-  transition:all .3s ease;cursor:pointer;
+
+.activities-timeline::before{
+  content:'';
+  position:absolute;
+  left:15px;
+  top:0;
+  bottom:0;
+  width:4px;
+  background:linear-gradient(180deg,var(--accent2),var(--accent1));
+  border-radius:4px;
 }
-.activity-tag:nth-child(1){animation-delay:0.1s;}
-.activity-tag:nth-child(2){animation-delay:0.2s;}
-.activity-tag:nth-child(3){animation-delay:0.3s;}
-.activity-tag:nth-child(4){animation-delay:0.4s;}
-.activity-tag:nth-child(5){animation-delay:0.5s;}
-.activity-tag:nth-child(6){animation-delay:0.6s;}
-.activity-tag:hover{
-  transform:translateY(-4px) scale(1.05);
-  box-shadow:0 15px 35px rgba(59,130,246,0.3);
+
+.timeline-item{
+  display:flex;
+  align-items:flex-start;
+  gap:22px;
+  margin-bottom:34px;
+  position:relative;
 }
+
+.timeline-dot{
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#fff;
+  border:4px solid var(--accent2);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:1.1rem;
+  box-shadow:0 8px 20px rgba(59,130,246,.4);
+  flex-shrink:0;
+}
+
+.timeline-card{
+  background:linear-gradient(145deg,#ffffff,#f8fafc);
+  border-radius:22px;
+  padding:20px 24px;
+  box-shadow:0 16px 38px rgba(15,23,42,.18);
+  transition:.35s cubic-bezier(.4,0,.2,1);
+}
+
+.timeline-card h4{
+  margin:0 0 6px;
+  font-size:1.05rem;
+  font-weight:700;
+  color:#0f172a;
+}
+
+.timeline-card p{
+  margin:0;
+  font-size:.95rem;
+  color:#475569;
+  line-height:1.55;
+}
+
+.timeline-item:hover .timeline-card{
+  transform:translateX(10px);
+  box-shadow:0 30px 70px rgba(15,23,42,.35);
+}
+
+/* Mobile */
+@media(max-width:600px){
+  .activities-timeline{
+    padding-left:20px;
+  }
+  .timeline-item{
+    gap:14px;
+  }
+  .timeline-card{
+    padding:18px 18px;
+  }
+}
+
+
+/* Mobile */
+@media(max-width:600px){
+  .activity-row{
+    flex-direction:column;
+    gap:12px;
+  }
+  .activity-row:hover{
+    transform:none;
+  }
+}
+
 
 /* FOOTER */
 footer{margin-top:60px;padding:24px;background:rgba(15,23,42,0.08);
@@ -333,15 +403,61 @@ footer{margin-top:60px;padding:24px;background:rgba(15,23,42,0.08);
 
 <section class="activities-section">
   <h2 class="activities-title">Activities</h2>
-  <div class="activity-tags">
-    <div class="activity-tag">Road & infrastructure improvement</div>
-    <div class="activity-tag">Streetlight and drainage maintenance</div>
-    <div class="activity-tag">Cleanliness and greenery drives</div>
-    <div class="activity-tag">Safety & neighborhood watch</div>
-    <div class="activity-tag">Cultural and social events</div>
-    <div class="activity-tag">Community welfare programs</div>
+
+  <div class="activities-timeline">
+
+    <div class="timeline-item">
+      <div class="timeline-dot">🏗️</div>
+      <div class="timeline-card">
+        <h4>Infrastructure Development</h4>
+        <p>Road construction, repairs and public infrastructure upgrades.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot">💡</div>
+      <div class="timeline-card">
+        <h4>Streetlight & Drainage</h4>
+        <p>Lighting maintenance and proper drainage systems.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot">🌱</div>
+      <div class="timeline-card">
+        <h4>Cleanliness & Greenery</h4>
+        <p>Clean drives and tree plantation initiatives.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot">🛡️</div>
+      <div class="timeline-card">
+        <h4>Safety & Neighborhood Watch</h4>
+        <p>Community safety awareness and monitoring programs.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot">🎉</div>
+      <div class="timeline-card">
+        <h4>Cultural & Social Events</h4>
+        <p>Festivals, meetings and social celebrations.</p>
+      </div>
+    </div>
+
+    <div class="timeline-item">
+      <div class="timeline-dot">🤝</div>
+      <div class="timeline-card">
+        <h4>Community Welfare</h4>
+        <p>Support programs for people’s well-being.</p>
+      </div>
+    </div>
+
   </div>
 </section>
+
+
 
 <footer>
   <p>&copy; 2025 Sri Ambal Nagar Peoples Welfare Association. All rights reserved.</p>
