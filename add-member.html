@@ -244,6 +244,11 @@
         <label>Phone</label>
         <input type="text" id="phone" placeholder="Contact number" />
       </div>
+      <div class="full-row">
+        <label>Address</label>
+        <input type="text" id="address" placeholder="Member address"/>
+      </div>
+
 
       <div>
         <label>Role</label>
@@ -279,6 +284,8 @@
     formData.append('phone', document.getElementById('phone').value);
     formData.append('role', document.getElementById('role').value);
     formData.append('joined', document.getElementById('joined').value);
+    formData.append('address', document.getElementById('address').value);
+
 
     const photoFile = document.getElementById('photoInput').files[0];
     if (photoFile) {

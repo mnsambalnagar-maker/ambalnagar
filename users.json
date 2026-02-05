@@ -31,37 +31,10 @@
     "email": "csccscscs@gmail.com"
   },
   {
-    "username": "Natarajan",
-    "phone": "-",
-    "role": "member",
-    "joined": "-",
-    "photo": "/uploads/Natarajan.jpeg",
-    "email": "kfkmpf@gmail.com"
-  },
-  {
-    "username": "Magesh",
-    "phone": "-",
-    "role": "member",
-    "joined": "-",
-    "photo": "/uploads/Magesh.png",
-    "email": "csacacasca@gmail.com"
-  },
-  {
     "username": "prabu",
     "phone": "-",
     "role": "member",
     "joined": "-",
     "photo": "/uploads/prabu.png"
-  },
-  {
-    "username": "arun",
-    "role": "member",
-    "phone": "97456321458",
-    "joined": "2026",
-    "email": "ashwinstark7007@gmail.com",
-    "avatar": "img/avatar5.png",
-    "password": "22222",
-    "otp": null,
-    "otpExpiry": null
   }
 ]

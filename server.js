@@ -185,7 +185,7 @@ function loadUsers() {
 // ================================
 app.post('/api/addUserWithPhoto', upload.single('photo'), async (req, res) => {
   try {
-    const { username, phone, role, joined } = req.body;
+    const { username, phone, role, joined, address } = req.body;
     let photo_url = null;
 
     if (!username) {
@@ -221,6 +221,7 @@ app.post('/api/addUserWithPhoto', upload.single('photo'), async (req, res) => {
         phone,
         role: role || 'member',
         joined,
+        address,
         photo_url
       }]);
 
