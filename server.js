@@ -33,7 +33,12 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/img', express.static(path.join(__dirname, 'img')));
-app.use(cors());
+app.use(cors({
+  origin: '*',
+  methods: ['GET','POST','PUT','DELETE','OPTIONS'],
+  allowedHeaders: ['Content-Type','Authorization']
+}));
+
 
 
 
