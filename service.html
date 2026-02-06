@@ -124,58 +124,61 @@
   <div id="membersContainer"></div>
 
   <script>
-    const categoriesContainer = document.getElementById('categoriesContainer');
-    const membersContainer = document.getElementById('membersContainer');
-    const selectedCategory = document.getElementById('selectedCategory');
+  const API_BASE = 'https://your-backend.onrender.com';
 
-    function loadCategories() {
-      fetch('/api/categories')
-        .then(res => res.json())
-        .then(categories => {
-          categoriesContainer.innerHTML = '';
-          categories.forEach(cat => {
-            const div = document.createElement('div');
-            div.className = 'category';
-            div.dataset.cat = cat.id;
+  const categoriesContainer = document.getElementById('categoriesContainer');
+  const membersContainer = document.getElementById('membersContainer');
+  const selectedCategory = document.getElementById('selectedCategory');
 
-            div.innerHTML = `
-              <img src="${cat.image || '/img/services/default.png'}" alt="${cat.name}">
-              <span>${cat.name}</span>
-            `;
+  function loadCategories() {
+    fetch(`${API_BASE}/api/categories`)
+      .then(res => res.json())
+      .then(categories => {
+        categoriesContainer.innerHTML = '';
+        categories.forEach(cat => {
+          const div = document.createElement('div');
+          div.className = 'category';
 
-            div.onclick = () => loadMembers(cat.id, cat.name);
-            categoriesContainer.appendChild(div);
-          });
+          div.innerHTML = `
+            <img src="${cat.image || '/img/services/default.png'}" alt="${cat.name}">
+            <span>${cat.name}</span>
+          `;
+
+          div.onclick = () => loadMembers(cat.id, cat.name);
+          categoriesContainer.appendChild(div);
         });
-    }
+      })
+      .catch(() => {
+        categoriesContainer.innerHTML = '<p>Failed to load categories</p>';
+      });
+  }
 
-    function loadMembers(catId, catName) {
-      selectedCategory.textContent = catName;
-      membersContainer.innerHTML = 'Loading members...';
+  function loadMembers(catId, catName) {
+    selectedCategory.textContent = catName;
+    membersContainer.innerHTML = 'Loading members...';
 
-      
-
-      fetch(`/api/members/${catId}`)
-        .then(res => res.json())
-        .then(members => {
-          if (!members.length) {
-            membersContainer.innerHTML = '<p>No members added yet.</p>';
-            return;
-          }
-          membersContainer.innerHTML = '';
-          members.forEach(m => {
-            const div = document.createElement('div');
-            div.className = 'member-entry';
-            div.innerHTML = `<strong>${m.name}</strong> — Phone: ${m.phone}`;
-            membersContainer.appendChild(div);
-          });
-        })
-        .catch(() => {
-          membersContainer.innerHTML = '<p>Failed to load members.</p>';
+    fetch(`${API_BASE}/api/members/${catId}`)
+      .then(res => res.json())
+      .then(members => {
+        if (!members.length) {
+          membersContainer.innerHTML = '<p>No members added yet.</p>';
+          return;
+        }
+        membersContainer.innerHTML = '';
+        members.forEach(m => {
+          const div = document.createElement('div');
+          div.className = 'member-entry';
+          div.innerHTML = `<strong>${m.name}</strong> — Phone: ${m.phone}`;
+          membersContainer.appendChild(div);
         });
-    }
+      })
+      .catch(() => {
+        membersContainer.innerHTML = '<p>Failed to load members.</p>';
+      });
+  }
 
-    loadCategories();
-  </script>
+  loadCategories();
+</script>
+
 </body>
 </html>

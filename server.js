@@ -855,96 +855,178 @@ app.delete('/api/deleteAdmin/:username', (req, res) => {
 });
 
 
-
 // ===================================================
-//             CATEGORY & MEMBERS SYSTEM
+//        CATEGORY & MEMBERS SYSTEM (SUPABASE)
 // ===================================================
-const MEMBERS_JSON = path.join(__dirname, 'members.json');
-const CATEGORIES_JSON = path.join(__dirname, 'categories.json');
 
-function writeJSON(filePath, data) {
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2));
-}
 
-app.get('/api/categories', (req, res) => {
-  const categories = loadJSON(CATEGORIES_JSON);
-  res.json(categories);
-});
 
-app.post('/api/categories', (req, res) => {
-  const { id, name } = req.body;
-  if (!id || !name) return res.status(400).json({ error: 'Missing id or name' });
 
-  let categories = loadJSON(CATEGORIES_JSON);
-  if (categories.find(c => c.id === id)) {
-    return res.status(409).json({ error: 'Category ID already exists' });
+
+// -----------------------
+// CATEGORIES
+// -----------------------
+
+// GET all categories
+app.get('/api/categories', async (req, res) => {
+  const { data, error } = await supabase
+    .from('service_categories')
+    .select('id, name, image')
+    .order('name');
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
   }
 
-  categories.push({ id, name });
-  writeJSON(CATEGORIES_JSON, categories);
+  res.json(data);
+});
+
+// ADD category
+app.post('/api/categories', async (req, res) => {
+  const { id, name } = req.body;
+
+  if (!id || !name) {
+    return res.status(400).json({ error: 'Missing id or name' });
+  }
+
+  const { error } = await supabase
+    .from('service_categories')
+    .insert([{ id, name }]);
+
+  if (error) {
+    if (error.code === '23505') {
+      return res.status(409).json({ error: 'Category ID already exists' });
+    }
+    return res.status(500).json({ error: error.message });
+  }
+
   res.status(201).json({ id, name });
 });
 
-app.put('/api/categories/:id', (req, res) => {
-  const id = req.params.id;
-  let categories = loadJSON(CATEGORIES_JSON);
-  const index = categories.findIndex(c => c.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Category not found' });
+// UPDATE category
+app.put('/api/categories/:id', async (req, res) => {
+  const { id } = req.params;
+  const { name } = req.body;
 
-  categories[index].name = req.body.name || categories[index].name;
-  writeJSON(CATEGORIES_JSON, categories);
-  res.json(categories[index]);
+  const { data, error } = await supabase
+    .from('service_categories')
+    .update({ name })
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) {
+    return res.status(404).json({ error: 'Category not found' });
+  }
+
+  res.json(data);
 });
 
-app.delete('/api/categories/:id', (req, res) => {
-  const id = req.params.id;
-  let categories = loadJSON(CATEGORIES_JSON);
-  categories = categories.filter(c => c.id !== id);
-  writeJSON(CATEGORIES_JSON, categories);
+// DELETE category
+app.delete('/api/categories/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from('service_categories')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   res.status(204).send();
 });
 
-app.get('/api/members', (req, res) => {
-  const members = loadJSON(MEMBERS_JSON);
-  res.json(members);
+// -----------------------
+// MEMBERS
+// -----------------------
+
+// GET all members (admin)
+app.get('/api/members', async (req, res) => {
+  const { data, error } = await supabase
+    .from('service_members')
+    .select('id, name, phone, category')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
 });
 
-app.get('/api/members/:category', (req, res) => {
-  const category = req.params.category;
-  const members = loadJSON(MEMBERS_JSON);
-  const filtered = members.filter(m => m.category === category);
-  res.json(filtered);
+// GET members by category (public)
+app.get('/api/members/:category', async (req, res) => {
+  const { category } = req.params;
+
+  const { data, error } = await supabase
+    .from('service_members')
+    .select('id, name, phone, category')
+    .eq('category', category);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.json(data);
 });
 
-app.post('/api/members', (req, res) => {
+// ADD member
+app.post('/api/members', async (req, res) => {
   const { name, phone, category } = req.body;
-  if (!name || !phone || !category) return res.status(400).json({ error: 'Missing required fields' });
 
-  const members = loadJSON(MEMBERS_JSON);
-  const newMember = { id: Date.now().toString(), name, phone, category };
-  members.push(newMember);
-  writeJSON(MEMBERS_JSON, members);
-  res.status(201).json(newMember);
+  if (!name || !phone || !category) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  const { data, error } = await supabase
+    .from('service_members')
+    .insert([{ name, phone, category }])
+    .select()
+    .single();
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
+  res.status(201).json(data);
 });
 
-app.put('/api/members/:id', (req, res) => {
-  const id = req.params.id;
-  let members = loadJSON(MEMBERS_JSON);
-  const index = members.findIndex(m => m.id === id);
-  if (index === -1) return res.status(404).json({ error: 'Member not found' });
+// UPDATE member
+app.put('/api/members/:id', async (req, res) => {
+  const { id } = req.params;
 
-  members[index] = { ...members[index], ...req.body };
-  writeJSON(MEMBERS_JSON, members);
-  res.json(members[index]);
+  const { data, error } = await supabase
+    .from('service_members')
+    .update(req.body)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error || !data) {
+    return res.status(404).json({ error: 'Member not found' });
+  }
+
+  res.json(data);
 });
 
-app.delete('/api/members/:id', (req, res) => {
-  const id = req.params.id;
-  let members = loadJSON(MEMBERS_JSON);
-  members = members.filter(m => m.id !== id);
-  writeJSON(MEMBERS_JSON, members);
+// DELETE member
+app.delete('/api/members/:id', async (req, res) => {
+  const { id } = req.params;
+
+  const { error } = await supabase
+    .from('service_members')
+    .delete()
+    .eq('id', id);
+
+  if (error) {
+    return res.status(500).json({ error: error.message });
+  }
+
   res.status(204).send();
 });
+
 
 //========================//
 //membership +  QR Code//
