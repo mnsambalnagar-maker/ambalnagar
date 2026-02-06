@@ -6,6 +6,8 @@ const multer = require('multer');
 const QRCode = require('qrcode');
 const axios = require('axios');
 const app = express();
+const cors = require('cors');
+
 
 require('dotenv').config();
 const supabase = require('./supabase');
@@ -31,6 +33,8 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use('/uploads', express.static(path.join(__dirname, 'public/uploads')));
 app.use('/img', express.static(path.join(__dirname, 'img')));
+app.use(cors());
+
 
 
 // ===============================
