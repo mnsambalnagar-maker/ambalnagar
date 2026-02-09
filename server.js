@@ -869,29 +869,22 @@ app.delete('/api/deleteAdmin/:username', (req, res) => {
   res.json({ success: true });
 });
 
+const { v4: uuidv4 } = require('uuid');
+
 // ===============================
-// IN-MEMORY DATA (REPLACE WITH DB LATER)
+// IN-MEMORY DATA
 // ===============================
 let categories = [];
 let members = [];
 
 // ===============================
-// HEALTH CHECK
-// ===============================
-app.get('/', (req, res) => {
-  res.send('AmbalNagar API running ✅');
-});
-
-// ===============================
 // CATEGORY APIs
 // ===============================
 
-// GET all categories
 app.get('/api/categories', (req, res) => {
   res.json(categories);
 });
 
-// ADD category
 app.post('/api/categories', (req, res) => {
   const { id, name } = req.body;
 
@@ -899,8 +892,7 @@ app.post('/api/categories', (req, res) => {
     return res.status(400).json({ message: 'Category id & name required' });
   }
 
-  const exists = categories.find(c => c.id === id);
-  if (exists) {
+  if (categories.some(c => c.id === id)) {
     return res.status(400).json({ message: 'Category already exists' });
   }
 
@@ -908,24 +900,17 @@ app.post('/api/categories', (req, res) => {
   res.json({ success: true });
 });
 
-// UPDATE category
 app.put('/api/categories/:id', (req, res) => {
-  const { id } = req.params;
-  const { name } = req.body;
+  const cat = categories.find(c => c.id === req.params.id);
+  if (!cat) return res.status(404).json({ message: 'Not found' });
 
-  const cat = categories.find(c => c.id === id);
-  if (!cat) {
-    return res.status(404).json({ message: 'Category not found' });
-  }
-
-  cat.name = name;
+  cat.name = req.body.name;
   res.json({ success: true });
 });
 
-// DELETE category
 app.delete('/api/categories/:id', (req, res) => {
-  categories = categories.filter(c => c.id !== id);
-  members = members.filter(m => m.category !== id); // cleanup members
+  categories = categories.filter(c => c.id !== req.params.id);
+  members = members.filter(m => m.category !== req.params.id);
   res.json({ success: true });
 });
 
@@ -933,22 +918,16 @@ app.delete('/api/categories/:id', (req, res) => {
 // MEMBER APIs
 // ===============================
 
-// GET all members
 app.get('/api/members', (req, res) => {
   res.json(members);
 });
 
-// GET members by category (for service.html)
 app.get('/api/members/:categoryId', (req, res) => {
-  const { categoryId } = req.params;
-  const filtered = members.filter(m => m.category === categoryId);
-  res.json(filtered);
+  res.json(members.filter(m => m.category === req.params.categoryId));
 });
 
-// ADD member
 app.post('/api/members', (req, res) => {
   const { name, phone, category } = req.body;
-
   if (!name || !phone || !category) {
     return res.status(400).json({ message: 'All fields required' });
   }
@@ -963,28 +942,19 @@ app.post('/api/members', (req, res) => {
   res.json({ success: true });
 });
 
-// UPDATE member
 app.put('/api/members/:id', (req, res) => {
-  const { id } = req.params;
-  const { name, phone, category } = req.body;
+  const mem = members.find(m => m.id === req.params.id);
+  if (!mem) return res.status(404).json({ message: 'Not found' });
 
-  const mem = members.find(m => m.id === id);
-  if (!mem) {
-    return res.status(404).json({ message: 'Member not found' });
-  }
-
-  mem.name = name;
-  mem.phone = phone;
-  mem.category = category;
-
+  Object.assign(mem, req.body);
   res.json({ success: true });
 });
 
-// DELETE member
 app.delete('/api/members/:id', (req, res) => {
-  members = members.filter(m => m.id !== id);
+  members = members.filter(m => m.id !== req.params.id);
   res.json({ success: true });
 });
+
 
 
 //========================//
