@@ -897,7 +897,7 @@ app.post('/api/categories', (req, res) => {
   }
 
   categories.push({
-    id: uuidv4(),
+    id: uuidv4(),   // ✅ auto ID
     name
   });
 
