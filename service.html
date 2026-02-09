@@ -123,8 +123,8 @@
   <h2 id="selectedCategory">Select a category</h2>
   <div id="membersContainer"></div>
 
-  <script>
-  const API_BASE = 'https://your-backend.onrender.com';
+<script>
+  const API_BASE = 'https://ambalnagar.onrender.com'; // ✅ FIXED
 
   const categoriesContainer = document.getElementById('categoriesContainer');
   const membersContainer = document.getElementById('membersContainer');
@@ -132,7 +132,10 @@
 
   function loadCategories() {
     fetch(`${API_BASE}/api/categories`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('API error');
+        return res.json();
+      })
       .then(categories => {
         categoriesContainer.innerHTML = '';
         categories.forEach(cat => {
@@ -148,7 +151,8 @@
           categoriesContainer.appendChild(div);
         });
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         categoriesContainer.innerHTML = '<p>Failed to load categories</p>';
       });
   }
@@ -158,12 +162,16 @@
     membersContainer.innerHTML = 'Loading members...';
 
     fetch(`${API_BASE}/api/members/${catId}`)
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('API error');
+        return res.json();
+      })
       .then(members => {
         if (!members.length) {
           membersContainer.innerHTML = '<p>No members added yet.</p>';
           return;
         }
+
         membersContainer.innerHTML = '';
         members.forEach(m => {
           const div = document.createElement('div');
@@ -172,13 +180,15 @@
           membersContainer.appendChild(div);
         });
       })
-      .catch(() => {
+      .catch(err => {
+        console.error(err);
         membersContainer.innerHTML = '<p>Failed to load members.</p>';
       });
   }
 
   loadCategories();
 </script>
+
 
 </body>
 </html>

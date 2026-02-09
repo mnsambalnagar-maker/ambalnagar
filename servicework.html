@@ -216,7 +216,11 @@
 
   </style>
 </head>
-<div class="home-float">
+
+
+<body>
+
+  <div class="home-float">
     <a href="/" aria-label="Go to home">
       <img src="img/home.png" alt="Home" />
     </a>
@@ -229,9 +233,8 @@
   }
  })();
 </script>
-
-<body>
   <h1>Service Dashboard</h1>
+  
 
   <div class="layout">
     <!-- Category Management -->
@@ -284,7 +287,7 @@
   </div>
 
   <script>
-  const API_BASE = 'https:ambalnagar.onrender.com';
+  const API_BASE = 'https://ambalnagar.onrender.com';
 
   const categoriesTableBody = document.querySelector('#categoriesTable tbody');
   const categoryForm = document.getElementById('categoryForm');
@@ -411,6 +414,32 @@
   };
 
   loadCategories().then(loadMembers);
+
+  window.editCategory = id => {
+  fetch(API_BASE + '/api/categories')
+    .then(res => res.json())
+    .then(categories => {
+      const cat = categories.find(c => c.id === id);
+      if (!cat) return;
+      categoryIdInput.value = cat.id;
+      categoryInputId.value = cat.id;
+      categoryInputName.value = cat.name;
+    });
+};
+
+window.editMember = id => {
+  fetch(API_BASE + '/api/members')
+    .then(res => res.json())
+    .then(members => {
+      const m = members.find(mem => mem.id === id);
+      if (!m) return;
+      memberIdInput.value = m.id;
+      memberNameInput.value = m.name;
+      memberPhoneInput.value = m.phone;
+      memberCategorySelect.value = m.category;
+    });
+};
+
 </script>
 
 </body>
