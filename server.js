@@ -869,177 +869,121 @@ app.delete('/api/deleteAdmin/:username', (req, res) => {
   res.json({ success: true });
 });
 
+// ===============================
+// IN-MEMORY DATA (REPLACE WITH DB LATER)
+// ===============================
+let categories = [];
+let members = [];
 
-// ===================================================
-//        CATEGORY & MEMBERS SYSTEM (SUPABASE)
-// ===================================================
+// ===============================
+// HEALTH CHECK
+// ===============================
+app.get('/', (req, res) => {
+  res.send('AmbalNagar API running ✅');
+});
 
-
-
-
-
-// -----------------------
-// CATEGORIES
-// -----------------------
+// ===============================
+// CATEGORY APIs
+// ===============================
 
 // GET all categories
-app.get('/api/categories', async (req, res) => {
-  const { data, error } = await supabase
-    .from('service_categories')
-    .select('id, name, image')
-    .order('name');
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.json(data);
+app.get('/api/categories', (req, res) => {
+  res.json(categories);
 });
 
 // ADD category
-app.post('/api/categories', async (req, res) => {
+app.post('/api/categories', (req, res) => {
   const { id, name } = req.body;
 
   if (!id || !name) {
-    return res.status(400).json({ error: 'Missing id or name' });
+    return res.status(400).json({ message: 'Category id & name required' });
   }
 
-  const { error } = await supabase
-    .from('service_categories')
-    .insert([{ id, name }]);
-
-  if (error) {
-    if (error.code === '23505') {
-      return res.status(409).json({ error: 'Category ID already exists' });
-    }
-    return res.status(500).json({ error: error.message });
+  const exists = categories.find(c => c.id === id);
+  if (exists) {
+    return res.status(400).json({ message: 'Category already exists' });
   }
 
-  res.status(201).json({ id, name });
+  categories.push({ id, name });
+  res.json({ success: true });
 });
 
 // UPDATE category
-app.put('/api/categories/:id', async (req, res) => {
+app.put('/api/categories/:id', (req, res) => {
   const { id } = req.params;
   const { name } = req.body;
 
-  const { data, error } = await supabase
-    .from('service_categories')
-    .update({ name })
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error || !data) {
-    return res.status(404).json({ error: 'Category not found' });
+  const cat = categories.find(c => c.id === id);
+  if (!cat) {
+    return res.status(404).json({ message: 'Category not found' });
   }
 
-  res.json(data);
+  cat.name = name;
+  res.json({ success: true });
 });
 
 // DELETE category
-app.delete('/api/categories/:id', async (req, res) => {
-  const { id } = req.params;
-
-  const { error } = await supabase
-    .from('service_categories')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.status(204).send();
+app.delete('/api/categories/:id', (req, res) => {
+  categories = categories.filter(c => c.id !== id);
+  members = members.filter(m => m.category !== id); // cleanup members
+  res.json({ success: true });
 });
 
-// -----------------------
-// MEMBERS
-// -----------------------
+// ===============================
+// MEMBER APIs
+// ===============================
 
-// GET all members (admin)
-app.get('/api/members', async (req, res) => {
-  const { data, error } = await supabase
-    .from('service_members')
-    .select('id, name, phone, category')
-    .order('created_at', { ascending: false });
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.json(data);
+// GET all members
+app.get('/api/members', (req, res) => {
+  res.json(members);
 });
 
-// GET members by category (public)
-app.get('/api/members/:category', async (req, res) => {
-  const { category } = req.params;
-
-  const { data, error } = await supabase
-    .from('service_members')
-    .select('id, name, phone, category')
-    .eq('category', category);
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.json(data);
+// GET members by category (for service.html)
+app.get('/api/members/:categoryId', (req, res) => {
+  const { categoryId } = req.params;
+  const filtered = members.filter(m => m.category === categoryId);
+  res.json(filtered);
 });
 
 // ADD member
-app.post('/api/members', async (req, res) => {
+app.post('/api/members', (req, res) => {
   const { name, phone, category } = req.body;
 
   if (!name || !phone || !category) {
-    return res.status(400).json({ error: 'Missing required fields' });
+    return res.status(400).json({ message: 'All fields required' });
   }
 
-  const { data, error } = await supabase
-    .from('service_members')
-    .insert([{ name, phone, category }])
-    .select()
-    .single();
+  members.push({
+    id: uuidv4(),
+    name,
+    phone,
+    category
+  });
 
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.status(201).json(data);
+  res.json({ success: true });
 });
 
 // UPDATE member
-app.put('/api/members/:id', async (req, res) => {
+app.put('/api/members/:id', (req, res) => {
   const { id } = req.params;
+  const { name, phone, category } = req.body;
 
-  const { data, error } = await supabase
-    .from('service_members')
-    .update(req.body)
-    .eq('id', id)
-    .select()
-    .single();
-
-  if (error || !data) {
-    return res.status(404).json({ error: 'Member not found' });
+  const mem = members.find(m => m.id === id);
+  if (!mem) {
+    return res.status(404).json({ message: 'Member not found' });
   }
 
-  res.json(data);
+  mem.name = name;
+  mem.phone = phone;
+  mem.category = category;
+
+  res.json({ success: true });
 });
 
 // DELETE member
-app.delete('/api/members/:id', async (req, res) => {
-  const { id } = req.params;
-
-  const { error } = await supabase
-    .from('service_members')
-    .delete()
-    .eq('id', id);
-
-  if (error) {
-    return res.status(500).json({ error: error.message });
-  }
-
-  res.status(204).send();
+app.delete('/api/members/:id', (req, res) => {
+  members = members.filter(m => m.id !== id);
+  res.json({ success: true });
 });
 
 
