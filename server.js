@@ -7,6 +7,7 @@ const QRCode = require('qrcode');
 const axios = require('axios');
 const app = express();
 const cors = require('cors');
+const { v4: uuidv4 } = require('uuid');
 
 
 require('dotenv').config();
@@ -869,7 +870,11 @@ app.delete('/api/deleteAdmin/:username', (req, res) => {
   res.json({ success: true });
 });
 
-const { v4: uuidv4 } = require('uuid');
+
+
+
+
+
 
 // ===============================
 // IN-MEMORY DATA
@@ -880,23 +885,19 @@ let members = [];
 // ===============================
 // CATEGORY APIs
 // ===============================
-
 app.get('/api/categories', (req, res) => {
   res.json(categories);
 });
 
 app.post('/api/categories', (req, res) => {
-  const { id, name } = req.body;
+  const { name } = req.body;
+  if (!name) return res.status(400).json({ message: 'Name required' });
 
-  if (!id || !name) {
-    return res.status(400).json({ message: 'Category id & name required' });
-  }
+  categories.push({
+    id: uuidv4(),   // ✅ AUTO ID
+    name
+  });
 
-  if (categories.some(c => c.id === id)) {
-    return res.status(400).json({ message: 'Category already exists' });
-  }
-
-  categories.push({ id, name });
   res.json({ success: true });
 });
 
@@ -917,7 +918,6 @@ app.delete('/api/categories/:id', (req, res) => {
 // ===============================
 // MEMBER APIs
 // ===============================
-
 app.get('/api/members', (req, res) => {
   res.json(members);
 });
@@ -928,9 +928,8 @@ app.get('/api/members/:categoryId', (req, res) => {
 
 app.post('/api/members', (req, res) => {
   const { name, phone, category } = req.body;
-  if (!name || !phone || !category) {
+  if (!name || !phone || !category)
     return res.status(400).json({ message: 'All fields required' });
-  }
 
   members.push({
     id: uuidv4(),
@@ -943,10 +942,10 @@ app.post('/api/members', (req, res) => {
 });
 
 app.put('/api/members/:id', (req, res) => {
-  const mem = members.find(m => m.id === req.params.id);
-  if (!mem) return res.status(404).json({ message: 'Not found' });
+  const m = members.find(x => x.id === req.params.id);
+  if (!m) return res.status(404).json({ message: 'Not found' });
 
-  Object.assign(mem, req.body);
+  Object.assign(m, req.body);
   res.json({ success: true });
 });
 
@@ -954,6 +953,8 @@ app.delete('/api/members/:id', (req, res) => {
   members = members.filter(m => m.id !== req.params.id);
   res.json({ success: true });
 });
+
+app.listen(process.env.PORT || 3001);
 
 
 

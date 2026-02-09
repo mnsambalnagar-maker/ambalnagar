@@ -191,173 +191,110 @@
 <script>
 const API_BASE = 'https://ambalnagar.onrender.com';
 
-const categoriesTable = document.getElementById('categoriesTable');
-const membersTable = document.getElementById('membersTable');
-const memberCategory = document.getElementById('memberCategory');
+const categoriesTableBody = document.querySelector('#categoriesTable tbody');
+const membersTableBody = document.querySelector('#membersTable tbody');
+const memberCategorySelect = document.getElementById('memberCategory');
 
 const categoryForm = document.getElementById('categoryForm');
-const categoryId = document.getElementById('categoryId');
-const categoryInputId = document.getElementById('categoryInputId');
-const categoryInputName = document.getElementById('categoryInputName');
-const categoryCancel = document.getElementById('categoryCancel');
+const categoryNameInput = document.getElementById('categoryInputName');
 
 const memberForm = document.getElementById('memberForm');
-const memberId = document.getElementById('memberId');
 const memberName = document.getElementById('memberName');
 const memberPhone = document.getElementById('memberPhone');
-const memberCancel = document.getElementById('memberCancel');
 
 let categoryMap = new Map();
 
-/* LOAD CATEGORIES */
-async function loadCategories(){
-  const res = await fetch(API_BASE+'/api/categories');
+async function loadCategories() {
+  const res = await fetch(API_BASE + '/api/categories');
   const cats = await res.json();
 
-  categoriesTable.innerHTML = '';
-  memberCategory.innerHTML = '<option value="">Select Category</option>';
   categoryMap.clear();
+  categoriesTableBody.innerHTML = '';
+  memberCategorySelect.innerHTML = '<option value="">Select Category</option>';
 
-  cats.forEach(c=>{
-    categoryMap.set(c.id,c.name);
+  cats.forEach(c => {
+    categoryMap.set(c.id, c.name);
 
-    categoriesTable.innerHTML += `
+    categoriesTableBody.innerHTML += `
       <tr>
-        <td>${c.id}</td>
         <td>${c.name}</td>
         <td>
-          <button class="btn-small btn-edit" onclick="editCategory('${c.id}')">Edit</button>
-          <button class="btn-small btn-delete" onclick="deleteCategory('${c.id}')">Delete</button>
+          <button onclick="deleteCategory('${c.id}')">Delete</button>
         </td>
       </tr>
     `;
 
-    const opt = document.createElement('option');
-    opt.value = c.id;
-    opt.textContent = c.name;
-    memberCategory.appendChild(opt);
+    memberCategorySelect.innerHTML += `
+      <option value="${c.id}">${c.name}</option>
+    `;
   });
 }
 
-/* LOAD MEMBERS */
-async function loadMembers(){
-  const res = await fetch(API_BASE+'/api/members');
-  const mems = await res.json();
+async function loadMembers() {
+  const res = await fetch(API_BASE + '/api/members');
+  const mem = await res.json();
 
-  membersTable.innerHTML = '';
-
-  mems.forEach(m=>{
-    membersTable.innerHTML += `
+  membersTableBody.innerHTML = '';
+  mem.forEach(m => {
+    membersTableBody.innerHTML += `
       <tr>
         <td>${m.name}</td>
         <td>${m.phone}</td>
-        <td>${categoryMap.get(m.category) || ''}</td>
-        <td>
-          <button class="btn-small btn-edit" onclick="editMember('${m.id}')">Edit</button>
-          <button class="btn-small btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
-        </td>
+        <td>${categoryMap.get(m.category)}</td>
       </tr>
     `;
   });
 }
 
-/* SAVE CATEGORY */
-categoryForm.onsubmit = async e=>{
+// CATEGORY SAVE
+categoryForm.onsubmit = async e => {
   e.preventDefault();
 
-  const id = categoryInputId.value.trim();
-  const name = categoryInputName.value.trim();
-
-  if(categoryId.value){
-    await fetch(API_BASE+'/api/categories/'+categoryId.value,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({name})
-    });
-  }else{
-    await fetch(API_BASE+'/api/categories',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({id,name})
-    });
-  }
+  await fetch(API_BASE + '/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name: categoryNameInput.value })
+  });
 
   categoryForm.reset();
-  await loadCategories();
-  await loadMembers();
+  loadCategories();
 };
 
-/* SAVE MEMBER */
-memberForm.onsubmit = async e=>{
+// MEMBER SAVE
+memberForm.onsubmit = async e => {
   e.preventDefault();
 
-  const body={
-    name:memberName.value,
-    phone:memberPhone.value,
-    category:memberCategory.value
-  };
-
-  if(memberId.value){
-    await fetch(API_BASE+'/api/members/'+memberId.value,{
-      method:'PUT',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
-  }else{
-    await fetch(API_BASE+'/api/members',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(body)
-    });
+  if (!memberCategorySelect.value) {
+    alert('Select category');
+    return;
   }
 
+  await fetch(API_BASE + '/api/members', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: memberName.value,
+      phone: memberPhone.value,
+      category: memberCategorySelect.value
+    })
+  });
+
   memberForm.reset();
-  await loadMembers();
+  loadMembers();
 };
 
-/* EDIT / DELETE */
-window.editCategory = async id=>{
-  const res = await fetch(API_BASE+'/api/categories');
-  const c = (await res.json()).find(x=>x.id===id);
-  if(!c) return;
+async function deleteCategory(id) {
+  await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
+  loadCategories();
+  loadMembers();
+}
 
-  categoryId.value = c.id;
-  categoryInputId.value = c.id;
-  categoryInputName.value = c.name;
-};
-
-window.deleteCategory = async id=>{
-  await fetch(API_BASE+'/api/categories/'+id,{method:'DELETE'});
-  await loadCategories();
-  await loadMembers();
-};
-
-window.editMember = async id=>{
-  const res = await fetch(API_BASE+'/api/members');
-  const m = (await res.json()).find(x=>x.id===id);
-  if(!m) return;
-
-  memberId.value = m.id;
-  memberName.value = m.name;
-  memberPhone.value = m.phone;
-  memberCategory.value = m.category;
-};
-
-window.deleteMember = async id=>{
-  await fetch(API_BASE+'/api/members/'+id,{method:'DELETE'});
-  await loadMembers();
-};
-
-/* CANCEL */
-categoryCancel.onclick = ()=>categoryForm.reset();
-memberCancel.onclick = ()=>memberForm.reset();
-
-/* INIT */
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadMembers();
 });
 </script>
+
 
 </body>
 </html>
