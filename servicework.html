@@ -481,13 +481,16 @@ memberCancelBtn.onclick = () => {
   memberForm.reset();
 };
 
-/* =======================
-   INIT
-======================= */
-(async function init() {
-  await loadCategories();
-  await loadMembers();
-})();
+document.addEventListener('DOMContentLoaded', async () => {
+  try {
+    await loadCategories();
+    await loadMembers();
+    console.log('Service dashboard loaded');
+  } catch (e) {
+    console.error('Init failed', e);
+  }
+});
+
 </script>
 
 </body>
