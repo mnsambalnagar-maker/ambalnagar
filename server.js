@@ -891,15 +891,19 @@ app.get('/api/categories', (req, res) => {
 
 app.post('/api/categories', (req, res) => {
   const { name } = req.body;
-  if (!name) return res.status(400).json({ message: 'Name required' });
+
+  if (!name) {
+    return res.status(400).json({ message: 'Category name required' });
+  }
 
   categories.push({
-    id: uuidv4(),   // ✅ AUTO ID
+    id: uuidv4(),
     name
   });
 
   res.json({ success: true });
 });
+
 
 app.put('/api/categories/:id', (req, res) => {
   const cat = categories.find(c => c.id === req.params.id);
