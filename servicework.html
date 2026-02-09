@@ -243,7 +243,7 @@
       <form id="categoryForm">
         <input type="hidden" id="categoryId" />
         <label>Category ID</label>
-        <input type="text" id="categoryInputId" required />
+        <input type="text" id="categoryInputId" required readonly />
         <label>Category Name</label>
         <input type="text" id="categoryInputName" required />
         <div class="btn-row">
@@ -268,7 +268,7 @@
         <label>Name</label>
         <input type="text" id="memberName" required />
         <label>Phone</label>
-        <input type="text" id="memberPhone" required />
+        <input type="tel" id="memberPhone" pattern="[0-9]{10}" required />
         <label>Category</label>
         <select id="memberCategory" required></select>
         <div class="btn-row">
@@ -377,6 +377,7 @@
         body: JSON.stringify({ id, name })
       }).then(() => loadCategories());
     }
+    categoryInputId.disabled = false;
   };
 
   memberForm.onsubmit = e => {
@@ -424,6 +425,8 @@
       categoryIdInput.value = cat.id;
       categoryInputId.value = cat.id;
       categoryInputName.value = cat.name;
+
+      categoryInputId.disabled = true;
     });
 };
 
@@ -439,6 +442,18 @@ window.editMember = id => {
       memberCategorySelect.value = m.category;
     });
 };
+categoryCancelBtn.onclick = () => {
+  categoryIdInput.value = '';
+  categoryInputId.value = '';
+  categoryInputName.value = '';
+};
+
+memberCancelBtn.onclick = () => {
+  memberIdInput.value = '';
+  memberNameInput.value = '';
+  memberPhoneInput.value = '';
+};
+
 
 </script>
 
