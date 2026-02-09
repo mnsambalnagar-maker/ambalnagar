@@ -286,6 +286,209 @@
     </div>
   </div>
 
+<script>
+const API_BASE = 'https://ambalnagar.onrender.com';
+
+const categoriesTableBody = document.querySelector('#categoriesTable tbody');
+const membersTableBody = document.querySelector('#membersTable tbody');
+
+const categoryForm = document.getElementById('categoryForm');
+const categoryIdInput = document.getElementById('categoryId');
+const categoryInputId = document.getElementById('categoryInputId');
+const categoryInputName = document.getElementById('categoryInputName');
+const categoryCancelBtn = document.getElementById('categoryCancel');
+
+const memberForm = document.getElementById('memberForm');
+const memberIdInput = document.getElementById('memberId');
+const memberNameInput = document.getElementById('memberName');
+const memberPhoneInput = document.getElementById('memberPhone');
+const memberCategorySelect = document.getElementById('memberCategory');
+const memberCancelBtn = document.getElementById('memberCancel');
+
+let categoryMap = new Map();
+
+/* =======================
+   LOAD CATEGORIES
+======================= */
+async function loadCategories() {
+  const res = await fetch(API_BASE + '/api/categories');
+  const categories = await res.json();
+
+  categoryMap.clear();
+  categoriesTableBody.innerHTML = '';
+  memberCategorySelect.innerHTML = '<option value="">Select Category</option>';
+
+  categories.forEach(cat => {
+    categoryMap.set(cat.id, cat.name);
+
+    // table
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${cat.id}</td>
+      <td>${cat.name}</td>
+      <td>
+        <button class="btn-small btn-edit" onclick="editCategory('${cat.id}')">Edit</button>
+        <button class="btn-small btn-delete" onclick="deleteCategory('${cat.id}')">Delete</button>
+      </td>
+    `;
+    categoriesTableBody.appendChild(tr);
+
+    // dropdown
+    const opt = document.createElement('option');
+    opt.value = cat.id;
+    opt.textContent = cat.name;
+    memberCategorySelect.appendChild(opt);
+  });
+}
+
+/* =======================
+   LOAD MEMBERS
+======================= */
+async function loadMembers() {
+  const res = await fetch(API_BASE + '/api/members');
+  const members = await res.json();
+
+  membersTableBody.innerHTML = '';
+
+  members.forEach(m => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${m.name}</td>
+      <td>${m.phone}</td>
+      <td>${categoryMap.get(m.category) || ''}</td>
+      <td>
+        <button class="btn-small btn-edit" onclick="editMember('${m.id}')">Edit</button>
+        <button class="btn-small btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
+      </td>
+    `;
+    membersTableBody.appendChild(tr);
+  });
+}
+
+/* =======================
+   CATEGORY SAVE
+======================= */
+categoryForm.onsubmit = async e => {
+  e.preventDefault();
+
+  const storedId = categoryIdInput.value;
+  const id = categoryInputId.value.trim();
+  const name = categoryInputName.value.trim();
+
+  if (!name) return;
+
+  if (storedId) {
+    await fetch(API_BASE + '/api/categories/' + storedId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name })
+    });
+  } else {
+    await fetch(API_BASE + '/api/categories', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, name })
+    });
+  }
+
+  categoryForm.reset();
+  categoryInputId.disabled = false;
+
+  await loadCategories();
+  await loadMembers();
+};
+
+/* =======================
+   MEMBER SAVE
+======================= */
+memberForm.onsubmit = async e => {
+  e.preventDefault();
+
+  const id = memberIdInput.value;
+  const body = {
+    name: memberNameInput.value,
+    phone: memberPhoneInput.value,
+    category: memberCategorySelect.value
+  };
+
+  if (!body.category) {
+    alert('Select category');
+    return;
+  }
+
+  if (id) {
+    await fetch(API_BASE + '/api/members/' + id, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  } else {
+    await fetch(API_BASE + '/api/members', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+  }
+
+  memberForm.reset();
+  await loadMembers();
+};
+
+/* =======================
+   EDIT / DELETE
+======================= */
+window.editCategory = async id => {
+  const res = await fetch(API_BASE + '/api/categories');
+  const cats = await res.json();
+  const c = cats.find(x => x.id === id);
+
+  categoryIdInput.value = c.id;
+  categoryInputId.value = c.id;
+  categoryInputName.value = c.name;
+  categoryInputId.disabled = true;
+};
+
+window.deleteCategory = async id => {
+  await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
+  await loadCategories();
+  await loadMembers();
+};
+
+window.editMember = async id => {
+  const res = await fetch(API_BASE + '/api/members');
+  const mem = (await res.json()).find(m => m.id === id);
+
+  memberIdInput.value = mem.id;
+  memberNameInput.value = mem.name;
+  memberPhoneInput.value = mem.phone;
+  memberCategorySelect.value = mem.category;
+};
+
+window.deleteMember = async id => {
+  await fetch(API_BASE + '/api/members/' + id, { method: 'DELETE' });
+  await loadMembers();
+};
+
+/* =======================
+   CANCEL
+======================= */
+categoryCancelBtn.onclick = () => {
+  categoryForm.reset();
+  categoryInputId.disabled = false;
+};
+
+memberCancelBtn.onclick = () => {
+  memberForm.reset();
+};
+
+/* =======================
+   INIT
+======================= */
+(async function init() {
+  await loadCategories();
+  await loadMembers();
+})();
+</script>
 
 </body>
 </html>
