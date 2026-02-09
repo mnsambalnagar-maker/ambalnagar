@@ -334,7 +334,9 @@
           memberCategorySelect.appendChild(option);
         });
       });
-  }
+     loadMembers();  
+    }
+
 
   function loadMembers() {
     fetch(API_BASE + '/api/members')
@@ -363,6 +365,7 @@
     const storedId = categoryIdInput.value;
     const id = categoryInputId.value.trim();
     const name = categoryInputName.value.trim();
+    categoryInputId.disabled = false;
 
     if (storedId) {
       fetch(API_BASE + '/api/categories/' + storedId, {
@@ -377,7 +380,7 @@
         body: JSON.stringify({ id, name })
       }).then(() => loadCategories());
     }
-    categoryInputId.disabled = false;
+    
   };
 
   memberForm.onsubmit = e => {
@@ -446,13 +449,16 @@ categoryCancelBtn.onclick = () => {
   categoryIdInput.value = '';
   categoryInputId.value = '';
   categoryInputName.value = '';
+  categoryInputId.disabled = false; //
 };
 
 memberCancelBtn.onclick = () => {
   memberIdInput.value = '';
   memberNameInput.value = '';
   memberPhoneInput.value = '';
+  memberCategorySelect.selectedIndex = 0;
 };
+
 
 
 </script>
