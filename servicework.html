@@ -133,14 +133,14 @@ th,td{
 </div>
 
 <script>
-const API = 'https://ambalnagar.onrender.com';
+const API_BASE = 'https://ambalnagar.onrender.com';
 
-const categoriesTable = document.getElementById('categoriesTable');
-const membersTable = document.getElementById('membersTable');
-const categorySelect = document.getElementById('memberCategory');
+const categoriesTableBody = document.getElementById('categoriesTable');
+const membersTableBody = document.getElementById('membersTable');
+const memberCategorySelect = document.getElementById('memberCategory');
 
 const categoryForm = document.getElementById('categoryForm');
-const categoryName = document.getElementById('categoryName');
+const categoryNameInput = document.getElementById('categoryInputName');
 
 const memberForm = document.getElementById('memberForm');
 const memberName = document.getElementById('memberName');
@@ -148,74 +148,89 @@ const memberPhone = document.getElementById('memberPhone');
 
 let categoryMap = new Map();
 
-/* ---------- LOAD CATEGORIES ---------- */
-async function loadCategories(){
-  const res = await fetch(API + '/api/categories');
+/* LOAD CATEGORIES */
+async function loadCategories() {
+  const res = await fetch(API_BASE + '/api/categories');
   const cats = await res.json();
 
-  categoriesTable.innerHTML = '';
-  categorySelect.innerHTML = '<option value="">Select Category</option>';
   categoryMap.clear();
+  categoriesTableBody.innerHTML = '';
+  memberCategorySelect.innerHTML = '<option value="">Select Category</option>';
 
-  cats.forEach(c=>{
-    categoryMap.set(c.id,c.name);
+  cats.forEach(c => {
+    categoryMap.set(c.id, c.name);
 
-    categoriesTable.innerHTML += `
+    categoriesTableBody.innerHTML += `
       <tr>
         <td>${c.id}</td>
         <td>${c.name}</td>
-        <td><button class="danger" onclick="deleteCategory('${c.id}')">X</button></td>
-      </tr>`;
+        <td>
+          <button class="btn-small btn-delete"
+            onclick="deleteCategory('${c.id}')">Delete</button>
+        </td>
+      </tr>
+    `;
 
-    categorySelect.innerHTML += `<option value="${c.id}">${c.name}</option>`;
+    memberCategorySelect.innerHTML += `
+      <option value="${c.id}">${c.name}</option>
+    `;
   });
 }
 
-/* ---------- LOAD MEMBERS ---------- */
-async function loadMembers(){
-  const res = await fetch(API + '/api/members');
+/* LOAD MEMBERS */
+async function loadMembers() {
+  const res = await fetch(API_BASE + '/api/members');
   const mem = await res.json();
 
-  membersTable.innerHTML='';
-  mem.forEach(m=>{
-    membersTable.innerHTML += `
+  membersTableBody.innerHTML = '';
+  mem.forEach(m => {
+    membersTableBody.innerHTML += `
       <tr>
         <td>${m.name}</td>
         <td>${m.phone}</td>
-        <td>${categoryMap.get(m.category)}</td>
-        <td><button class="danger" onclick="deleteMember('${m.id}')">X</button></td>
-      </tr>`;
+        <td>${categoryMap.get(m.category) || ''}</td>
+        <td>
+          <button class="btn-small btn-delete"
+            onclick="deleteMember('${m.id}')">Delete</button>
+        </td>
+      </tr>
+    `;
   });
 }
 
-/* ---------- SAVE CATEGORY ---------- */
-categoryForm.onsubmit = async e=>{
+/* SAVE CATEGORY */
+categoryForm.onsubmit = async e => {
   e.preventDefault();
 
-  const name = categoryName.value.trim();
-  const id = name.toLowerCase().replace(/\s+/g,'-');
+  const name = categoryNameInput.value.trim();
+  if (!name) return;
 
-  await fetch(API + '/api/categories',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({id,name})
+  await fetch(API_BASE + '/api/categories', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
   });
 
   categoryForm.reset();
   await loadCategories();
 };
 
-/* ---------- SAVE MEMBER ---------- */
-memberForm.onsubmit = async e=>{
+/* SAVE MEMBER */
+memberForm.onsubmit = async e => {
   e.preventDefault();
 
-  await fetch(API + '/api/members',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      name:memberName.value,
-      phone:memberPhone.value,
-      category:categorySelect.value
+  if (!memberCategorySelect.value) {
+    alert('Select category');
+    return;
+  }
+
+  await fetch(API_BASE + '/api/members', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name: memberName.value,
+      phone: memberPhone.value,
+      category: memberCategorySelect.value
     })
   });
 
@@ -223,24 +238,24 @@ memberForm.onsubmit = async e=>{
   await loadMembers();
 };
 
-/* ---------- DELETE ---------- */
-async function deleteCategory(id){
-  await fetch(API + '/api/categories/' + id,{method:'DELETE'});
+/* DELETE */
+async function deleteCategory(id) {
+  await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
   await loadCategories();
   await loadMembers();
 }
 
-async function deleteMember(id){
-  await fetch(API + '/api/members/' + id,{method:'DELETE'});
+async function deleteMember(id) {
+  await fetch(API_BASE + '/api/members/' + id, { method: 'DELETE' });
   await loadMembers();
 }
 
-/* ---------- INIT ---------- */
-document.addEventListener('DOMContentLoaded',async()=>{
+document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadMembers();
 });
 </script>
+
 
 </body>
 </html>
