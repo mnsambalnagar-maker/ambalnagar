@@ -148,7 +148,9 @@ const memberPhone = document.getElementById('memberPhone');
 
 let categoryMap = new Map();
 
-/* LOAD CATEGORIES */
+/* =====================
+   LOAD CATEGORIES
+===================== */
 async function loadCategories() {
   const res = await fetch(API_BASE + '/api/categories');
   const cats = await res.json();
@@ -177,7 +179,9 @@ async function loadCategories() {
   });
 }
 
-/* LOAD MEMBERS */
+/* =====================
+   LOAD MEMBERS
+===================== */
 async function loadMembers() {
   const res = await fetch(API_BASE + '/api/members');
   const mem = await res.json();
@@ -198,7 +202,9 @@ async function loadMembers() {
   });
 }
 
-/* SAVE CATEGORY */
+/* =====================
+   SAVE CATEGORY ✅ NOW WORKS
+===================== */
 categoryForm.onsubmit = async e => {
   e.preventDefault();
 
@@ -215,7 +221,9 @@ categoryForm.onsubmit = async e => {
   await loadCategories();
 };
 
-/* SAVE MEMBER */
+/* =====================
+   SAVE MEMBER
+===================== */
 memberForm.onsubmit = async e => {
   e.preventDefault();
 
@@ -238,7 +246,9 @@ memberForm.onsubmit = async e => {
   await loadMembers();
 };
 
-/* DELETE */
+/* =====================
+   DELETE
+===================== */
 async function deleteCategory(id) {
   await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
   await loadCategories();
@@ -250,6 +260,9 @@ async function deleteMember(id) {
   await loadMembers();
 }
 
+/* =====================
+   INIT
+===================== */
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadMembers();
