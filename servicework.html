@@ -187,7 +187,6 @@
   </div>
 
 </div>
-
 <script>
 const API_BASE = 'https://ambalnagar.onrender.com';
 
@@ -204,14 +203,17 @@ const memberPhone = document.getElementById('memberPhone');
 
 let categoryMap = new Map();
 
-/* LOAD CATEGORIES */
+/* =====================
+   LOAD CATEGORIES
+===================== */
 async function loadCategories() {
   const res = await fetch(API_BASE + '/api/categories');
   const cats = await res.json();
 
   categoryMap.clear();
   categoriesTableBody.innerHTML = '';
-  memberCategorySelect.innerHTML = '<option value="">Select Category</option>';
+  memberCategorySelect.innerHTML =
+    '<option value="">Select Category</option>';
 
   cats.forEach(c => {
     categoryMap.set(c.id, c.name);
@@ -221,7 +223,8 @@ async function loadCategories() {
         <td>${c.id}</td>
         <td>${c.name}</td>
         <td>
-          <button class="btn-small btn-delete" onclick="deleteCategory('${c.id}')">Delete</button>
+          <button class="btn-small btn-delete"
+            onclick="deleteCategory('${c.id}')">Delete</button>
         </td>
       </tr>
     `;
@@ -232,7 +235,9 @@ async function loadCategories() {
   });
 }
 
-/* LOAD MEMBERS */
+/* =====================
+   LOAD MEMBERS
+===================== */
 async function loadMembers() {
   const res = await fetch(API_BASE + '/api/members');
   const mem = await res.json();
@@ -245,14 +250,17 @@ async function loadMembers() {
         <td>${m.phone}</td>
         <td>${categoryMap.get(m.category) || ''}</td>
         <td>
-          <button class="btn-small btn-delete" onclick="deleteMember('${m.id}')">Delete</button>
+          <button class="btn-small btn-delete"
+            onclick="deleteMember('${m.id}')">Delete</button>
         </td>
       </tr>
     `;
   });
 }
 
-/* SAVE CATEGORY */
+/* =====================
+   SAVE CATEGORY
+===================== */
 categoryForm.onsubmit = async e => {
   e.preventDefault();
 
@@ -262,14 +270,19 @@ categoryForm.onsubmit = async e => {
   await fetch(API_BASE + '/api/categories', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name })
+    body: JSON.stringify({
+      id: name.toLowerCase().replace(/\s+/g, '-'),
+      name
+    })
   });
 
   categoryForm.reset();
   await loadCategories();
 };
 
-/* SAVE MEMBER */
+/* =====================
+   SAVE MEMBER
+===================== */
 memberForm.onsubmit = async e => {
   e.preventDefault();
 
@@ -292,7 +305,9 @@ memberForm.onsubmit = async e => {
   await loadMembers();
 };
 
-/* DELETE */
+/* =====================
+   DELETE
+===================== */
 async function deleteCategory(id) {
   await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
   await loadCategories();
@@ -311,7 +326,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 </script>
 
 
-</script>
+
+
+
 
 
 </body>
