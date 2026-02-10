@@ -21,9 +21,10 @@
       text-transform: uppercase;
     }
 
+    /* Category grid */
     #categoriesContainer {
       max-width: 1000px;
-      margin: 0 auto 40px;
+      margin: 0 auto 40px auto;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 24px;
@@ -33,116 +34,148 @@
       cursor: pointer;
       padding: 18px 12px 16px;
       border-radius: 18px;
-      background: rgba(255,255,255,0.08);
-      box-shadow: 0 18px 35px rgba(0,0,0,0.55);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 18px 35px rgba(0, 0, 0, 0.55);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.12);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      transition: .25s;
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border 0.25s ease;
+      position: relative;
+      overflow: hidden;
     }
 
     .category:hover {
       transform: translateY(-6px) scale(1.02);
+      box-shadow: 0 22px 40px rgba(0, 0, 0, 0.7);
       border-color: #ffd54a;
     }
+
+  
 
     .category img {
       width: 70px;
       height: 70px;
       border-radius: 50%;
       object-fit: cover;
-      border: 2px solid #fff;
+      border: 2px solid rgba(255, 255, 255, 0.9);
+      background: #0b1020;
+    }
+
+    .category span {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fdfdfd;
     }
 
     #selectedCategory {
       text-align: center;
       font-size: 1.4rem;
+      margin: 10px 0 8px;
       color: #ffeb99;
+      font-weight: 600;
     }
 
     #membersContainer {
       max-width: 650px;
-      margin: auto;
-      background: rgba(0,0,0,.35);
+      margin: 0 auto;
+      font-size: 0.98rem;
+      color: #f7f7f7;
+      background: rgba(0, 0, 0, 0.35);
       border-radius: 16px;
-      padding: 12px 18px;
+      padding: 12px 18px 4px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
     }
 
     .member-entry {
       padding: 10px 4px;
-      border-bottom: 1px solid rgba(255,255,255,.12);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .member-entry:last-child {
+      border-bottom: none;
+    }
+
+    .member-entry strong {
+      color: #ffeb99;
+    }
+
+    @media (max-width: 480px) {
+      body {
+        padding: 25px 10px;
+      }
+      h1 {
+        font-size: 1.4rem;
+      }
+      #membersContainer {
+        padding: 10px 12px 4px;
+      }
     }
   </style>
 </head>
-
 <body>
+  <h1>Service Categories</h1>
+  <div id="categoriesContainer"></div>
 
-<h1>Service Categories</h1>
-<div id="categoriesContainer"></div>
+  <h2 id="selectedCategory">Select a category</h2>
+  <div id="membersContainer"></div>
 
-<h2 id="selectedCategory">Select a category</h2>
-<div id="membersContainer"></div>
+  <script>
+    const categoriesContainer = document.getElementById('categoriesContainer');
+    const membersContainer = document.getElementById('membersContainer');
+    const selectedCategory = document.getElementById('selectedCategory');
 
-<script>
-/* ✅ IMPORTANT */
-const API_BASE = 'https://ambalnagar.onrender.com';
+    function loadCategories() {
+      fetch('/api/categories')
+        .then(res => res.json())
+        .then(categories => {
+          categoriesContainer.innerHTML = '';
+          categories.forEach(cat => {
+            const div = document.createElement('div');
+            div.className = 'category';
+            div.dataset.cat = cat.id;
 
-const categoriesContainer = document.getElementById('categoriesContainer');
-const membersContainer = document.getElementById('membersContainer');
-const selectedCategory = document.getElementById('selectedCategory');
+            div.innerHTML = `
+              <img src="${cat.image || '/img/services/default.png'}" alt="${cat.name}">
+              <span>${cat.name}</span>
+            `;
 
-async function loadCategories() {
-  try {
-    const res = await fetch(API_BASE + '/api/categories');
-    const categories = await res.json();
-
-    categoriesContainer.innerHTML = '';
-
-    categories.forEach(cat => {
-      const div = document.createElement('div');
-      div.className = 'category';
-
-      div.innerHTML = `
-        <img src="${cat.image || '/img/services/default.png'}" alt="${cat.name}">
-        <span>${cat.name}</span>
-      `;
-
-      div.onclick = () => loadMembers(cat.id, cat.name);
-      categoriesContainer.appendChild(div);
-    });
-  } catch (e) {
-    categoriesContainer.innerHTML = '<p>Failed to load categories</p>';
-  }
-}
-
-async function loadMembers(catId, catName) {
-  selectedCategory.textContent = catName;
-  membersContainer.innerHTML = 'Loading members...';
-
-  try {
-    const res = await fetch(API_BASE + '/api/members/' + catId);
-    const members = await res.json();
-
-    if (!members.length) {
-      membersContainer.innerHTML = '<p>No members added yet.</p>';
-      return;
+            div.onclick = () => loadMembers(cat.id, cat.name);
+            categoriesContainer.appendChild(div);
+          });
+        });
     }
 
-    membersContainer.innerHTML = '';
-    members.forEach(m => {
-      const div = document.createElement('div');
-      div.className = 'member-entry';
-      div.innerHTML = `<strong>${m.name}</strong> — Phone: ${m.phone}`;
-      membersContainer.appendChild(div);
-    });
-  } catch (e) {
-    membersContainer.innerHTML = '<p>Failed to load members.</p>';
-  }
-}
+    function loadMembers(catId, catName) {
+      selectedCategory.textContent = catName;
+      membersContainer.innerHTML = 'Loading members...';
 
-loadCategories();
-</script>
+      
 
+      fetch(`/api/members/${catId}`)
+        .then(res => res.json())
+        .then(members => {
+          if (!members.length) {
+            membersContainer.innerHTML = '<p>No members added yet.</p>';
+            return;
+          }
+          membersContainer.innerHTML = '';
+          members.forEach(m => {
+            const div = document.createElement('div');
+            div.className = 'member-entry';
+            div.innerHTML = `<strong>${m.name}</strong> — Phone: ${m.phone}`;
+            membersContainer.appendChild(div);
+          });
+        })
+        .catch(() => {
+          membersContainer.innerHTML = '<p>Failed to load members.</p>';
+        });
+    }
+
+    loadCategories();
+  </script>
 </body>
 </html>

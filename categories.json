@@ -1,0 +1,62 @@
+
+[
+  {
+    "id": "corporation_department",
+    "name": "Corporation Department",
+    "image": "/img/services/corp.png"
+  },
+  {
+    "id": "police",
+    "name": "Police",
+    "image": "/img/services/police.png"
+  },
+  {
+    "id": "forest_department",
+    "name": "Forest Department",
+    "image": "/img/services/forest.png"
+  },
+  {
+    "id": "taxi",
+    "name": "Taxi",
+    "image": "/img/services/taxi.png"
+  },
+  {
+    "id": "fire_service",
+    "name": "Fire Service",
+    "image": "/img/services/fire.png"
+  },
+  {
+    "id": "electrician",
+    "name": "Electrician",
+    "image": "/img/services/electrician.png"
+  },
+  {
+    "id": "plumber",
+    "name": "Plumber",
+    "image": "/img/services/plumber.png"
+  },
+  {
+    "id": "house_made",
+    "name": "House Made",
+    "image": "/img/services/house_maid.png"
+  },
+  {
+    "id": "gas",
+    "name": "Gas",
+    "image": "/img/services/gas.png"
+  },
+  {
+    "id": "cm_cell",
+    "name": "CM Cell",
+    "image": "/img/services/cm_cell.png"
+  },
+  {
+    "id": "mechanic",
+    "name": "Mechanic",
+    "image": "/img/services/mechanic.png"
+  },
+  {
+    "id": "8",
+    "name": "car_service"
+  }
+]
