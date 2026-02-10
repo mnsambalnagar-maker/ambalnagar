@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <title>Public Services View</title>
-
   <style>
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -15,7 +14,9 @@
 
     h1 {
       text-align: center;
+      color: #ffffff;
       margin-bottom: 30px;
+      font-weight: 700;
       letter-spacing: 1.5px;
       text-transform: uppercase;
     }
@@ -30,19 +31,20 @@
 
     .category {
       cursor: pointer;
-      padding: 16px;
+      padding: 18px 12px 16px;
       border-radius: 18px;
       background: rgba(255,255,255,0.08);
+      box-shadow: 0 18px 35px rgba(0,0,0,0.55);
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 10px;
-      transition: 0.3s;
+      transition: .25s;
     }
 
     .category:hover {
-      transform: translateY(-4px);
-      border: 1px solid #ffd54a;
+      transform: translateY(-6px) scale(1.02);
+      border-color: #ffd54a;
     }
 
     .category img {
@@ -50,31 +52,26 @@
       height: 70px;
       border-radius: 50%;
       object-fit: cover;
-      background: #0b1020;
+      border: 2px solid #fff;
     }
 
     #selectedCategory {
       text-align: center;
-      margin-bottom: 10px;
+      font-size: 1.4rem;
       color: #ffeb99;
-      font-size: 1.2rem;
     }
 
     #membersContainer {
       max-width: 650px;
       margin: auto;
-      background: rgba(0,0,0,0.35);
-      border-radius: 14px;
-      padding: 12px;
+      background: rgba(0,0,0,.35);
+      border-radius: 16px;
+      padding: 12px 18px;
     }
 
     .member-entry {
-      padding: 8px;
-      border-bottom: 1px solid rgba(255,255,255,0.15);
-    }
-
-    .member-entry:last-child {
-      border-bottom: none;
+      padding: 10px 4px;
+      border-bottom: 1px solid rgba(255,255,255,.12);
     }
   </style>
 </head>
@@ -82,75 +79,53 @@
 <body>
 
 <h1>Service Categories</h1>
-
 <div id="categoriesContainer"></div>
 
 <h2 id="selectedCategory">Select a category</h2>
 <div id="membersContainer"></div>
 
 <script>
-/* ===============================
-   CONFIG
-================================ */
+/* ✅ IMPORTANT */
 const API_BASE = 'https://ambalnagar.onrender.com';
 
-/* ===============================
-   ELEMENTS
-================================ */
 const categoriesContainer = document.getElementById('categoriesContainer');
 const membersContainer = document.getElementById('membersContainer');
 const selectedCategory = document.getElementById('selectedCategory');
 
-/* ===============================
-   LOAD CATEGORIES
-================================ */
 async function loadCategories() {
   try {
-    const res = await fetch(API_BASE + '/api/categories', { cache: 'no-store' });
+    const res = await fetch(API_BASE + '/api/categories');
     const categories = await res.json();
 
     categoriesContainer.innerHTML = '';
-
-    if (!categories.length) {
-      categoriesContainer.innerHTML = '<p style="text-align:center">No categories available</p>';
-      return;
-    }
 
     categories.forEach(cat => {
       const div = document.createElement('div');
       div.className = 'category';
 
       div.innerHTML = `
-        <img src="/img/services/default.png" alt="service">
+        <img src="${cat.image || '/img/services/default.png'}" alt="${cat.name}">
         <span>${cat.name}</span>
       `;
 
-      div.addEventListener('click', () => {
-        loadMembers(cat.id, cat.name);
-      });
-
+      div.onclick = () => loadMembers(cat.id, cat.name);
       categoriesContainer.appendChild(div);
     });
-
-  } catch (err) {
-    console.error(err);
-    categoriesContainer.innerHTML = '<p>Error loading categories</p>';
+  } catch (e) {
+    categoriesContainer.innerHTML = '<p>Failed to load categories</p>';
   }
 }
 
-/* ===============================
-   LOAD MEMBERS
-================================ */
-async function loadMembers(categoryId, categoryName) {
-  selectedCategory.textContent = categoryName;
-  membersContainer.innerHTML = 'Loading...';
+async function loadMembers(catId, catName) {
+  selectedCategory.textContent = catName;
+  membersContainer.innerHTML = 'Loading members...';
 
   try {
-    const res = await fetch(API_BASE + '/api/members/' + categoryId, { cache: 'no-store' });
+    const res = await fetch(API_BASE + '/api/members/' + catId);
     const members = await res.json();
 
     if (!members.length) {
-      membersContainer.innerHTML = '<p>No members found</p>';
+      membersContainer.innerHTML = '<p>No members added yet.</p>';
       return;
     }
 
@@ -158,20 +133,15 @@ async function loadMembers(categoryId, categoryName) {
     members.forEach(m => {
       const div = document.createElement('div');
       div.className = 'member-entry';
-      div.innerHTML = `<strong>${m.name}</strong> — ${m.phone}`;
+      div.innerHTML = `<strong>${m.name}</strong> — Phone: ${m.phone}`;
       membersContainer.appendChild(div);
     });
-
-  } catch (err) {
-    console.error(err);
-    membersContainer.innerHTML = '<p>Error loading members</p>';
+  } catch (e) {
+    membersContainer.innerHTML = '<p>Failed to load members.</p>';
   }
 }
 
-/* ===============================
-   INIT
-================================ */
-document.addEventListener('DOMContentLoaded', loadCategories);
+loadCategories();
 </script>
 
 </body>

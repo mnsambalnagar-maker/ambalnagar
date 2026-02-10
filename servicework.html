@@ -90,14 +90,7 @@ th,td{
 
 <form id="categoryForm">
 <label>Category Name</label>
-<input
-  id="categoryInputName"
-  type="text"
-  placeholder="Category Name"
-  required
-/>
-
-
+<input id="categoryInputName" required />
 <button class="primary" type="submit">Save Category</button>
 <button class="ghost" type="button" onclick="categoryForm.reset()">Cancel</button>
 </form>
@@ -122,7 +115,9 @@ th,td{
 <input id="memberPhone" required pattern="[0-9]{10}">
 
 <label>Category</label>
-<select id="memberCategory" required></select>
+<select id="memberCategory" required>
+  <option value="">Select Category</option>
+</select>
 
 <button class="primary" type="submit">Save Member</button>
 <button class="ghost" type="button" onclick="memberForm.reset()">Cancel</button>
@@ -143,79 +138,71 @@ const API_BASE = 'https://ambalnagar.onrender.com';
 
 const categoriesTableBody = document.getElementById('categoriesTable');
 const membersTableBody = document.getElementById('membersTable');
-const memberCategorySelect = document.getElementById('memberCategory');
 
 const categoryForm = document.getElementById('categoryForm');
-const categoryNameInput = document.getElementById('categoryInputName');
+const categoryInputName = document.getElementById('categoryInputName');
 
 const memberForm = document.getElementById('memberForm');
-const memberName = document.getElementById('memberName');
-const memberPhone = document.getElementById('memberPhone');
+const memberNameInput = document.getElementById('memberName');
+const memberPhoneInput = document.getElementById('memberPhone');
+const memberCategorySelect = document.getElementById('memberCategory');
 
 let categoryMap = new Map();
 
-/* =====================
-   LOAD CATEGORIES
-===================== */
+/* LOAD CATEGORIES */
 async function loadCategories() {
   const res = await fetch(API_BASE + '/api/categories');
-  const cats = await res.json();
+  const categories = await res.json();
 
   categoryMap.clear();
   categoriesTableBody.innerHTML = '';
   memberCategorySelect.innerHTML = '<option value="">Select Category</option>';
 
-  cats.forEach(c => {
-    categoryMap.set(c.id, c.name);
+  categories.forEach(cat => {
+    categoryMap.set(cat.id, cat.name);
 
     categoriesTableBody.innerHTML += `
       <tr>
-        <td>${c.id}</td>
-        <td>${c.name}</td>
+        <td>${cat.id}</td>
+        <td>${cat.name}</td>
         <td>
-          <button class="btn-small btn-delete"
-            onclick="deleteCategory('${c.id}')">Delete</button>
+          <button class="danger" onclick="deleteCategory('${cat.id}')">Delete</button>
         </td>
       </tr>
     `;
 
     memberCategorySelect.innerHTML += `
-      <option value="${c.id}">${c.name}</option>
+      <option value="${cat.id}">${cat.name}</option>
     `;
   });
 }
 
-/* =====================
-   LOAD MEMBERS
-===================== */
+/* LOAD MEMBERS */
 async function loadMembers() {
   const res = await fetch(API_BASE + '/api/members');
-  const mem = await res.json();
+  const members = await res.json();
 
   membersTableBody.innerHTML = '';
-  mem.forEach(m => {
+  members.forEach(m => {
     membersTableBody.innerHTML += `
       <tr>
         <td>${m.name}</td>
         <td>${m.phone}</td>
         <td>${categoryMap.get(m.category) || ''}</td>
         <td>
-          <button class="btn-small btn-delete"
-            onclick="deleteMember('${m.id}')">Delete</button>
+          <button class="danger" onclick="deleteMember('${m.id}')">Delete</button>
         </td>
       </tr>
     `;
   });
 }
 
-/* =====================
-   SAVE CATEGORY ✅ NOW WORKS
-===================== */
+/* SAVE CATEGORY */
 categoryForm.onsubmit = async e => {
   e.preventDefault();
 
-  const name = categoryNameInput.value.trim();
-  if (!name) return;
+  const name = categoryInputName.value.trim();
+  if (!name) return alert('Category name required');
 
   await fetch(API_BASE + '/api/categories', {
     method: 'POST',
@@ -227,9 +214,7 @@ categoryForm.onsubmit = async e => {
   await loadCategories();
 };
 
-/* =====================
-   SAVE MEMBER
-===================== */
+/* SAVE MEMBER */
 memberForm.onsubmit = async e => {
   e.preventDefault();
 
@@ -242,8 +227,8 @@ memberForm.onsubmit = async e => {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      name: memberName.value,
-      phone: memberPhone.value,
+      name: memberNameInput.value,
+      phone: memberPhoneInput.value,
       category: memberCategorySelect.value
     })
   });
@@ -252,29 +237,26 @@ memberForm.onsubmit = async e => {
   await loadMembers();
 };
 
-/* =====================
-   DELETE
-===================== */
+/* DELETE */
 async function deleteCategory(id) {
+  if (!confirm('Delete category?')) return;
   await fetch(API_BASE + '/api/categories/' + id, { method: 'DELETE' });
   await loadCategories();
   await loadMembers();
 }
 
 async function deleteMember(id) {
+  if (!confirm('Delete member?')) return;
   await fetch(API_BASE + '/api/members/' + id, { method: 'DELETE' });
   await loadMembers();
 }
 
-/* =====================
-   INIT
-===================== */
+/* INIT */
 document.addEventListener('DOMContentLoaded', async () => {
   await loadCategories();
   await loadMembers();
 });
 </script>
-
 
 </body>
 </html>
