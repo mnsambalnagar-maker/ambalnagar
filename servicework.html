@@ -90,7 +90,13 @@ th,td{
 
 <form id="categoryForm">
 <label>Category Name</label>
-<input id="categoryName" required>
+<input
+  id="categoryInputName"
+  type="text"
+  placeholder="Category Name"
+  required
+/>
+
 
 <button class="primary" type="submit">Save Category</button>
 <button class="ghost" type="button" onclick="categoryForm.reset()">Cancel</button>
