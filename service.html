@@ -50,12 +50,14 @@
       height: 70px;
       border-radius: 50%;
       object-fit: cover;
+      background: #0b1020;
     }
 
     #selectedCategory {
       text-align: center;
       margin-bottom: 10px;
       color: #ffeb99;
+      font-size: 1.2rem;
     }
 
     #membersContainer {
@@ -69,6 +71,10 @@
     .member-entry {
       padding: 8px;
       border-bottom: 1px solid rgba(255,255,255,0.15);
+    }
+
+    .member-entry:last-child {
+      border-bottom: none;
     }
   </style>
 </head>
@@ -100,21 +106,29 @@ const selectedCategory = document.getElementById('selectedCategory');
 ================================ */
 async function loadCategories() {
   try {
-    const res = await fetch(API_BASE + '/api/categories');
+    const res = await fetch(API_BASE + '/api/categories', { cache: 'no-store' });
     const categories = await res.json();
 
     categoriesContainer.innerHTML = '';
+
+    if (!categories.length) {
+      categoriesContainer.innerHTML = '<p style="text-align:center">No categories available</p>';
+      return;
+    }
 
     categories.forEach(cat => {
       const div = document.createElement('div');
       div.className = 'category';
 
       div.innerHTML = `
-        <img src="${cat.image ? cat.image : '/img/services/default.png'}">
+        <img src="/img/services/default.png" alt="service">
         <span>${cat.name}</span>
       `;
 
-      div.onclick = () => loadMembers(cat.id, cat.name);
+      div.addEventListener('click', () => {
+        loadMembers(cat.id, cat.name);
+      });
+
       categoriesContainer.appendChild(div);
     });
 
@@ -132,7 +146,7 @@ async function loadMembers(categoryId, categoryName) {
   membersContainer.innerHTML = 'Loading...';
 
   try {
-    const res = await fetch(API_BASE + '/api/members/' + categoryId);
+    const res = await fetch(API_BASE + '/api/members/' + categoryId, { cache: 'no-store' });
     const members = await res.json();
 
     if (!members.length) {
@@ -157,7 +171,7 @@ async function loadMembers(categoryId, categoryName) {
 /* ===============================
    INIT
 ================================ */
-loadCategories();
+document.addEventListener('DOMContentLoaded', loadCategories);
 </script>
 
 </body>
