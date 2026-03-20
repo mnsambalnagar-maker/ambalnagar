@@ -167,15 +167,14 @@ function loadJSON(filePath) {
 }
 
 async function uploadToSupabaseStorage(file) {
-  const fileName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
+  const fileName = `${Date.now()}-${file.originalname}`;
 
   const { error } = await supabase.storage
     .from('events')
     .upload(fileName, file.buffer, {
-    contentType: file.mimetype,
-    upsert: true
+      contentType: file.mimetype,
+      upsert: true
     });
-
 
   if (error) throw error;
 
