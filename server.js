@@ -483,27 +483,14 @@ app.get('/api/events/:id/gallery', async (req, res) => {
     res.json({ files: [] });
   }
 });
-async function uploadToSupabaseStorage(file) {
-  const fileName = `${Date.now()}-${file.originalname}`;
 
-  const { data, error } = await supabase.storage
-    .from('events') // 👈 bucket name EXACT
-    .upload(fileName, file.buffer, {
-      contentType: file.mimetype,
-      upsert: false
-    });
-
-  if (error) {
-    console.error('STORAGE UPLOAD ERROR:', error);
-    throw error;
-  }
 
   const { data: publicData } = supabase.storage
     .from('events')
     .getPublicUrl(fileName);
 
   return publicData.publicUrl;
-}
+
 
 
 
