@@ -186,7 +186,28 @@ function loadUsers() {
   if (!fs.existsSync(file)) return [];
   return JSON.parse(fs.readFileSync(file, 'utf8'));
 }
+async function uploadToSupabaseStorage(file) {
+  const fileName = `${Date.now()}-${file.originalname.replace(/\s+/g, '_')}`;
 
+  const { error } = await supabase.storage
+    .from('events')
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+      upsert: true
+    });
+
+  if (error) throw error;
+
+  return `${process.env.SUPABASE_URL}/storage/v1/object/public/events/${fileName}`;
+}
+
+function loadUsers() {
+  const file = path.join(__dirname, 'users.json');
+
+  if (!fs.existsSync(file)) return [];
+
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
 
 
 
@@ -482,7 +503,23 @@ app.get('/api/events/:id/gallery', async (req, res) => {
     res.json({ files: [] });
   }
 });
+async function uploadToSupabaseStorage(file) {
+  const fileName = `${Date.now()}-${file.originalname}`;
 
+  const { data, error } = await supabase.storage
+    .from('events') // 👈 bucket name EXACT
+    .upload(fileName, file.buffer, {
+      contentType: file.mimetype,
+      upsert: false
+    });
+
+  if (error) {
+    console.error('STORAGE UPLOAD ERROR:', error);
+    throw error;
+  }
+
+  return `${process.env.SUPABASE_URL}/storage/v1/object/public/events/${fileName}`;
+}
 
   
 
