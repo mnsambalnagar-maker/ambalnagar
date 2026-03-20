@@ -484,11 +484,7 @@ app.get('/api/events/:id/gallery', async (req, res) => {
 });
 
 
-  const { data: publicData } = supabase.storage
-    .from('events')
-    .getPublicUrl(fileName);
-
-  return publicData.publicUrl;
+  
 
 
 
